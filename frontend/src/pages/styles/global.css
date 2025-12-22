@@ -1,0 +1,147 @@
+/* frontend/src/styles/global.css */
+
+/* Tailwind base if you're using it already: keep these imports at top of file */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme variables - Light theme (A: Clean White + Soft Gray) */
+:root.light {
+  --bg: #ffffff;
+  --card: #f8fafc; /* very light gray */
+  --muted: #64748b; /* text muted */
+  --text: #0f172a; /* dark text */
+  --border: #e6eef8;
+  --sidebar: #f3f6fb;
+  --accent-start: #22d3ee;
+  --accent-end: #7c3aed;
+  --btn-text: #0b1220;
+  --card-date-bg: #edf2f7;
+}
+
+/* Dark theme variables (your dark-blue base) */
+:root.dark {
+  --bg: #071029;
+  --card: rgba(15,23,42,0.35); /* slate-ish */
+  --muted: #9aa7bb;
+  --text: #e6eef8;
+  --border: rgba(255,255,255,0.04);
+  --sidebar: rgba(3,7,18,0.6);
+  --accent-start: #22d3ee;
+  --accent-end: #7c3aed;
+  --btn-text: #0b1220;
+  --card-date-bg: rgba(148,163,184,0.06);
+}
+
+/* Apply global bg/text from variables */
+html {
+  height: 100%;
+}
+body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* layout helpers */
+.container {
+  max-width: 1100px;
+  margin: 24px auto;
+}
+
+/* Sidebar */
+.sidebar {
+  background: var(--sidebar);
+  border: 1px solid var(--border);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  color: var(--text);
+}
+
+/* Main cards / messages */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  color: var(--text);
+}
+
+/* Buttons */
+.btn {
+  background: linear-gradient(90deg, var(--accent-start), var(--accent-end));
+  color: var(--btn-text);
+  font-weight: 600;
+  padding: 0.55rem 0.9rem;
+  border-radius: 0.6rem;
+  transition: transform .12s ease, box-shadow .12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(31, 41, 55, 0.12); }
+
+/* Inputs */
+.input {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.6rem;
+  border-radius: 0.5rem;
+  width: 100%;
+}
+
+/* Message bubble tweaks */
+.message {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 0.75rem;
+  border-radius: 0.6rem;
+}
+
+/* Own messages */
+.msg-mine { background: linear-gradient(90deg, rgba(34,211,238,0.08), rgba(124,58,237,0.06)); }
+
+/* Avatar */
+.avatar { border-radius: 0.5rem; object-fit: cover; }
+
+/* Card date pill */
+.card-date {
+  background: var(--card-date-bg);
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+/* small status tag */
+.card-status {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Reaction active */
+.reacted { background: linear-gradient(90deg, var(--accent-start), var(--accent-end)); color: #071029; }
+
+/* composer */
+.composer {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* small util */
+.text-muted { color: var(--muted); }
+
+/* small responsiveness */
+@media (max-width: 820px) {
+  .sidebar { width: 100%; }
+  .layout { flex-direction: column; padding: 1rem; }
+}

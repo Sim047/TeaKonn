@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: teakonn-backend
+    env: node
+    plan: free
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: JWT_SECRET
+        value: supersecret123
+      - key: FRONTEND_URL
+        value: https://your-frontend.vercel.app
+      - key: MONGO_URI
+        sync: false
+      - key: UPLOAD_DIR
+        value: uploads
+    disk:
+      name: uploads
+      mountPath: /uploads
+      sizeGB: 1

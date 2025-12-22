@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: teakonn-backend
+    env: node
+    rootDir: backend
+    buildCommand: "npm install"
+    startCommand: "node src/server.js"
+    autoDeploy: true
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: UPLOAD_DIR
+        value: uploads
