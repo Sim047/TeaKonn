@@ -1,7 +1,7 @@
 {
   "buildCommand": "npm run build",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://teakonn-app-production.up.railway.app/api/$1" },
-    { "source": "/uploads/(.*)", "destination": "https://teakonn-app-production.up.railway.app/uploads/$1" }
+    { "source": "/api/(.*)", "destination": "https://teakonn-production.up.railway.app/api/$1" },
+    { "source": "/uploads/(.*)", "destination": "https://teakonn-production.up.railway.app/uploads/$1" }
   ]
 }

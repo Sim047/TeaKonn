@@ -7,7 +7,7 @@ A modern, feature-rich social networking and communication platform built with t
 ## 🌐 Live Demo
 
  - **Frontend:** [https://teakonn-app.vercel.app](https://teakonn-app.vercel.app)
- - **Backend API:** [https://teakonn-app-production.up.railway.app](https://teakonn-app-production.up.railway.app)
+ - **Backend API:** [https://teakonn-production.up.railway.app](https://teakonn-production.up.railway.app)
 
 ## ✨ Features
 
@@ -99,7 +99,7 @@ A modern, feature-rich social networking and communication platform built with t
 
 ### Deployment
 - **Frontend:** Vercel (https://teakonn-app.vercel.app)
-- **Backend:** Railway (https://teakonn-app-production.up.railway.app)
+- **Backend:** Railway (https://teakonn-production.up.railway.app)
 - **Database:** MongoDB Atlas
 - **Images:** Cloudinary
 
@@ -409,7 +409,7 @@ TeaKonn/
 ### Mobile (Expo)
 1. Use the `App/` folder as the mobile project.
 2. Configure environment before running (PowerShell example):
-  - `$env:EXPO_PUBLIC_API_URL = "https://teakonn-app-production.up.railway.app/api"`
+  - `$env:EXPO_PUBLIC_API_URL = "https://teakonn-production.up.railway.app/api"`
   - `$env:EXPO_PUBLIC_API_BASE = "https://your-backend-url"`
 3. Run from `App/`:
   - `npm install`

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../utils/axios";
 import GoogleLoginButton from "../components/GoogleLoginButton";
 import Logo from "../assets/teakonn-logo.png";
 
-const API = import.meta.env.VITE_API_URL || "";
+// Use centralized axios instance with normalized baseURL
 
 export default function Register({ onSuccess, switchToLogin }) {
   const [username, setUsername] = useState("");
@@ -17,7 +17,7 @@ export default function Register({ onSuccess, switchToLogin }) {
     setError("");
 
     try {
-      const res = await axios.post(API + "/api/auth/register", {
+      const res = await api.post("/auth/register", {
         username,
         email,
         password,

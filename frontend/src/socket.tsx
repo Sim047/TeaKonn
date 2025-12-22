@@ -3,7 +3,29 @@ import { io, Socket } from 'socket.io-client';
 
 // Vite exposes runtime env vars through import.meta.env
 // use VITE_API_URL to point to your backend (set in Vercel/Render environments)
-const API = import.meta.env.VITE_API_URL || '/';
+function normalizeBase(url?: string): string {
+  if (!url) return '/';
+  let u = url.trim().replace(/\/$/, '');
+  if (/^https?:\/\//i.test(u)) return u;
+  if (u.startsWith('//')) {
+    try {
+      return (typeof window !== 'undefined' ? window.location.protocol : 'https:') + u;
+    } catch {
+      return 'https:' + u;
+    }
+  }
+  if (u.startsWith('/')) {
+    try {
+      return (typeof window !== 'undefined' ? window.location.origin : '') + u;
+    } catch {
+      return u;
+    }
+  }
+  const isProd = (import.meta as any)?.env?.MODE === 'production';
+  return `${isProd ? 'https://' : 'http://'}${u}`;
+}
+
+const API = normalizeBase(import.meta.env.VITE_API_URL) || '/';
 
 // lightweight helper — prefer using localStorage token for handshake
 function getTokenFromStorage() {
