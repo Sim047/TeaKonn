@@ -165,6 +165,15 @@ body {
   box-shadow: 0 12px 34px rgba(2, 6, 23, 0.18);
   z-index: 15;
 }
+
+/* Inline, in-bubble reaction bar */
+.reaction-inline {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  padding: 0.25rem 0.4rem;
+  margin-top: 0.25rem;
+}
 .reaction-option {
   padding: 0.35rem 0.55rem;
   border-radius: 999px;

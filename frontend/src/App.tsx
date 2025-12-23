@@ -1356,9 +1356,8 @@ function onMyStatusUpdated(newStatus: any) {
                   })()}
                   {reactionPickerFor === m._id && (
                     <div
-                      className="reaction-picker flex items-center gap-2"
+                      className="reaction-inline flex items-center gap-1"
                       onClick={(e) => e.stopPropagation()}
-                      style={{ left: 0 }}
                     >
                       {AVAILABLE_REACTIONS.filter((e) => e !== currentReactionEmojiFor(m)).map((e) => (
                         <button
