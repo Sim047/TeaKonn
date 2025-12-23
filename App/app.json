@@ -12,7 +12,8 @@
     ],
     "icon": "./assets/icon.png",
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/ce6cf9cc-c389-4a33-84f5-5f73939968d7"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -31,14 +32,19 @@
       "permissions": [
         "INTERNET",
         "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "INTERNET",
+        "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE"
       ]
     },
     "extra": {
       "apiUrl": "https://teakonn-production.up.railway.app/api",
       "apiBase": "https://teakonn-production.up.railway.app",
-      "webUrl": "https://teakonn-app.vercel.app",
-      "eas": {}
+      "webUrl": "https://tea-konn.vercel.app",
+      "eas": {
+        "projectId": "ce6cf9cc-c389-4a33-84f5-5f73939968d7"
+      }
     },
     "plugins": [
       "expo-secure-store"
