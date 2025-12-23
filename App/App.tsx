@@ -265,13 +265,38 @@ function WebScreen({ navigation }: any) {
             history.replaceState = function(){ try{ /* depth unchanged */ }catch(e){}; post(); return _replace.apply(this, arguments); };
             window.addEventListener('popstate', function(){ try{ if(window.__RN_NAV_DEPTH>1) window.__RN_NAV_DEPTH--; }catch(e){}; post(); });
             setTimeout(post, 0);
+
+            // Detect Vercel 404 (DEPLOYMENT_NOT_FOUND) and notify native
+            function detectVercel404(){
+              try {
+                var txt = '';
+                try { txt = (document.body && document.body.innerText) || ''; } catch(_e) {}
+                if (/DEPLOYMENT_NOT_FOUND|404:\s*NOT_FOUND/i.test(txt)) {
+                  window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'web_error', reason: 'vercel_404' }));
+                }
+              } catch(_e) {}
+            }
+            document.addEventListener('DOMContentLoaded', function(){ setTimeout(detectVercel404, 50); });
+            setTimeout(detectVercel404, 500);
           } catch(e) {}
         })();`}
+        onLoadEnd={() => {
+          try {
+            webRef.current?.injectJavaScript(`(function(){ try { var t = (document.body && document.body.innerText) || ''; if (/DEPLOYMENT_NOT_FOUND|404:\\s*NOT_FOUND/i.test(t)) { window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'web_error', reason: 'vercel_404' })); } } catch(e){} })();`);
+          } catch {}
+        }}
         onMessage={(evt) => {
           try {
             const data = JSON.parse(evt.nativeEvent.data || '{}');
             if (data && data.type === 'nav') {
               setCanGoBack(!!(data.depth > 1));
+              return;
+            }
+            if (data && data.type === 'web_error') {
+              // Fallback to native Discover if the web app shows a deployment 404
+              setFallbackNative(true);
+              navigation?.replace?.('Discover');
+              return;
             }
           } catch {}
         }}
