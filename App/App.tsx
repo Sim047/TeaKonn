@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text, TextInput, Button, StyleSheet, FlatList, TouchableOpacity, BackHandler } from 'react-native';
+import { SafeAreaView, View, Text, TextInput, Button, StyleSheet, FlatList, TouchableOpacity, BackHandler, ActivityIndicator } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import Constants from 'expo-constants';
 import { WebView } from 'react-native-webview';
 import { api } from './src/api';
@@ -129,6 +130,7 @@ function WebScreen({ navigation }: any) {
   const webRef = React.useRef<WebView>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [webError, setWebError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   // Web-first: no auth injection; rely on the website's own login
 
   useEffect(() => {
@@ -170,6 +172,14 @@ function WebScreen({ navigation }: any) {
           <Text style={{ color: '#92400e', fontSize: 12 }}>Web error: {webError}. Use Refresh to retry.</Text>
         </View>
       )}
+      {isLoading && (
+        <View style={{ position: 'absolute', top: 16, alignSelf: 'center', zIndex: 50, backgroundColor: '#00000060', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16 }} pointerEvents="none">
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <ActivityIndicator color="#fff" />
+            <Text style={{ color: '#fff', fontSize: 12 }}>Refreshing…</Text>
+          </View>
+        </View>
+      )}
       <WebView
         ref={webRef}
         source={{ uri: webUrl }}
@@ -186,6 +196,9 @@ function WebScreen({ navigation }: any) {
         setSupportMultipleWindows={false}
         overScrollMode="always"
         bounces={true}
+        onLoadStart={() => {
+          try { setIsLoading(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
+        }}
         onHttpError={(e) => {
           try {
             const ne = e?.nativeEvent || {} as any;
@@ -265,6 +278,7 @@ function WebScreen({ navigation }: any) {
           try {
             webRef.current?.injectJavaScript(`(function(){ try { var t = (document.body && document.body.innerText) || ''; if (/DEPLOYMENT_NOT_FOUND|404:\\s*NOT_FOUND/i.test(t)) { window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'web_error', reason: 'vercel_404' })); } } catch(e){} })();`);
           } catch {}
+          try { setIsLoading(false); } catch {}
         }}
         onMessage={(evt) => {
           try {
@@ -290,6 +304,7 @@ function WebScreen({ navigation }: any) {
         onNavigationStateChange={(navState) => setCanGoBack(!!navState.canGoBack)}
         onLoadProgress={({ nativeEvent }) => {
           try {
+            setIsLoading(nativeEvent.progress < 1);
             if (nativeEvent.progress === 1) setWebError("");
           } catch {}
         }}
