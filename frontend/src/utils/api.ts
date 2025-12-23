@@ -13,6 +13,18 @@ function normalizeBase(url?: string): string {
     }
   }
   if (u.startsWith("/")) {
+    // If value is like "/host.tld" and contains a dot in first segment,
+    // treat it as protocol-relative and convert to "https://host.tld".
+    const afterSlash = u.slice(1);
+    const firstSegment = afterSlash.split("/")[0] || "";
+    if (!u.startsWith("//") && firstSegment.includes(".")) {
+      try {
+        const proto = typeof window !== "undefined" ? window.location.protocol : "https:";
+        return `${proto}//${afterSlash}`;
+      } catch {
+        return "https://" + afterSlash;
+      }
+    }
     try {
       return (typeof window !== "undefined" ? window.location.origin : "") + u;
     } catch {
