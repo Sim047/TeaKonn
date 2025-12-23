@@ -128,51 +128,8 @@ function WebScreen({ navigation }: any) {
   const webUrl = (process.env.EXPO_PUBLIC_WEB_URL as string) || (Constants.expoConfig?.extra as any)?.webUrl || 'http://localhost:5173';
   const webRef = React.useRef<WebView>(null);
   const [canGoBack, setCanGoBack] = useState(false);
-  const [authScript, setAuthScript] = useState<string>("");
   const [webError, setWebError] = useState<string>("");
-
-  // Hard refresh once auth script is ready so injection applies before content
-  useEffect(() => {
-    if (authScript) {
-      const t = setTimeout(() => {
-        try { webRef.current?.reload(); } catch {}
-      }, 50);
-      return () => clearTimeout(t);
-    }
-  }, [authScript]);
-
-  // Web-first: no boot preflight redirect; show banner and allow retry on errors
-
-  useEffect(() => {
-    // Build injected auth script from native token + user profile
-    const loadAuth = async () => {
-      try {
-        const token = await readToken();
-        if (!token) { setAuthScript(""); return; }
-        let userJson = "";
-        try {
-          const res = await api.get('/users/me');
-          userJson = JSON.stringify({ _id: res.data._id, username: res.data.username, email: res.data.email, avatar: res.data.avatar });
-        } catch {
-          userJson = "{}";
-        }
-        const script = `try{ 
-          try{
-            if (!sessionStorage.getItem('teakonnClearedOnce')) {
-              localStorage.clear();
-              sessionStorage.setItem('teakonnClearedOnce','true');
-            }
-          }catch(e){}
-          localStorage.setItem('token', ${JSON.stringify(token)});
-          localStorage.setItem('user', ${typeof userJson === 'string' ? userJson : JSON.stringify(userJson)});
-          
-          localStorage.setItem('DEBUG_WEBVIEW','true');
-        }catch(e){}`;
-        setAuthScript(script);
-      } catch { setAuthScript(""); }
-    };
-    loadAuth();
-  }, []);
+  // Web-first: no auth injection; rely on the website's own login
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -217,16 +174,16 @@ function WebScreen({ navigation }: any) {
         ref={webRef}
         source={{ uri: webUrl }}
         originWhitelist={["*"]}
-        userAgent={"Mozilla/5.0 (Linux; Android 11; KR) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36"}
         startInLoadingState
         javaScriptEnabled
         domStorageEnabled
-        cacheEnabled={false}
+        cacheEnabled={true}
         pullToRefreshEnabled={true}
         mixedContentMode="always"
         thirdPartyCookiesEnabled
         javaScriptCanOpenWindowsAutomatically
         allowsFullscreenVideo
+        setSupportMultipleWindows={false}
         onHttpError={(e) => {
           console.warn('WebView HTTP error', e?.nativeEvent);
           setWebError(String(e?.nativeEvent?.statusCode || 'HTTP error'));
@@ -236,8 +193,7 @@ function WebScreen({ navigation }: any) {
         }}
         injectedJavaScriptBeforeContentLoaded={`(function(){
           try {
-            ${authScript}
-            try { window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'debug', token: localStorage.getItem('token') ? 'set' : 'missing', api: (window.__API_URL || localStorage.getItem('API_URL') || 'unset'), href: location.href })); } catch(_e){}
+            try { window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'debug', href: location.href })); } catch(_e){}
             if (!window.__RN_NAV_DEPTH) window.__RN_NAV_DEPTH = 1;
             function post(){
               try { window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'nav', depth: window.__RN_NAV_DEPTH, href: location.href })); } catch(e) {}
