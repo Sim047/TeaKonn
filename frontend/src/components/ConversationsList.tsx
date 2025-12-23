@@ -1,6 +1,7 @@
 // frontend/src/components/ConversationsList.tsx
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 import Avatar from "./Avatar";
 import { Trash2, MessageSquareOff } from "lucide-react";
 import dayjs from "dayjs";
@@ -9,10 +10,7 @@ import { socket } from "../socket";
 
 dayjs.extend(relativeTime);
 
-const API =
-  (typeof window !== "undefined" && (window as any).__API_URL) ||
-  (typeof window !== "undefined" && localStorage.getItem("API_URL")) ||
-  import.meta.env.VITE_API_URL || "";
+const API = API_URL.replace(/\/api$/, "");
 const PLACEHOLDER = "https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff";
 
 export default function ConversationsList({

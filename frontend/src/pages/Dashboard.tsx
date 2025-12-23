@@ -26,7 +26,8 @@ import SportEvents from "./SportEvents";
 
 dayjs.extend(relativeTime);
 
-const API = import.meta.env.VITE_API_URL || "";
+import { API_URL } from "../config/api";
+const API = API_URL.replace(/\/api$/, "");
 
 // Comprehensive Sports Categories
 const ALL_SPORTS = [

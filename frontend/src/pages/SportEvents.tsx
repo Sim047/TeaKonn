@@ -1,6 +1,7 @@
 // frontend/src/pages/SportEvents.tsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 import dayjs from "dayjs";
 import {
   Calendar,
@@ -12,7 +13,7 @@ import {
   DollarSign,
 } from "lucide-react";
 
-const API = import.meta.env.VITE_API_URL || "";
+const API = API_URL.replace(/\/api$/, "");
 
 export default function SportEvents({ sport, token, onBack }: any) {
   const [events, setEvents] = useState<any[]>([]);

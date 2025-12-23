@@ -23,9 +23,10 @@ import {
 import Avatar from "./Avatar";
 import StatusPicker from "./StatusPicker";
 import SearchUsers from "./SearchUsers";
+import { API_URL } from "../config/api";
 import logo from "../assets/teakonn-logo.png";
 
-const API = (import.meta as any).env?.VITE_API_URL || "";
+const API = API_URL.replace(/\/api$/, "");
 
 interface SidebarProps {
   token: string;

@@ -2,8 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { getUserSubtitle } from "../utils/userDisplay";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
-const API = import.meta.env.VITE_API_URL || "";
+const API = API_URL.replace(/\/api$/, "");
 const PLACEHOLDER = "https://placehold.co/48x48?text=U";
 
 export default function SearchUsers({ token, onOpenConversation, currentUserId, onShowProfile }: any) {

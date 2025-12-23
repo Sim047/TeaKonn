@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 import { Search, Users, Trophy, Calendar, Stethoscope, ShoppingBag, Hash } from "lucide-react";
 
-const API = import.meta.env.VITE_API_URL || "";
+const API = API_URL.replace(/\/api$/, "");
 
 interface DashboardSearchProps {
   token: string;

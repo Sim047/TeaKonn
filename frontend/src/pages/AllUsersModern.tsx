@@ -1,6 +1,7 @@
 // frontend/src/pages/AllUsersModern.tsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 import { 
   Search, 
   MessageCircle, 
@@ -13,7 +14,7 @@ import {
   Star
 } from "lucide-react";
 
-const API = import.meta.env.VITE_API_URL || "";
+const API = API_URL.replace(/\/api$/, "");
 
 type User = {
   _id: string;

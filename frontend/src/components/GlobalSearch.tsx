@@ -1,9 +1,10 @@
 // frontend/src/components/GlobalSearch.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 import { Search, Users, Calendar, Trophy, ShoppingBag, Stethoscope, Hash, X } from "lucide-react";
 
-const API = (import.meta as any).env?.VITE_API_URL || "";
+const API = API_URL.replace(/\/api$/, "");
 
 interface GlobalSearchProps {
   token: string;

@@ -1,8 +1,9 @@
 // frontend/src/components/StatusPicker.tsx
 import React, { useState } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API = API_URL.replace(/\/api$/, "");
 
 export default function StatusPicker({ token, currentStatus, onUpdated }: any) {
   const [open, setOpen] = useState(false);
