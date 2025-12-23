@@ -21,5 +21,8 @@ export default {
       }
     }
   },
-  plugins: []
+  plugins: [
+    // Enable utilities like `line-clamp-3` across the app
+    require('@tailwindcss/line-clamp')
+  ]
 };

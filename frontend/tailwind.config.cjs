@@ -18,5 +18,8 @@ module.exports = {
       }
     }
   },
-  plugins: [],
+  plugins: [
+    // Ensure classic CommonJS config also loads line-clamp utilities
+    require('@tailwindcss/line-clamp')
+  ],
 };
