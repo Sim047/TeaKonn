@@ -2172,9 +2172,6 @@ function onMyStatusUpdated(newStatus: any) {
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
             <button onClick={(e) => { e.stopPropagation(); shareMessageImage(); }} className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm">Share</button>
             <button onClick={(e) => { e.stopPropagation(); downloadMessageImage(); }} className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm">Download</button>
-            {messageImageUrls.length > 1 && (
-              <span className="text-white/70 text-xs ml-2">{messageImageViewer.index + 1} / {messageImageUrls.length}</span>
-            )}
           </div>
         </div>
       )}

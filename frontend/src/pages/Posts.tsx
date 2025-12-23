@@ -1119,9 +1119,6 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
               <button onClick={(e) => { e.stopPropagation(); shareImage(previewImage); }} className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm">Share</button>
               <button onClick={(e) => { e.stopPropagation(); downloadImage(previewImage); }} className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm">Download</button>
-              {imageList.length > 1 && (
-                <span className="text-white/70 text-xs ml-2">{previewIndex + 1} / {imageList.length}</span>
-              )}
             </div>
           </div>
         )}
