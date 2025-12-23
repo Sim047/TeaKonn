@@ -57,6 +57,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
   const [uploadingImage, setUploadingImage] = useState(false);
   const [expandedCaptions, setExpandedCaptions] = useState<Record<string, boolean>>({});
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   
   // Edit states
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
@@ -613,12 +614,13 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
 
                 {/* Post Image (standardized height) */}
                 {post.imageUrl && (
-                  <div className="w-full h-64 sm:h-72 md:h-80 overflow-hidden rounded-t-2xl">
+                  <div className="w-full h-64 sm:h-72 md:h-80 overflow-hidden rounded-t-2xl relative group cursor-zoom-in" onClick={() => setPreviewImage(post.imageUrl)}>
                     <img
                       src={post.imageUrl}
                       alt="Post"
                       className="w-full h-full object-cover"
                     />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                   </div>
                 )}
 
@@ -1051,6 +1053,28 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Lightbox Preview */}
+        {previewImage && (
+          <div
+            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+            onClick={() => setPreviewImage(null)}
+          >
+            <button
+              onClick={() => setPreviewImage(null)}
+              className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/70 rounded-full p-2 transition-colors"
+              aria-label="Close image preview"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <img
+              src={previewImage}
+              alt="Preview"
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
         )}
       </div>
