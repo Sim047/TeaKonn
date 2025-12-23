@@ -129,8 +129,7 @@ function WebScreen({ navigation }: any) {
   const webRef = React.useRef<WebView>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [authScript, setAuthScript] = useState<string>("");
-  const [fallbackNative, setFallbackNative] = useState(false);
-  const [webStatus, setWebStatus] = useState<string>("");
+  const [webError, setWebError] = useState<string>("");
 
   // Hard refresh once auth script is ready so injection applies before content
   useEffect(() => {
@@ -142,27 +141,7 @@ function WebScreen({ navigation }: any) {
     }
   }, [authScript]);
 
-  useEffect(() => {
-    // Preflight check: if webUrl is unreachable or returns 404, fallback to native
-    const controller = new AbortController();
-    (async () => {
-      try {
-        const res = await fetch(webUrl, { method: 'HEAD', signal: controller.signal as any });
-        if (!res.ok) {
-          setWebStatus(`Web unavailable: ${res.status}`);
-          setFallbackNative(true);
-          navigation?.replace?.('Discover');
-          return;
-        }
-        setWebStatus('ok');
-      } catch (e: any) {
-        setWebStatus('error');
-        setFallbackNative(true);
-        navigation?.replace?.('Discover');
-      }
-    })();
-    return () => controller.abort();
-  }, [webUrl, navigation]);
+  // Web-first: no boot preflight redirect; show banner and allow retry on errors
 
   useEffect(() => {
     // Build injected auth script from native token + user profile
@@ -171,7 +150,6 @@ function WebScreen({ navigation }: any) {
         const token = await readToken();
         if (!token) { setAuthScript(""); return; }
         let userJson = "";
-        const apiBase = (Constants.expoConfig?.extra as any)?.apiUrl || process.env.EXPO_PUBLIC_API_URL || "";
         try {
           const res = await api.get('/users/me');
           userJson = JSON.stringify({ _id: res.data._id, username: res.data.username, email: res.data.email, avatar: res.data.avatar });
@@ -187,7 +165,7 @@ function WebScreen({ navigation }: any) {
           }catch(e){}
           localStorage.setItem('token', ${JSON.stringify(token)});
           localStorage.setItem('user', ${typeof userJson === 'string' ? userJson : JSON.stringify(userJson)});
-          ${apiBase ? `localStorage.setItem('API_URL', ${JSON.stringify(apiBase)}); window.__API_URL = ${JSON.stringify(apiBase)};` : ''}
+          
           localStorage.setItem('DEBUG_WEBVIEW','true');
         }catch(e){}`;
         setAuthScript(script);
@@ -230,9 +208,9 @@ function WebScreen({ navigation }: any) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
-      {fallbackNative && (
+      {!!webError && (
         <View style={{ padding: 8, backgroundColor: '#fde68a' }}>
-          <Text style={{ color: '#92400e', fontSize: 12 }}>Web app unreachable ({webStatus || 'unknown'}). Showing native screens.</Text>
+          <Text style={{ color: '#92400e', fontSize: 12 }}>Web error: {webError}. Use Refresh to retry.</Text>
         </View>
       )}
       <WebView
@@ -249,10 +227,10 @@ function WebScreen({ navigation }: any) {
         allowsFullscreenVideo
         onHttpError={(e) => {
           console.warn('WebView HTTP error', e?.nativeEvent);
-          try { navigation?.replace?.('Discover'); setFallbackNative(true); } catch {}
+          setWebError(String(e?.nativeEvent?.statusCode || 'HTTP error'));
         }}
         onError={() => {
-          try { navigation?.replace?.('Discover'); setFallbackNative(true); } catch {}
+          setWebError('WebView failed to load');
         }}
         injectedJavaScriptBeforeContentLoaded={`(function(){
           try {
@@ -296,9 +274,7 @@ function WebScreen({ navigation }: any) {
               return;
             }
             if (data && data.type === 'web_error') {
-              // Fallback to native Discover if the web app shows a deployment 404
-              setFallbackNative(true);
-              navigation?.replace?.('Discover');
+              setWebError(String(data?.reason || 'web error'));
               return;
             }
           } catch {}
@@ -311,23 +287,12 @@ function WebScreen({ navigation }: any) {
 
 export default function App() {
   const [bootChecked, setBootChecked] = useState(false);
-  const [initialRoute, setInitialRoute] = useState<'Login' | 'Web'>('Login');
-  const [webOk, setWebOk] = useState<boolean | null>(null);
-  const webUrlGlobal = (process.env.EXPO_PUBLIC_WEB_URL as string) || (Constants.expoConfig?.extra as any)?.webUrl || 'http://localhost:5173';
+  const [initialRoute, setInitialRoute] = useState<'Login' | 'Web'>('Web');
 
   useEffect(() => {
     const check = async () => {
       const token = await readToken();
-      // Preflight check the configured web URL; fallback to native if unreachable
-      try {
-        const res = await fetch(webUrlGlobal, { method: 'HEAD' });
-        const ok = !!res.ok;
-        setWebOk(ok);
-        setInitialRoute(token ? (ok ? 'Web' : 'Discover') : 'Login');
-      } catch {
-        setWebOk(false);
-        setInitialRoute(token ? 'Discover' : 'Login');
-      }
+      setInitialRoute('Web');
       setBootChecked(true);
     };
     check();
