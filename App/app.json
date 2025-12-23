@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "TeaKonn",
-    "slug": "auralink-expo-app",
+    "slug": "teakonn",
     "scheme": "teakonn",
     "version": "0.1.0",
     "sdkVersion": "54.0.0",
@@ -12,8 +12,7 @@
     ],
     "icon": "./assets/icon.png",
     "updates": {
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/662fee92-4be6-4230-8e4f-c23bde091223"
+      "fallbackToCacheTimeout": 0
     },
     "assetBundlePatterns": [
       "**/*"
@@ -32,9 +31,6 @@
       "permissions": [
         "INTERNET",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
-        "INTERNET",
-        "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE"
       ]
     },
@@ -42,9 +38,7 @@
       "apiUrl": "https://teakonn-production.up.railway.app/api",
       "apiBase": "https://teakonn-production.up.railway.app",
       "webUrl": "https://teakonn-app.vercel.app",
-      "eas": {
-        "projectId": "662fee92-4be6-4230-8e4f-c23bde091223"
-      }
+      "eas": {}
     },
     "plugins": [
       "expo-secure-store"
