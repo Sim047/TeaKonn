@@ -153,12 +153,8 @@ function WebScreen({ navigation }: any) {
           webRef.current?.goBack();
           return true; // handled by WebView history
         }
-        if (navigation?.canGoBack?.()) {
-          navigation.goBack();
-          return true; // handled by navigation stack
-        }
-        // At root with no history: navigate to Discover instead of exiting app
-        navigation?.navigate?.('Discover');
+        // At root with no WebView history: stay on Web and consume back
+        // This prevents switching to the native stack for better UX
         return true;
       } catch {
         return false;
