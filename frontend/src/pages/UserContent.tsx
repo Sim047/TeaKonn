@@ -213,7 +213,14 @@ export default function UserContent({ token, onNavigate }: any) {
 
         <div className="space-y-3">
           {useMemo(() => items.map((it) => (
-            <button key={it._id} onClick={() => openFromCard(it)} className="w-full text-left p-3 rounded-xl themed-card hover:shadow-md">
+            <div
+              key={it._id}
+              role="button"
+              tabIndex={0}
+              onClick={() => openFromCard(it)}
+              onKeyDown={(e) => { if (e.key === 'Enter') openFromCard(it); }}
+              className="w-full text-left p-3 rounded-xl themed-card hover:shadow-md"
+            >
               {tab === 'events' ? (
                 <div className="flex items-center gap-3">
                   <img src={it.image || 'https://placehold.co/80x80?text=E'} loading="lazy" className="w-12 h-12 rounded-lg object-cover" />
@@ -250,7 +257,7 @@ export default function UserContent({ token, onNavigate }: any) {
                   </div>
                 </div>
               )}
-            </button>
+            </div>
           )), [items, tab])}
           {loading && (
             <div className="space-y-2">
