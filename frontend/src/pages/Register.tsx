@@ -57,41 +57,64 @@ export default function Register({ onSuccess, switchToLogin }) {
 
           {/* USERNAME */}
           <div className="relative">
-            <label className={`absolute left-3 top-3 text-theme-secondary transition-all pointer-events-none ${username ? "text-xs -top-2" : ""}`}>
-              Username
-            </label>
             <input
-              className="input w-full pt-6"
+              id="reg-username"
+              className="input w-full pt-6 peer"
+              placeholder=" "
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
+            <label
+              htmlFor="reg-username"
+              className="absolute left-3 top-3 text-theme-secondary transition-all duration-200 pointer-events-none
+                peer-placeholder-shown:top-3 peer-placeholder-shown:text-base
+                peer-focus:-top-2 peer-focus:text-xs
+                peer-[&:not(:placeholder-shown)]:-top-2 peer-[&:not(:placeholder-shown)]:text-xs"
+            >
+              Username
+            </label>
           </div>
 
           {/* EMAIL */}
           <div className="relative">
-            <label className={`absolute left-3 top-3 text-theme-secondary transition-all pointer-events-none ${email ? "text-xs -top-2" : ""}`}>
-              Email
-            </label>
             <input
+              id="reg-email"
               type="email"
-              className="input w-full pt-6"
+              className="input w-full pt-6 peer"
+              placeholder=" "
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+            <label
+              htmlFor="reg-email"
+              className="absolute left-3 top-3 text-theme-secondary transition-all duration-200 pointer-events-none
+                peer-placeholder-shown:top-3 peer-placeholder-shown:text-base
+                peer-focus:-top-2 peer-focus:text-xs
+                peer-[&:not(:placeholder-shown)]:-top-2 peer-[&:not(:placeholder-shown)]:text-xs"
+            >
+              Email
+            </label>
           </div>
 
           {/* PASSWORD */}
           <div className="relative">
-            <label className={`absolute left-3 top-3 text-theme-secondary transition-all pointer-events-none ${password ? "text-xs -top-2" : ""}`}>
-              Password
-            </label>
-
             <input
+              id="reg-password"
               type={showPass ? "text" : "password"}
-              className="input w-full pt-6"
+              className="input w-full pt-6 peer"
+              placeholder=" "
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            <label
+              htmlFor="reg-password"
+              className="absolute left-3 top-3 text-theme-secondary transition-all duration-200 pointer-events-none
+                peer-placeholder-shown:top-3 peer-placeholder-shown:text-base
+                peer-focus:-top-2 peer-focus:text-xs
+                peer-[&:not(:placeholder-shown)]:-top-2 peer-[&:not(:placeholder-shown)]:text-xs"
+            >
+              Password
+            </label>
 
             {/* Show / Hide */}
             <button

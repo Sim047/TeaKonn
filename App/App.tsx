@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, View, Text, TextInput, Button, StyleSheet, FlatList, TouchableOpacity, BackHandler, ActivityIndicator } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import Constants from 'expo-constants';
 import { WebView } from 'react-native-webview';
@@ -132,6 +133,7 @@ function WebScreen({ navigation }: any) {
   const [webError, setWebError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const HEADER_H = 56;
+  const insets = useSafeAreaInsets();
 
   const doRefresh = () => {
     try {
@@ -177,9 +179,9 @@ function WebScreen({ navigation }: any) {
   }, [navigation]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#000', paddingTop: HEADER_H }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000', paddingTop: HEADER_H + (insets?.top || 0) }}>
       {/* Minimal, sleek header (Instagram-style) */}
-      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: HEADER_H, backgroundColor: '#0b0b0b', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.08)', zIndex: 100, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 }}>
+      <View style={{ position: 'absolute', top: (insets?.top || 0), left: 0, right: 0, height: HEADER_H, backgroundColor: '#0b0b0b', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.08)', zIndex: 100, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 }}>
         <Text style={{ color: '#fff', fontSize: 20, fontWeight: '700' }}>TeaKonn</Text>
         <TouchableOpacity onPress={doRefresh} style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.08)' }}>
           <Text style={{ color: '#fff', fontSize: 12, fontWeight: '600' }}>Refresh</Text>

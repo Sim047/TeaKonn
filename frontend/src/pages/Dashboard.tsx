@@ -553,7 +553,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
                   {showEvents ? 'Hide' : 'Show'}
                 </button>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap justify-end w-full sm:w-auto">
                 <button
                   onClick={() => {
                     try { localStorage.setItem('auralink-all-events-filter', 'past'); } catch {}
