@@ -616,7 +616,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
                         {dayjs(event.startDate).format('DD')}
                       </div>
                       <div className={`flex-1 min-w-0 ${(event as any).archivedAt || dayjs(event.startDate).isBefore(dayjs()) ? 'opacity-70' : ''}`}>
-                        <h3 className="font-semibold text-heading mb-1">{event.title}</h3>
+                        <h3 className="font-semibold text-heading mb-1 line-clamp-1 break-words" title={event.title}>{event.title}</h3>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 text-sm text-theme-secondary">
                             <Clock className="w-4 h-4 shrink-0" />

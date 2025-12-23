@@ -31,6 +31,7 @@ export default function UserContent({ token, onNavigate }: any) {
   // Prefetch cache for next page
   const [prefetch, setPrefetch] = useState<any[] | null>(null);
   const [prefetchPageNum, setPrefetchPageNum] = useState<number | null>(null);
+  const [expandedCaption, setExpandedCaption] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setUserId(localStorage.getItem("auralink-user-content-id"));
@@ -217,7 +218,7 @@ export default function UserContent({ token, onNavigate }: any) {
                 <div className="flex items-center gap-3">
                   <img src={it.image || 'https://placehold.co/80x80?text=E'} loading="lazy" className="w-12 h-12 rounded-lg object-cover" />
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-heading truncate">{it.title || 'Untitled Event'}</div>
+                    <div className="text-sm font-semibold text-heading line-clamp-1 break-words" title={it.title || 'Untitled Event'}>{it.title || 'Untitled Event'}</div>
                     <div className="text-xs text-theme-secondary truncate">{formatLocation(it.location)}</div>
                     <div className="text-xs text-cyan-500">{it.startDate ? new Date(it.startDate).toLocaleDateString() : ''}</div>
                   </div>
@@ -226,8 +227,26 @@ export default function UserContent({ token, onNavigate }: any) {
                 <div className="flex items-center gap-3">
                   <img src={it.imageUrl || 'https://placehold.co/80x80?text=P'} loading="lazy" className="w-12 h-12 rounded-lg object-cover" />
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-heading truncate">{it.title || 'Post'}</div>
-                    <div className="text-xs text-theme-secondary line-clamp-2">{it.caption || ''}</div>
+                    <div className="text-sm font-semibold text-heading line-clamp-1 break-words" title={it.title || 'Post'}>{it.title || 'Post'}</div>
+                    {(() => {
+                      const cap = String(it.caption || '');
+                      const expanded = !!expandedCaption[it._id];
+                      const tooLong = cap.length > 160;
+                      return (
+                        <>
+                          <div className={`text-xs text-theme-secondary break-words ${expanded ? '' : 'line-clamp-3'}`}>{cap}</div>
+                          {tooLong && (
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setExpandedCaption((m) => ({ ...m, [it._id]: !expanded })); }}
+                              className="mt-1 text-[11px] font-semibold text-accent hover:underline"
+                            >
+                              {expanded ? 'See less' : 'See more'}
+                            </button>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               )}
