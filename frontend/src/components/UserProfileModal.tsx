@@ -307,7 +307,7 @@ export default function UserProfileModal({
                           try { localStorage.setItem('auralink-highlight-post', po._id); } catch {}
                           if (onNavigate) onNavigate('posts'); else window.location.href = '/';
                         }}
-                        className="w-full text-left bg-white/5 rounded-xl p-3 border border-white/10 hover:border-purple-500/40 transition-colors"
+                        className="w-full text-left bg-white/5 rounded-xl p-3 border border-white/10 hover:border-purple-500/40 transition-colors overflow-hidden"
                       >
                         <div className="flex items-center gap-3">
                           <img src={po.imageUrl || PLACEHOLDER} alt={po.title || 'Post'} className="w-12 h-12 rounded-lg object-cover" />
@@ -319,7 +319,12 @@ export default function UserProfileModal({
                               const tooLong = cap.length > 160;
                               return (
                                 <>
-                                  <div className={`text-xs text-gray-400 break-words overflow-hidden ${expanded ? '' : 'line-clamp-3'}`}>{cap}</div>
+                                  <div
+                                    className={`text-xs text-gray-400 break-words overflow-hidden ${expanded ? '' : 'line-clamp-3'}`}
+                                    style={expanded ? undefined : ({ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', wordBreak: 'break-word' } as any)}
+                                  >
+                                    {cap}
+                                  </div>
                                   {tooLong && (
                                     <button
                                       type="button"
