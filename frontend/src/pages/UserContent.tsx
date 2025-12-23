@@ -241,7 +241,7 @@ export default function UserContent({ token, onNavigate }: any) {
                       const tooLong = cap.length > 160;
                       return (
                         <>
-                          <div className={`text-xs text-theme-secondary break-words ${expanded ? '' : 'line-clamp-3'}`}>{cap}</div>
+                          <div className={`text-xs text-theme-secondary break-words overflow-hidden ${expanded ? '' : 'line-clamp-3'}`}>{cap}</div>
                           {tooLong && (
                             <button
                               type="button"

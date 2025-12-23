@@ -282,7 +282,7 @@ export default function UserProfileModal({
                       >
                         <div className="flex items-center gap-3">
                           <img src={ev.image || PLACEHOLDER} alt={ev.title} className="w-12 h-12 rounded-lg object-cover" />
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0">
                             <div className="text-white font-semibold text-sm line-clamp-1 break-words" title={ev.title || 'Untitled Event'}>{ev.title || "Untitled Event"}</div>
                             <div className="text-xs text-gray-400">{formatLocation(ev.location)}</div>
                             <div className="text-xs text-cyan-300">{ev.startDate ? new Date(ev.startDate).toLocaleDateString() : ""}</div>
@@ -311,7 +311,7 @@ export default function UserProfileModal({
                       >
                         <div className="flex items-center gap-3">
                           <img src={po.imageUrl || PLACEHOLDER} alt={po.title || 'Post'} className="w-12 h-12 rounded-lg object-cover" />
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0">
                             <div className="text-white font-semibold text-sm line-clamp-1 break-words" title={po.title || 'Post'}>{po.title || 'Post'}</div>
                             {(() => {
                               const cap = String(po.caption || '');
@@ -319,7 +319,7 @@ export default function UserProfileModal({
                               const tooLong = cap.length > 160;
                               return (
                                 <>
-                                  <div className={`text-xs text-gray-400 break-words ${expanded ? '' : 'line-clamp-3'}`}>{cap}</div>
+                                  <div className={`text-xs text-gray-400 break-words overflow-hidden ${expanded ? '' : 'line-clamp-3'}`}>{cap}</div>
                                   {tooLong && (
                                     <button
                                       type="button"
