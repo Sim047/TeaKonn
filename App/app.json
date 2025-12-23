@@ -1,18 +1,19 @@
 {
   "expo": {
-    "name": "TeaKonn Expo App",
-    "slug": "teakonn-expo-app",
+    "name": "TeaKonn",
+    "slug": "auralink-expo-app",
     "scheme": "teakonn",
     "version": "0.1.0",
     "sdkVersion": "54.0.0",
     "orientation": "portrait",
     "platforms": [
       "ios",
-      "android",
-      "web"
+      "android"
     ],
+    "icon": "./assets/icon.png",
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/662fee92-4be6-4230-8e4f-c23bde091223"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -24,15 +25,22 @@
     "android": {
       "package": "com.teakonn.app",
       "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#ffffff"
+      },
       "permissions": [
+        "INTERNET",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
         "INTERNET",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE"
       ]
     },
     "extra": {
-      "apiUrl": "https://teakonn-app.vercel.app/api",
-      "apiBase": "https://teakonn-app.vercel.app",
+      "apiUrl": "https://teakonn-production.up.railway.app/api",
+      "apiBase": "https://teakonn-production.up.railway.app",
       "webUrl": "https://teakonn-app.vercel.app",
       "eas": {
         "projectId": "662fee92-4be6-4230-8e4f-c23bde091223"
@@ -41,6 +49,9 @@
     "plugins": [
       "expo-secure-store"
     ],
-    "owner": "simsweb"
+    "owner": "simsweb",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }
