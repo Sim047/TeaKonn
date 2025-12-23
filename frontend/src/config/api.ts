@@ -58,3 +58,12 @@ export const API_URL = `${BASE_URL}/api`;
 
 // Export for backward compatibility
 export const API = BASE_URL;
+
+// One-time runtime log to verify resolved API base in the deployed app
+try {
+  if (typeof window !== 'undefined' && !(window as any).__API_BASE_LOGGED) {
+    (window as any).__API_BASE_LOGGED = true;
+    // Keep it concise but informative for debugging
+    console.log('[API] Resolved BASE_URL:', BASE_URL, '| API_URL:', API_URL);
+  }
+} catch {}

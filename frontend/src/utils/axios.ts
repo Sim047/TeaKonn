@@ -34,8 +34,18 @@ function normalizeBase(url?: string): string {
   return `${isProd ? "https://" : "http://"}${u}`;
 }
 
+const resolvedBase = `${normalizeBase(import.meta.env.VITE_API_URL)}/api`;
+
+// One-time runtime log to verify axios baseURL resolution in the deployed app
+try {
+  if (typeof window !== "undefined" && !(window as any).__AXIOS_BASE_LOGGED) {
+    (window as any).__AXIOS_BASE_LOGGED = true;
+    console.log("[Axios] baseURL:", resolvedBase);
+  }
+} catch {}
+
 const api = axios.create({
-  baseURL: `${normalizeBase(import.meta.env.VITE_API_URL)}/api`,
+  baseURL: resolvedBase,
 });
 
 api.interceptors.request.use((cfg) => {
