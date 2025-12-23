@@ -1297,20 +1297,27 @@ function onMyStatusUpdated(newStatus: any) {
                   {m.text && (
                     <div
                       className="mt-2 break-words"
-                      style={{
-                        wordBreak: 'break-word',
-                        overflowWrap: 'break-word',
-                        maxHeight: expandedMessages[m._id] ? 'none' : '6rem',
-                        overflow: expandedMessages[m._id] ? 'visible' : 'hidden'
-                      }}
+                      onClick={(e) => { e.stopPropagation(); setExpandedMessages((prev) => ({ ...prev, [m._id]: !prev[m._id] })); }}
+                      style={expandedMessages[m._id]
+                        ? ({ wordBreak: 'break-word', overflowWrap: 'anywhere', cursor: 'auto' } as any)
+                        : ({
+                            display: '-webkit-box',
+                            WebkitLineClamp: 5,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            wordBreak: 'break-word',
+                            overflowWrap: 'anywhere',
+                            cursor: 'pointer'
+                          } as any)}
+                      title={expandedMessages[m._id] ? undefined : 'Click to expand'}
                     >
                       {m.text}
                     </div>
                   )}
-                  {m.text && m.text.length > 240 && (
+                  {m.text && m.text.length > 160 && (
                     <button
                       className="mt-1 text-xs text-cyan-600 dark:text-cyan-400 hover:opacity-80"
-                      onClick={() => setExpandedMessages((prev) => ({ ...prev, [m._id]: !prev[m._id] }))}
+                      onClick={(e) => { e.stopPropagation(); setExpandedMessages((prev) => ({ ...prev, [m._id]: !prev[m._id] })); }}
                     >
                       {expandedMessages[m._id] ? 'See less' : 'See more'}
                     </button>
