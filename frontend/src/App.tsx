@@ -28,6 +28,7 @@ import Avatar from "./components/Avatar";
 import Sidebar from "./components/Sidebar";
 import AssistantWidget from "./components/AssistantWidget";
 import logo from "./assets/logo.png";
+import { API_URL } from "./config/api";
 import UserProfileModal from "./components/UserProfileModal";
 
 dayjs.extend(localizedFormat);
@@ -35,10 +36,8 @@ dayjs.extend(relativeTime);
 dayjs.extend(updateLocale);
 dayjs.updateLocale("en", { weekStart: 1 });
 
-const API =
-  (typeof window !== "undefined" && (window as any).__API_URL) ||
-  (typeof window !== "undefined" && localStorage.getItem("API_URL")) ||
-  import.meta.env.VITE_API_URL || "http://localhost:5000";
+// Use centralized normalized API base
+const API = API_URL.replace(/\/api$/, "");
 
 const SAMPLE_AVATAR =
   "https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff";
