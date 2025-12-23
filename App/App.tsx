@@ -129,6 +129,8 @@ function WebScreen({ navigation }: any) {
   const webRef = React.useRef<WebView>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [authScript, setAuthScript] = useState<string>("");
+  const [fallbackNative, setFallbackNative] = useState(false);
+  const [webStatus, setWebStatus] = useState<string>("");
 
   // Hard refresh once auth script is ready so injection applies before content
   useEffect(() => {
@@ -139,6 +141,28 @@ function WebScreen({ navigation }: any) {
       return () => clearTimeout(t);
     }
   }, [authScript]);
+
+  useEffect(() => {
+    // Preflight check: if webUrl is unreachable or returns 404, fallback to native
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const res = await fetch(webUrl, { method: 'HEAD', signal: controller.signal as any });
+        if (!res.ok) {
+          setWebStatus(`Web unavailable: ${res.status}`);
+          setFallbackNative(true);
+          navigation?.replace?.('Discover');
+          return;
+        }
+        setWebStatus('ok');
+      } catch (e: any) {
+        setWebStatus('error');
+        setFallbackNative(true);
+        navigation?.replace?.('Discover');
+      }
+    })();
+    return () => controller.abort();
+  }, [webUrl, navigation]);
 
   useEffect(() => {
     // Build injected auth script from native token + user profile
@@ -206,6 +230,11 @@ function WebScreen({ navigation }: any) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
+      {fallbackNative && (
+        <View style={{ padding: 8, backgroundColor: '#fde68a' }}>
+          <Text style={{ color: '#92400e', fontSize: 12 }}>Web app unreachable ({webStatus || 'unknown'}). Showing native screens.</Text>
+        </View>
+      )}
       <WebView
         ref={webRef}
         source={{ uri: webUrl }}
@@ -220,6 +249,7 @@ function WebScreen({ navigation }: any) {
         allowsFullscreenVideo
         onHttpError={(e) => {
           console.warn('WebView HTTP error', e?.nativeEvent);
+          try { navigation?.replace?.('Discover'); setFallbackNative(true); } catch {}
         }}
         injectedJavaScriptBeforeContentLoaded={`(function(){
           try {
