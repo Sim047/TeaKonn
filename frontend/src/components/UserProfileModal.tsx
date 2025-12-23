@@ -20,7 +20,7 @@ export default function UserProfileModal({
   const [followState, setFollowState] = React.useState(user.isFollowed);
   const [details, setDetails] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
-  const [tab, setTab] = React.useState<"events" | "posts">("events");
+  const [tab, setTab] = React.useState<'events'>('events');
   const [events, setEvents] = React.useState<any[]>([]);
   const [posts, setPosts] = React.useState<any[]>([]);
   const [loadingContent, setLoadingContent] = React.useState(false);
@@ -238,30 +238,24 @@ export default function UserProfileModal({
                 Events {eventCount ? `(${eventCount})` : ""}
               </button>
               <button
-                className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${tab === "posts" ? "bg-purple-600 text-white" : "bg-white/10 text-gray-300 hover:bg-white/20"}`}
-                onClick={() => setTab("posts")}
-              >
-                Posts {postCount ? `(${postCount})` : ""}
-              </button>
-              <button
                 className="px-3 py-2 rounded-xl text-sm font-semibold bg-white/10 text-gray-300 hover:bg-white/20"
                 onClick={() => {
                   try {
                     localStorage.setItem('auralink-user-content-id', user._id);
-                    localStorage.setItem('auralink-user-content-tab', tab);
+                    localStorage.setItem('auralink-user-content-tab', 'posts');
                   } catch {}
                   if (onClose) onClose();
                   if (onNavigate) onNavigate('user-content');
                 }}
-                aria-label={`View all ${tab}`}
+                aria-label={`View all posts`}
               >
-                {tab === 'events' ? 'View all events' : 'View all posts'}
+                {`View all posts${postCount ? ` (${postCount})` : ''}`}
               </button>
             </div>
 
             {loadingContent ? (
               <div className="text-center py-6 text-gray-400">Loading {tab}...</div>
-            ) : tab === "events" ? (
+            ) : (
               <div className="space-y-3 pr-1">
                 {events.length === 0 ? (
                   <div className="text-center text-gray-400 text-sm py-6">No events yet</div>
@@ -286,57 +280,6 @@ export default function UserProfileModal({
                             <div className="text-white font-semibold text-sm line-clamp-1 break-words" title={ev.title || 'Untitled Event'}>{ev.title || "Untitled Event"}</div>
                             <div className="text-xs text-gray-400">{formatLocation(ev.location)}</div>
                             <div className="text-xs text-cyan-300">{ev.startDate ? new Date(ev.startDate).toLocaleDateString() : ""}</div>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })()
-                )}
-              </div>
-            ) : (
-              <div className="space-y-3 pr-1">
-                {posts.length === 0 ? (
-                  <div className="text-center text-gray-400 text-sm py-6">No posts yet</div>
-                ) : (
-                  (() => {
-                    const po = [...posts].sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())[0];
-                    return (
-                      <button
-                        key={po._id}
-                        onClick={() => {
-                          try { localStorage.setItem('auralink-highlight-post', po._id); } catch {}
-                          if (onNavigate) onNavigate('posts'); else window.location.href = '/';
-                        }}
-                        className="w-full text-left bg-white/5 rounded-xl p-3 border border-white/10 hover:border-purple-500/40 transition-colors overflow-hidden"
-                      >
-                        <div className="flex items-center gap-3">
-                          <img src={po.imageUrl || PLACEHOLDER} alt={po.title || 'Post'} className="w-12 h-12 rounded-lg object-cover" />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-white font-semibold text-sm line-clamp-1 break-words" title={po.title || 'Post'}>{po.title || 'Post'}</div>
-                            {(() => {
-                              const cap = String(po.caption || '');
-                              const expanded = !!expandedPreview[po._id];
-                              const tooLong = cap.length > 80;
-                              return (
-                                <>
-                                  <div
-                                    className={`text-xs text-gray-400 break-words overflow-hidden ${expanded ? '' : 'line-clamp-2'} leading-snug`}
-                                    style={expanded ? undefined : ({ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', wordBreak: 'break-word', overflowWrap: 'anywhere' } as any)}
-                                  >
-                                    {cap}
-                                  </div>
-                                  {tooLong && (
-                                    <button
-                                      type="button"
-                                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setExpandedPreview((m) => ({ ...m, [po._id]: !expanded })); }}
-                                      className="mt-1 text-[11px] font-semibold text-purple-300 hover:underline"
-                                    >
-                                      {expanded ? 'See less' : 'See more'}
-                                    </button>
-                                  )}
-                                </>
-                              );
-                            })()}
                           </div>
                         </div>
                       </button>
