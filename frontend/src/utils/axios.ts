@@ -11,13 +11,25 @@ function normalizeBase(url?: string): string {
       return "https:" + u;
     }
   }
-  if (u.startsWith("/")) {
-    try {
-      return (typeof window !== "undefined" ? window.location.origin : "") + u;
-    } catch {
-      return u;
+    if (u.startsWith("/")) {
+      // Handle common misconfiguration: VITE_API_URL set as "/host.tld" instead of protocol-relative "//host.tld"
+      // If it looks like a host (contains a dot) after the leading slash, treat it as protocol-relative.
+      const afterSlash = u.slice(1);
+      const firstSegment = afterSlash.split("/")[0] || "";
+      if (!u.startsWith("//") && firstSegment.includes(".")) {
+        try {
+          const proto = typeof window !== "undefined" ? window.location.protocol : "https:";
+          return `${proto}//${afterSlash}`;
+        } catch {
+          return "https://" + afterSlash;
+        }
+      }
+      try {
+        return (typeof window !== "undefined" ? window.location.origin : "") + u;
+      } catch {
+        return u;
+      }
     }
-  }
   const isProd = (import.meta as any)?.env?.MODE === "production";
   return `${isProd ? "https://" : "http://"}${u}`;
 }
