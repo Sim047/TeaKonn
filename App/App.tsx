@@ -251,6 +251,9 @@ function WebScreen({ navigation }: any) {
           console.warn('WebView HTTP error', e?.nativeEvent);
           try { navigation?.replace?.('Discover'); setFallbackNative(true); } catch {}
         }}
+        onError={() => {
+          try { navigation?.replace?.('Discover'); setFallbackNative(true); } catch {}
+        }}
         injectedJavaScriptBeforeContentLoaded={`(function(){
           try {
             ${authScript}
@@ -309,11 +312,22 @@ function WebScreen({ navigation }: any) {
 export default function App() {
   const [bootChecked, setBootChecked] = useState(false);
   const [initialRoute, setInitialRoute] = useState<'Login' | 'Web'>('Login');
+  const [webOk, setWebOk] = useState<boolean | null>(null);
+  const webUrlGlobal = (process.env.EXPO_PUBLIC_WEB_URL as string) || (Constants.expoConfig?.extra as any)?.webUrl || 'http://localhost:5173';
 
   useEffect(() => {
     const check = async () => {
       const token = await readToken();
-      setInitialRoute(token ? 'Web' : 'Login');
+      // Preflight check the configured web URL; fallback to native if unreachable
+      try {
+        const res = await fetch(webUrlGlobal, { method: 'HEAD' });
+        const ok = !!res.ok;
+        setWebOk(ok);
+        setInitialRoute(token ? (ok ? 'Web' : 'Discover') : 'Login');
+      } catch {
+        setWebOk(false);
+        setInitialRoute(token ? 'Discover' : 'Login');
+      }
       setBootChecked(true);
     };
     check();
