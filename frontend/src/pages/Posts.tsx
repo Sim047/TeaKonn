@@ -58,6 +58,41 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [expandedCaptions, setExpandedCaptions] = useState<Record<string, boolean>>({});
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewIndex, setPreviewIndex] = useState<number>(-1);
+  const imageList = React.useMemo(() => posts.filter(p => !!p.imageUrl).map(p => p.imageUrl), [posts]);
+
+  function openImage(url: string) {
+    setPreviewImage(url);
+    const idx = imageList.indexOf(url);
+    setPreviewIndex(idx >= 0 ? idx : imageList.findIndex(u => u === url));
+  }
+  function closeImage() { setPreviewImage(null); setPreviewIndex(-1); }
+  function prevImage() { if (!imageList.length) return; setPreviewIndex((i) => { const ni = (i + imageList.length - 1) % imageList.length; setPreviewImage(imageList[ni]); return ni; }); }
+  function nextImage() { if (!imageList.length) return; setPreviewIndex((i) => { const ni = (i + 1) % imageList.length; setPreviewImage(imageList[ni]); return ni; }); }
+  async function shareImage(url: string) {
+    try {
+      if ((navigator as any).share) { await (navigator as any).share({ title: 'TeaKonn Photo', url }); return; }
+    } catch {}
+    try { await navigator.clipboard.writeText(url); alert('Image link copied'); } catch { window.open(url, '_blank'); }
+  }
+  function downloadImage(url: string) {
+    try {
+      const a = document.createElement('a');
+      a.href = url; a.download = url.split('/').pop() || 'image.jpg';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    } catch { window.open(url, '_blank'); }
+  }
+
+  React.useEffect(() => {
+    if (!previewImage) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeImage();
+      else if (e.key === 'ArrowLeft') prevImage();
+      else if (e.key === 'ArrowRight') nextImage();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [previewImage, imageList]);
   
   // Edit states
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
@@ -614,7 +649,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
 
                 {/* Post Image (standardized height) */}
                 {post.imageUrl && (
-                  <div className="w-full h-64 sm:h-72 md:h-80 overflow-hidden rounded-t-2xl relative group cursor-zoom-in" onClick={() => setPreviewImage(post.imageUrl)}>
+                  <div className="w-full h-64 sm:h-72 md:h-80 overflow-hidden rounded-t-2xl relative group cursor-zoom-in" onClick={() => openImage(post.imageUrl)}>
                     <img
                       src={post.imageUrl}
                       alt="Post"
@@ -1060,21 +1095,34 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
         {previewImage && (
           <div
             className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-            onClick={() => setPreviewImage(null)}
+            onClick={closeImage}
           >
             <button
-              onClick={() => setPreviewImage(null)}
+              onClick={closeImage}
               className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/70 rounded-full p-2 transition-colors"
               aria-label="Close image preview"
             >
               <X className="w-6 h-6" />
             </button>
+            {imageList.length > 1 && (
+              <>
+                <button onClick={(e) => { e.stopPropagation(); prevImage(); }} className="absolute left-4 mid:top-1/2 -translate-y-1/2 text-white bg-black/40 hover:bg-black/60 rounded-full p-3">‹</button>
+                <button onClick={(e) => { e.stopPropagation(); nextImage(); }} className="absolute right-4 mid:top-1/2 -translate-y-1/2 text-white bg-black/40 hover:bg-black/60 rounded-full p-3">›</button>
+              </>
+            )}
             <img
               src={previewImage}
               alt="Preview"
               className="max-w-full max-h-full object-contain"
               onClick={(e) => e.stopPropagation()}
             />
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
+              <button onClick={(e) => { e.stopPropagation(); shareImage(previewImage); }} className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm">Share</button>
+              <button onClick={(e) => { e.stopPropagation(); downloadImage(previewImage); }} className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm">Download</button>
+              {imageList.length > 1 && (
+                <span className="text-white/70 text-xs ml-2">{previewIndex + 1} / {imageList.length}</span>
+              )}
+            </div>
           </div>
         )}
       </div>

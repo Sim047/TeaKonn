@@ -1269,8 +1269,9 @@ function onMyStatusUpdated(newStatus: any) {
               {m.fileUrl && (
                 <img
                   src={m.fileUrl.startsWith('http') ? m.fileUrl : API + m.fileUrl}
-                  className="max-w-full w-auto h-auto rounded-md mt-2"
+                  className="max-w-full w-auto h-auto rounded-md mt-2 cursor-zoom-in"
                   style={{ maxHeight: "400px", objectFit: "contain" }}
+                  onClick={() => openMessageImage(m.fileUrl.startsWith('http') ? m.fileUrl : API + m.fileUrl)}
                 />
               )}
 
@@ -1488,6 +1489,49 @@ function onMyStatusUpdated(newStatus: any) {
     setUser(null);
     window.location.reload();
   }
+
+  // MESSAGE IMAGE VIEWER STATE ----------------------------------
+  const [messageImageViewer, setMessageImageViewer] = React.useState<{ index: number } | null>(null);
+  const messageImageUrls = React.useMemo(() => {
+    try {
+      return messages
+        .filter((m: any) => !!m.fileUrl)
+        .map((m: any) => (m.fileUrl.startsWith('http') ? m.fileUrl : API + m.fileUrl));
+    } catch { return []; }
+  }, [messages]);
+  function openMessageImage(url: string) {
+    const idx = messageImageUrls.indexOf(url);
+    setMessageImageViewer({ index: idx >= 0 ? idx : 0 });
+  }
+  function closeMessageImage() { setMessageImageViewer(null); }
+  function prevMessageImage() { if (!messageImageUrls.length) return; setMessageImageViewer((v) => ({ index: ( (v?.index || 0) + messageImageUrls.length - 1) % messageImageUrls.length })); }
+  function nextMessageImage() { if (!messageImageUrls.length) return; setMessageImageViewer((v) => ({ index: ( (v?.index || 0) + 1) % messageImageUrls.length })); }
+  async function shareMessageImage() {
+    try {
+      const url = messageImageUrls[messageImageViewer?.index || 0];
+      if ((navigator as any).share) { await (navigator as any).share({ title: 'TeaKonn Photo', url }); return; }
+      await navigator.clipboard.writeText(url);
+      alert('Image link copied');
+    } catch {}
+  }
+  function downloadMessageImage() {
+    try {
+      const url = messageImageUrls[messageImageViewer?.index || 0];
+      const a = document.createElement('a');
+      a.href = url; a.download = url.split('/').pop() || 'image.jpg';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    } catch {}
+  }
+  React.useEffect(() => {
+    if (!messageImageViewer) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeMessageImage();
+      else if (e.key === 'ArrowLeft') prevMessageImage();
+      else if (e.key === 'ArrowRight') nextMessageImage();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [messageImageViewer, messageImageUrls]);
 
   // AUTH CHECK ---------------------------------------------------
   if (!token || !user) {
@@ -2096,6 +2140,41 @@ function onMyStatusUpdated(newStatus: any) {
                 Done
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ---------------- MESSAGE IMAGE LIGHTBOX ---------------- */}
+      {messageImageViewer && (
+        <div
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          onClick={closeMessageImage}
+        >
+          <button
+            onClick={closeMessageImage}
+            className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/70 rounded-full p-2 transition-colors"
+            aria-label="Close image preview"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          {messageImageUrls.length > 1 && (
+            <>
+              <button onClick={(e) => { e.stopPropagation(); prevMessageImage(); }} className="absolute left-4 mid:top-1/2 -translate-y-1/2 text-white bg-black/40 hover:bg-black/60 rounded-full p-3">‹</button>
+              <button onClick={(e) => { e.stopPropagation(); nextMessageImage(); }} className="absolute right-4 mid:top-1/2 -translate-y-1/2 text-white bg-black/40 hover:bg-black/60 rounded-full p-3">›</button>
+            </>
+          )}
+          <img
+            src={messageImageUrls[messageImageViewer.index]}
+            alt="Message Image"
+            className="max-w-full max-h-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
+            <button onClick={(e) => { e.stopPropagation(); shareMessageImage(); }} className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm">Share</button>
+            <button onClick={(e) => { e.stopPropagation(); downloadMessageImage(); }} className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm">Download</button>
+            {messageImageUrls.length > 1 && (
+              <span className="text-white/70 text-xs ml-2">{messageImageViewer.index + 1} / {messageImageUrls.length}</span>
+            )}
           </div>
         </div>
       )}
