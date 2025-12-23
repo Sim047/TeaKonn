@@ -184,6 +184,8 @@ function WebScreen({ navigation }: any) {
         javaScriptCanOpenWindowsAutomatically
         allowsFullscreenVideo
         setSupportMultipleWindows={false}
+        overScrollMode="always"
+        bounces={true}
         onHttpError={(e) => {
           try {
             const ne = e?.nativeEvent || {} as any;
