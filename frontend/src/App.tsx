@@ -1325,8 +1325,8 @@ function onMyStatusUpdated(newStatus: any) {
                 </>
               )}
 
-              {/* Compact reaction bar: emoji as trigger (click = unlike or choose) */}
-              <div className="mt-2 flex items-center gap-2">
+              {/* Reactions */}
+              <div className="mt-2 flex items-center gap-2 flex-wrap">
                 <div className="relative inline-flex">
                   {(() => {
                     const emoji = currentReactionEmojiFor(m);
@@ -1389,6 +1389,24 @@ function onMyStatusUpdated(newStatus: any) {
                     </div>
                   )}
                 </div>
+
+                {/* Existing reactions summary chips */}
+                {AVAILABLE_REACTIONS.map((e) => {
+                  const count = reactionCount(m, e);
+                  if (!count) return null;
+                  const mine = hasReacted(m, e);
+                  return (
+                    <button
+                      key={e}
+                      className={clsx('reaction-chip', mine && 'mine')}
+                      onClick={(ev) => { ev.stopPropagation(); toggleReaction(m, e); }}
+                      title={mine ? 'Remove your reaction' : 'React'}
+                    >
+                      <span>{e}</span>
+                      <span className="text-xs opacity-70">{count}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               {openMessageActions === m._id && (

@@ -94,15 +94,22 @@ body {
 }
 
 /* Message bubble tweaks */
+
+/* Chat message bubble */
 .message {
   background: var(--card);
   border: 1px solid var(--border);
-  padding: 0.75rem;
-  border-radius: 0.6rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.95rem;
+  box-shadow: 0 6px 20px rgba(2, 6, 23, 0.08);
+  backdrop-filter: saturate(140%) blur(2px);
 }
 
 /* Own messages */
-.msg-mine { background: linear-gradient(90deg, rgba(34,211,238,0.08), rgba(124,58,237,0.06)); }
+.msg-mine {
+  background: linear-gradient(135deg, rgba(34,211,238,0.10), rgba(124,58,237,0.08));
+  border-color: rgba(34, 211, 238, 0.25);
+}
 
 /* Avatar */
 .avatar { border-radius: 0.5rem; object-fit: cover; }
@@ -129,6 +136,54 @@ body {
 
 /* Reaction active */
 .reacted { background: linear-gradient(90deg, var(--accent-start), var(--accent-end)); color: #071029; }
+
+/* Reactions UI */
+.reaction-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(148,163,184,0.08);
+  color: var(--text);
+  transition: background .15s ease, transform .15s ease;
+}
+.reaction-btn:hover { background: rgba(148,163,184,0.14); transform: translateY(-1px); }
+.reaction-btn .count { font-size: 0.75rem; opacity: .7; }
+
+.reaction-picker {
+  position: absolute;
+  top: 2.25rem;
+  left: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.35rem 0.5rem;
+  box-shadow: 0 12px 34px rgba(2, 6, 23, 0.18);
+  z-index: 15;
+}
+.reaction-option {
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  transition: background .15s ease, border-color .15s ease;
+}
+.reaction-option:hover { background: rgba(148,163,184,0.12); border-color: var(--border); }
+
+.reaction-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(148,163,184,0.10);
+  font-size: 0.8rem;
+}
+.reaction-chip.mine { outline: 2px solid rgba(124,58,237,0.35); }
 
 /* composer */
 .composer {
