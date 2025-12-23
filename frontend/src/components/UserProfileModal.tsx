@@ -316,12 +316,12 @@ export default function UserProfileModal({
                             {(() => {
                               const cap = String(po.caption || '');
                               const expanded = !!expandedPreview[po._id];
-                              const tooLong = cap.length > 160;
+                              const tooLong = cap.length > 80;
                               return (
                                 <>
                                   <div
-                                    className={`text-xs text-gray-400 break-words overflow-hidden ${expanded ? '' : 'line-clamp-3'}`}
-                                    style={expanded ? undefined : ({ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', wordBreak: 'break-word' } as any)}
+                                    className={`text-xs text-gray-400 break-words overflow-hidden ${expanded ? '' : 'line-clamp-2'} leading-snug`}
+                                    style={expanded ? undefined : ({ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', wordBreak: 'break-word', overflowWrap: 'anywhere' } as any)}
                                   >
                                     {cap}
                                   </div>
