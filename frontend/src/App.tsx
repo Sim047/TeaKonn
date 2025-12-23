@@ -1339,18 +1339,13 @@ function onMyStatusUpdated(newStatus: any) {
                         )}
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (reacted) {
-                            // Clicking the emoji removes your reaction
-                            toggleReaction(m, emoji);
-                          } else {
-                            // If not reacted yet, open picker anchored to this emoji
-                            setReactionPickerFor(m._id);
-                          }
+                          // Always open the inline picker; removal can be done via chips or 'Remove'
+                          setReactionPickerFor(m._id);
                         }}
-                        title={reacted ? "Remove reaction" : "React"}
+                        title={reacted ? "Change or remove reaction" : "React"}
                       >
-                        <span>{emoji}</span>
-                        <span className="count">{reactionCount(m, emoji) || ""}</span>
+                        <span role="img" aria-label="react">🙂</span>
+                        <span className="text-xs opacity-80">React</span>
                       </button>
                     );
                   })()}
