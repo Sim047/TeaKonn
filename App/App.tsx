@@ -131,6 +131,17 @@ function WebScreen({ navigation }: any) {
   const [canGoBack, setCanGoBack] = useState(false);
   const [webError, setWebError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const HEADER_H = 56;
+
+  const doRefresh = () => {
+    try {
+      setIsLoading(true);
+      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
+      try { webRef.current?.reload(); } catch {}
+      // Fallback to in-page reload for SPAs
+      setTimeout(() => { try { webRef.current?.injectJavaScript('(function(){ try{ location.reload(); }catch(e){} })();'); } catch {} }, 150);
+    } catch {}
+  };
   // Web-first: no auth injection; rely on the website's own login
 
   useEffect(() => {
@@ -166,7 +177,14 @@ function WebScreen({ navigation }: any) {
   }, [navigation]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#000', paddingTop: HEADER_H }}>
+      {/* Minimal, sleek header (Instagram-style) */}
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: HEADER_H, backgroundColor: '#0b0b0b', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.08)', zIndex: 100, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 }}>
+        <Text style={{ color: '#fff', fontSize: 20, fontWeight: '700' }}>TeaKonn</Text>
+        <TouchableOpacity onPress={doRefresh} style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.08)' }}>
+          <Text style={{ color: '#fff', fontSize: 12, fontWeight: '600' }}>Refresh</Text>
+        </TouchableOpacity>
+      </View>
       {!!webError && (
         <View style={{ padding: 8, backgroundColor: '#fde68a' }}>
           <Text style={{ color: '#92400e', fontSize: 12 }}>Web error: {webError}. Use Refresh to retry.</Text>
