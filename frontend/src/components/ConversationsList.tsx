@@ -182,7 +182,14 @@ export default function ConversationsList({
         } catch {}
       })
       .catch((err) => {
-        console.error("ConversationsList error:", err);
+        try {
+          const status = err?.response?.status;
+          const data = err?.response?.data;
+          const url = (err?.config?.baseURL || "") + (err?.config?.url || "");
+          console.error("ConversationsList error", { url, status, data });
+        } catch {
+          console.error("ConversationsList error", err);
+        }
         // keep any cached list rather than clearing to empty
       })
       .finally(() => {

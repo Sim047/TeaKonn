@@ -2,8 +2,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { X, Calendar, Clock, MapPin, DollarSign, CheckCircle } from "lucide-react";
-
-const API = import.meta.env.VITE_API_URL || "";
+import { API_URL } from "../config/api";
+const API = API_URL.replace(/\/api$/, "");
 
 type BookingModalProps = {
   isOpen: boolean;

@@ -634,7 +634,14 @@ function onMyStatusUpdated(newStatus: any) {
           });
         }
       })
-      .catch(() => {})
+      .catch((e) => {
+        try {
+          const status = e?.response?.status;
+          const data = e?.response?.data;
+          const url = (e?.config?.baseURL || "") + (e?.config?.url || "");
+          console.error("Room load error", { url, status, data });
+        } catch {}
+      })
       .finally(() => setMessagesLoading(false));
   }, [room, token, view, inDM, user, socket]);
 
@@ -662,7 +669,16 @@ function onMyStatusUpdated(newStatus: any) {
           });
         }
       })
-      .catch((e) => console.error("DM load error", e))
+      .catch((e) => {
+        try {
+          const status = e?.response?.status;
+          const data = e?.response?.data;
+          const url = (e?.config?.baseURL || "") + (e?.config?.url || "");
+          console.error("DM load error", { url, status, data });
+        } catch {
+          console.error("DM load error", e);
+        }
+      })
       .finally(() => setMessagesLoading(false));
   }, [token, inDM, activeConversation, user, socket]);
 
@@ -694,7 +710,14 @@ function onMyStatusUpdated(newStatus: any) {
         headers: { Authorization: "Bearer " + token }
       })
       .then((r) => setConversations(r.data || []))
-      .catch(() => {});
+      .catch((e) => {
+        try {
+          const status = e?.response?.status;
+          const data = e?.response?.data;
+          const url = (e?.config?.baseURL || "") + (e?.config?.url || "");
+          console.error("Conversations load error", { url, status, data });
+        } catch {}
+      });
   }, [token]);
 
   useEffect(() => {
