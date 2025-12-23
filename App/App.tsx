@@ -185,14 +185,45 @@ function WebScreen({ navigation }: any) {
         allowsFullscreenVideo
         setSupportMultipleWindows={false}
         onHttpError={(e) => {
-          console.warn('WebView HTTP error', e?.nativeEvent);
-          setWebError(String(e?.nativeEvent?.statusCode || 'HTTP error'));
+          try {
+            const ne = e?.nativeEvent || {} as any;
+            console.warn('WebView HTTP error', ne);
+            const status = Number(ne.statusCode || 0);
+            const failingUrl = String(ne.url || '');
+            // If the SPA path '/login' 404s, redirect to root with view param to avoid Vercel static 404
+            if (status === 404 && /\/login(\/?|$)/.test(failingUrl)) {
+              const fallback = (Constants.expoConfig?.extra as any)?.webUrl?.replace(/\/login\/?$/, '/?view=login') || 'https://tea-konn.vercel.app/?view=login';
+              try { webRef.current?.injectJavaScript(`(function(){ try { location.replace(${JSON.stringify(fallback)}); } catch(_){} })();`); } catch {}
+            }
+            setWebError(String(status || 'HTTP error'));
+          } catch {
+            setWebError('HTTP error');
+          }
         }}
         onError={() => {
           setWebError('WebView failed to load');
         }}
         injectedJavaScriptBeforeContentLoaded={`(function(){
           try {
+            // Sanitize potentially corrupted localStorage values from previous app sessions
+            try {
+              var u = localStorage.getItem('user');
+              if (u) {
+                var ut = String(u).trim();
+                if (ut === '[object Object]' || ut.indexOf('[object') === 0) {
+                  localStorage.removeItem('user');
+                } else {
+                  try { JSON.parse(u); } catch (_) { localStorage.removeItem('user'); }
+                }
+              }
+              var t = localStorage.getItem('token');
+              if (t) {
+                var tt = String(t).trim();
+                if (tt === '[object Object]' || tt.indexOf('[object') === 0) {
+                  localStorage.removeItem('token');
+                }
+              }
+            } catch(_e) {}
             try { window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'debug', href: location.href })); } catch(_e){}
             if (!window.__RN_NAV_DEPTH) window.__RN_NAV_DEPTH = 1;
             function post(){
@@ -293,12 +324,7 @@ export default function App() {
         <Stack.Screen
           name='Web'
           component={WebScreen}
-          options={({ navigation }) => ({
-            title: 'TeaKonn',
-            headerRight: () => (
-              <Button title='Native' onPress={() => navigation.navigate('Discover')} />
-            )
-          })}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name='Discover'
