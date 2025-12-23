@@ -1,6 +1,7 @@
 // frontend/src/pages/MyEvents.tsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 import dayjs from "dayjs";
 import {
   Calendar,
@@ -28,7 +29,7 @@ import CreateProductModal from "../components/CreateProductModal";
 import EventParticipantsModal from "../components/EventParticipantsModal";
 import NotificationToast from "../components/NotificationToast";
 
-const API = import.meta.env.VITE_API_URL || "";
+const API = API_URL.replace(/\/api$/, "");
 
 type TabType = "events" | "services" | "products";
 

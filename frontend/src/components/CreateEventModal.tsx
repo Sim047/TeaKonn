@@ -1,10 +1,11 @@
 // frontend/src/components/CreateEventModal.tsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 import { X, Calendar, MapPin, Users, DollarSign, Clock, Trophy, Camera } from "lucide-react";
 import ImageUpload from "./ImageUpload";
 
-const API = import.meta.env.VITE_API_URL || "";
+const API = API_URL.replace(/\/api$/, "");
 
 // Comprehensive Sports List (matching Dashboard)
 const SPORTS = [

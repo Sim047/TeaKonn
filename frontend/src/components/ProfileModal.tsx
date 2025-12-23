@@ -1,8 +1,8 @@
 // frontend/src/components/ProfileModal.tsx
 import React from "react";
 import { X, MessageCircle, UserPlus, UserMinus } from "lucide-react";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { API_URL } from "../config/api";
+const API = API_URL.replace(/\/api$/, "");
 
 export default function ProfileModal({
   user,

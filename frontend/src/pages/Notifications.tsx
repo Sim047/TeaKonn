@@ -7,7 +7,8 @@ import { Bell, ArrowLeft, Calendar, Loader } from "lucide-react";
 
 dayjs.extend(relativeTime);
 
-const API = (import.meta as any).env?.VITE_API_URL || "";
+import { API_URL } from "../config/api";
+const API = API_URL.replace(/\/api$/, "");
 
 export default function Notifications({ token, onBack }: any) {
   const [notifications, setNotifications] = useState<any[]>([]);

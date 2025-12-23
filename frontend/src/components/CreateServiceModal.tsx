@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { X, Stethoscope, DollarSign, MapPin, Award, Clock, Camera, Info } from "lucide-react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 import ImageUpload from "./ImageUpload";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API = API_URL.replace(/\/api$/, "");
 
 interface CreateServiceModalProps {
   isOpen: boolean;

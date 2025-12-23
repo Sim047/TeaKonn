@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { X, ShoppingBag, DollarSign, Package, MapPin, Camera, Tag } from "lucide-react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 import ImageUpload from "./ImageUpload";
 
-const API = import.meta.env.VITE_API_URL || "";
+const API = API_URL.replace(/\/api$/, "");
 
 const CURRENCIES = [
   { code: "USD", symbol: "$", name: "US Dollar" },

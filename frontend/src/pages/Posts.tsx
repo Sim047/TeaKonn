@@ -1,6 +1,7 @@
 // frontend/src/pages/Posts.tsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 import { Heart, MessageCircle, Send, Trash2, Edit, X, Image as ImageIcon, Plus, ArrowUp, Share } from "lucide-react";
 import Avatar from "../components/Avatar";
 import dayjs from "dayjs";
@@ -8,7 +9,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 
 dayjs.extend(relativeTime);
 
-const API = import.meta.env.VITE_API_URL || "";
+const API = API_URL.replace(/\/api$/, "");
 
 interface Post {
   _id: string;

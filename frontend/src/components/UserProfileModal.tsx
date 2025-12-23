@@ -1,8 +1,9 @@
 import React from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 import { X, MessageCircle, UserPlus, UserMinus } from "lucide-react";
 
-const API = import.meta.env.VITE_API_URL || "";
+const API = API_URL.replace(/\/api$/, "");
 const PLACEHOLDER = "https://placehold.co/80x80?text=U";
 
 export default function UserProfileModal({

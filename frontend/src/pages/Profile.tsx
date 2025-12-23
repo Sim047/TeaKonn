@@ -1,5 +1,6 @@
 // src/pages/Profile.tsx
 import React, { useEffect, useState } from "react";
+import { API_URL } from "../config/api";
 import api from "../api";
 
 type ProfileProps = {
@@ -85,11 +86,12 @@ export default function Profile({ userId, onBack, onMessage }: ProfileProps) {
     );
 
   // Resolve avatar url safely (backend may return "/uploads/xxx" or "uploads/xxx" or full url)
+  const BASE = API_URL.replace(/\/api$/, "");
   function avatarUrl(a?: string | null) {
     if (!a) return "/default-avatar.png";
     if (a.startsWith("http://") || a.startsWith("https://")) return a;
-    if (a.startsWith("/")) return (import.meta.env.VITE_API_URL || "http://localhost:5000") + a;
-    return (import.meta.env.VITE_API_URL || "http://localhost:5000") + "/uploads/" + a;
+    if (a.startsWith("/")) return BASE + a;
+    return BASE + "/uploads/" + a;
   }
 
   return (

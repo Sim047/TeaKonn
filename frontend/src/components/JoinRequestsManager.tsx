@@ -3,11 +3,12 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { API_URL } from "../config/api";
 import { CheckCircle, XCircle, Calendar, User, CreditCard, Clock } from "lucide-react";
 
 dayjs.extend(relativeTime);
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API = API_URL.replace(/\/api$/, "");
 
 interface JoinRequest {
   requestId: string;
