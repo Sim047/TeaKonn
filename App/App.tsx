@@ -216,6 +216,8 @@ function WebScreen({ navigation }: any) {
       <WebView
         ref={webRef}
         source={{ uri: webUrl }}
+        originWhitelist={["*"]}
+        userAgent={"Mozilla/5.0 (Linux; Android 11; KR) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36"}
         startInLoadingState
         javaScriptEnabled
         domStorageEnabled
@@ -240,6 +242,15 @@ function WebScreen({ navigation }: any) {
             function post(){
               try { window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'nav', depth: window.__RN_NAV_DEPTH, href: location.href })); } catch(e) {}
             }
+            // Capture JS errors to help diagnose blank screens
+            try {
+              window.addEventListener('error', function(ev){
+                try { window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'js_error', message: String(ev && ev.message || 'error'), filename: String(ev && ev.filename || ''), lineno: String(ev && ev.lineno || ''), colno: String(ev && ev.colno || ''), stack: String(ev && ev.error && ev.error.stack || '') })); } catch(e){}
+              });
+              window.addEventListener('unhandledrejection', function(ev){
+                try { var r = ev && ev.reason; window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'js_rejection', message: String(r && (r.message || r) || 'rejection'), stack: String(r && r.stack || '') })); } catch(e){}
+              });
+            } catch(_e) {}
             var _push = history.pushState;
             var _replace = history.replaceState;
             history.pushState = function(){ try{ window.__RN_NAV_DEPTH++; }catch(e){}; post(); return _push.apply(this, arguments); };
@@ -277,9 +288,22 @@ function WebScreen({ navigation }: any) {
               setWebError(String(data?.reason || 'web error'));
               return;
             }
+            if (data && data.type === 'js_error') {
+              setWebError(`JS error: ${data.message}`);
+              return;
+            }
+            if (data && data.type === 'js_rejection') {
+              setWebError(`Unhandled rejection: ${data.message}`);
+              return;
+            }
           } catch {}
         }}
         onNavigationStateChange={(navState) => setCanGoBack(!!navState.canGoBack)}
+        onLoadProgress={({ nativeEvent }) => {
+          try {
+            if (nativeEvent.progress === 1) setWebError("");
+          } catch {}
+        }}
       />
     </SafeAreaView>
   );
