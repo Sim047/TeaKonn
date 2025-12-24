@@ -590,6 +590,12 @@ export default function MyEvents({
                           Explore Other Events
                         </button>
                         <button
+                          onClick={() => onNavigate && onNavigate('past-events')}
+                          className="btn w-full sm:w-auto"
+                        >
+                          View Past Events
+                        </button>
+                        <button
                           onClick={() => setCreateOtherOpen((v) => !v)}
                           className="btn w-full sm:w-auto"
                         >
