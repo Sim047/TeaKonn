@@ -190,7 +190,9 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
                 <button
                   onClick={async () => {
                     try {
-                      const resp = await axios.get(`${API}/api/events/${ev._id}`);
+                      const resp = await axios.get(`${API}/api/events/${ev._id}`, {
+                        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+                      });
                       setSelectedEvent(resp.data as any);
                     } catch {
                       setSelectedEvent(ev);
