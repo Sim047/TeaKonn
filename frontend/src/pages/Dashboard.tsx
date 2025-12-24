@@ -518,12 +518,11 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
               </button>
               <button
                 onClick={() => {
-                  onNavigate && onNavigate('past-events');
+                  /* Past Events button removed per request */
                 }}
-                className="px-6 py-3 bg-gradient-to-r from-gray-700 to-gray-500 text-white font-bold rounded-xl hover:from-gray-800 hover:to-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
+                className="hidden"
               >
-                <Clock className="w-5 h-5" />
-                Past Events
+                {/* Removed */}
               </button>
             </div>
           </div>
