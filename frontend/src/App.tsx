@@ -1204,6 +1204,7 @@ export default function App() {
             onMouseLeave={cancelMessagePress}
             onTouchStart={() => startMessagePress(m._id)}
             onTouchEnd={cancelMessagePress}
+            id={`msg-${m._id}`}
           >
             {String(m.sender?._id) !== String(user?._id) ? (
               showAvatar ? (
@@ -1265,6 +1266,40 @@ export default function App() {
 
                 {/* Removed three-dots toggle to simplify reply UX */}
               </div>
+
+              {/* Reply context */}
+              {m.replyTo && (
+                <div
+                  className="mt-2 p-2 rounded-md border text-xs opacity-90 cursor-pointer"
+                  style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const pid = typeof m.replyTo === 'string' ? m.replyTo : m.replyTo?._id;
+                    if (pid) {
+                      const el = document.getElementById(`msg-${pid}`);
+                      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                  }}
+                  title="Jump to replied message"
+                >
+                  {(() => {
+                    const pid = typeof m.replyTo === 'string' ? m.replyTo : m.replyTo?._id;
+                    const parent: any =
+                      (pid && messages.find((x: any) => x._id === pid)) || (m as any).replyTo;
+                    const uname = parent?.sender?.username || 'User';
+                    const ptext = (parent?.text || '').toString();
+                    return (
+                      <div className="flex items-center gap-2">
+                        <span className="opacity-70">Replying to</span>
+                        <strong>{uname}</strong>
+                        {!!ptext && (
+                          <span className="opacity-60 truncate max-w-[50%]">{ptext.slice(0, 100)}</span>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
 
               {m.fileUrl && (
                 <img
