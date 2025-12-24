@@ -22,6 +22,7 @@ import {
   Truck,
   Image as ImageIcon,
   Search,
+  MessageSquare,
 } from 'lucide-react';
 import CreateEventModal from '../components/CreateEventModal';
 import CreateServiceModal from '../components/CreateServiceModal';
@@ -976,6 +977,18 @@ export default function MyEvents({
                                 </div>
                               </div>
                               <div className="flex gap-2 ml-4">
+                                <button
+                                  onClick={() => {
+                                    try {
+                                      localStorage.setItem('auralink-open-room', event._id);
+                                    } catch {}
+                                    onNavigate && onNavigate('chat');
+                                  }}
+                                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition text-white"
+                                  title="Open Chat"
+                                >
+                                  <MessageSquare className="w-4 h-4" />
+                                </button>
                                 <button
                                   onClick={() => handleEdit(event)}
                                   className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition text-white"
