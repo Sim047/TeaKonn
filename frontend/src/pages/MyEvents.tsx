@@ -16,6 +16,7 @@ import {
   Trophy,
   Stethoscope,
   Star,
+  Package,
   Search,
   MessageSquare,
 } from 'lucide-react';
