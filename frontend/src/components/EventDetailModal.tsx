@@ -13,6 +13,7 @@ import {
   User as UserIcon,
   ChevronDown,
   ChevronUp,
+  XCircle,
 } from 'lucide-react';
 import dayjs from 'dayjs';
 
@@ -59,6 +60,7 @@ interface EventDetailModalProps {
   onMessage: (organizerId: string) => void;
   onViewProfile?: (userId: string) => void;
   onViewParticipants?: (event: Event) => void;
+  onLeave?: (eventId: string) => void;
   currentUserId?: string;
 }
 
@@ -69,6 +71,7 @@ export default function EventDetailModal({
   onMessage,
   onViewParticipants,
   onViewProfile,
+  onLeave,
   currentUserId,
 }: EventDetailModalProps) {
   if (!event) return null; // Guard against null event prop
@@ -377,6 +380,14 @@ export default function EventDetailModal({
                         ? 'Request to Join'
                         : 'Join Event'}
               </button>
+              {onLeave && isParticipant && !isArchived && (
+                <button
+                  onClick={() => onLeave(event._id)}
+                  className="px-4 py-3 rounded-lg font-semibold transition-all bg-red-600 text-white hover:bg-red-700 shadow-lg inline-flex items-center gap-2"
+                >
+                  <XCircle className="w-4 h-4" /> Leave Event
+                </button>
+              )}
             </div>
           )}
 

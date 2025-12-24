@@ -42,6 +42,21 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
     event: null,
   });
 
+  // Decode current user id from JWT for modal participant checks
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    try {
+      if (token) {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setCurrentUserId(payload.id || payload._id);
+      } else {
+        setCurrentUserId(undefined);
+      }
+    } catch {
+      setCurrentUserId(undefined);
+    }
+  }, [token]);
+
   useEffect(() => {
     fetchEvents();
   }, []);
@@ -109,6 +124,33 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
 
   const handlePaymentCancel = () => setPaymentModalData({ show: false, event: null });
 
+  const handleLeaveEvent = async (eventId: string) => {
+    if (!token) {
+      setNotification({ message: 'Please log in to leave events', type: 'info' });
+      return;
+    }
+    const ev = events.find((e) => e._id === eventId) || selectedEvent;
+    const title = ev?.title ? ev.title : 'this event';
+    const confirmLeave = window.confirm(`Leave ${title}? You will be removed from participants.`);
+    if (!confirmLeave) return;
+    try {
+      await axios.post(
+        `${API_URL}/events/${eventId}/leave`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      setNotification({ message: 'Left event', type: 'success' });
+      await fetchEvents();
+      // Refresh selectedEvent if open
+      if (selectedEvent && selectedEvent._id === eventId) {
+        const refreshed = await axios.get(`${API_URL}/events/${eventId}`);
+        setSelectedEvent(refreshed.data);
+      }
+    } catch (err: any) {
+      setNotification({ message: err?.response?.data?.error || 'Failed to leave', type: 'error' });
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <div className="max-w-4xl mx-auto py-8">
@@ -150,6 +192,8 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
             event={selectedEvent}
             onClose={() => setSelectedEvent(null)}
             onJoin={() => handleJoinEvent(selectedEvent._id)}
+            onLeave={(eventId: string) => handleLeaveEvent(eventId)}
+            currentUserId={currentUserId}
           />
         )}
 

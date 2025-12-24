@@ -549,6 +549,20 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
         onJoin={handleJoinFromDashboard}
         onMessage={handleMessageOrganizer}
         onViewParticipants={openParticipantsModal}
+        onLeave={async (eventId: string) => {
+          try {
+            await axios.post(`${API}/api/events/${eventId}/leave`, {}, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            const refreshed = await axios.get(`${API}/api/events/${eventId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            setSelectedEvent(refreshed.data);
+            loadDashboardData();
+          } catch (err) {
+            console.error('Leave event error:', err);
+          }
+        }}
         currentUserId={currentUserId}
       />
       {participantsModalEvent && (
