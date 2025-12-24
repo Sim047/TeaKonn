@@ -1353,7 +1353,7 @@ export default function App() {
                       aria-label={mine ? 'Remove your reaction' : 'React'}
                     >
                       <span className="emoji">{e}</span>
-                      <span className="count">{count}</span>
+                      {count > 0 && <span className="count">{count}</span>}
                     </button>
                   );
                 })}
