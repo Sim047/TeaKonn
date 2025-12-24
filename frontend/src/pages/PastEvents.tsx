@@ -23,41 +23,29 @@ export default function PastEvents({ token, onBack, onNavigate }: { token?: stri
     try {
       setLoading(true);
       setError('');
-
-      const requests: Promise<any>[] = [];
+      // Fetch archived and past events for the current user
+      let combined: any[] = [];
       if (token) {
-        requests.push(
+        const [createdRes, joinedRes] = await Promise.all([
           axios.get(`${API}/api/events/my/created`, {
+            params: { includeArchived: true },
             headers: { Authorization: `Bearer ${token}` },
           }),
-        );
+          axios.get(`${API}/api/events/my/joined`, {
+            params: { includeArchived: true },
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+        const created = createdRes.data.events || [];
+        const joined = joinedRes.data.events || [];
+        combined = [...created, ...joined];
+      } else {
+        // Fallback: show general past/archived events (not user-specific)
+        const res = await axios.get(`${API}/api/events`, {
+          params: { includeArchived: true },
+        });
+        combined = res.data.events || [];
       }
-      requests.push(
-        axios.get(`${API}/api/events?status=published`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        }),
-      );
-      const results = await Promise.all(requests);
-      const createdRes = token ? results[0] : { data: { events: [] } };
-      const allRes = token ? results[1] : results[0];
-
-      const created = createdRes.data.events || [];
-      const all = allRes.data.events || [];
-
-      // Decode user id from token
-      let userId: string | null = null;
-      try {
-        if (token) {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          userId = payload.id || payload._id;
-        }
-      } catch {}
-
-      const participating = userId
-        ? all.filter((e: any) => (e.participants || []).some((p: any) => String(p?._id || p) === String(userId)))
-        : [];
-
-      const combined = [...created, ...participating];
 
       const past = combined.filter((e: any) => {
         const archived = !!e.archivedAt;
