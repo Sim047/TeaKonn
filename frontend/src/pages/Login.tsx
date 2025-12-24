@@ -32,7 +32,7 @@ export default function Login({ onSuccess, switchToRegister }) {
       <div className="bg-slate-800/60 p-10 rounded-xl w-full max-w-md text-slate-100">
         {/* LOGO */}
         <div className="flex justify-center mb-6">
-          <TeaKonnLogo size={48} theme="auto" variant="lockup" ariaLabel="TeaKonn" />
+          <TeaKonnLogo size={64} ariaLabel="TeaKonn" />
         </div>
 
         {/* TITLE */}

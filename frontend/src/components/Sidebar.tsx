@@ -211,7 +211,7 @@ export default function Sidebar({
         {!isCollapsed ? (
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center justify-center flex-1">
-              <TeaKonnLogo size={64} theme="auto" variant="mark" ariaLabel="TeaKonn" />
+                <TeaKonnLogo size={64} ariaLabel="TeaKonn" />
             </div>
             {/* Theme Toggle */}
             <button
@@ -228,7 +228,7 @@ export default function Sidebar({
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2">
-            <TeaKonnLogo size={40} theme="auto" variant="mark" ariaLabel="TeaKonn" />
+              <TeaKonnLogo size={40} ariaLabel="TeaKonn" />
           </div>
         )}
       </div>
@@ -537,9 +537,9 @@ export default function Sidebar({
       )}
 
       {/* Mobile Overlay */}
-      {isMobileOpen && (
+      {!isMobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          <TeaKonnLogo size={28} ariaLabel="TeaKonn" />
           onClick={() => setIsMobileOpen(false)}
         />
       )}
