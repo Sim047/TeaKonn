@@ -331,6 +331,22 @@ export default function MyEvents({
     }
   }
 
+  async function handleLeave(eventId: string) {
+    if (!confirm('Leave this event? You will be removed from participants.')) return;
+    try {
+      setDeletingId(eventId);
+      await axios.post(`${API}/api/events/${eventId}/leave`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setEventsJoined((prev) => prev.filter((e) => e._id !== eventId));
+      setToast({ message: 'Left event', type: 'success' });
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Failed to leave event');
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   function handleMessageUser(userId: string) {
     // TODO: Implement messaging - integrate with your chat system
     console.log('Message user:', userId);
@@ -506,8 +522,137 @@ export default function MyEvents({
         {(() => {
           if (activeTab === 'events') {
             return (
-              <div>
-                {/* Other Events section removed per request */}
+              <div className="space-y-8">
+                {/* Events I Created */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-2xl font-bold text-heading">Events I Created</h2>
+                    <button
+                      className="text-sm text-theme-secondary hover:text-heading"
+                      onClick={() => setOrganizingListOpen((v) => !v)}
+                    >
+                      {organizingListOpen ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                  {eventsCreated.length === 0 ? (
+                    <div className="rounded-2xl p-8 text-center themed-card">
+                      <p className="text-theme-secondary mb-4">You haven\'t created any events yet.</p>
+                      <button
+                        onClick={() => { setEditingEvent(null); setCreateModalOpen(true); }}
+                        className="px-5 py-2 bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-lg"
+                      >
+                        Create Event
+                      </button>
+                    </div>
+                  ) : organizingListOpen ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {eventsCreated.map((ev) => (
+                        <div key={ev._id} className="rounded-2xl overflow-hidden themed-card">
+                          <div className="bg-gradient-to-r from-cyan-600 to-purple-600 p-5">
+                            <h3 className="text-white text-xl font-semibold line-clamp-1">{ev.title}</h3>
+                          </div>
+                          <div className="p-5 space-y-3">
+                            <div className="flex items-center gap-2 text-theme-secondary">
+                              <Calendar className="w-4 h-4 text-cyan-600" />
+                              <span>{dayjs(ev.startDate || ev.date).format('MMM D, YYYY')}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-theme-secondary">
+                              <MapPin className="w-4 h-4 text-purple-600" />
+                              <span>{ev.location?.city || ev.location?.address || 'Online'}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-theme-secondary">
+                              <Users className="w-4 h-4 text-emerald-600" />
+                              <span>{(ev.participants?.length || 0)} / {(ev.capacity?.max || ev.maxParticipants || 0)}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => setParticipantsModalEvent(ev)}
+                                className="px-3 py-2 text-sm rounded-md border"
+                                style={{ borderColor: 'var(--border)' }}
+                              >
+                                View Participants
+                              </button>
+                              <button
+                                onClick={() => handleEdit(ev)}
+                                className="px-3 py-2 text-sm rounded-md border"
+                                style={{ borderColor: 'var(--border)' }}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDelete(ev._id)}
+                                disabled={deletingId === ev._id}
+                                className="px-3 py-2 text-sm rounded-md border text-red-600 disabled:opacity-50"
+                                style={{ borderColor: 'var(--border)' }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+
+                {/* Events I Joined */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-2xl font-bold text-heading">Events I Joined</h2>
+                    <button
+                      className="text-sm text-theme-secondary hover:text-heading"
+                      onClick={() => setJoinedListOpen((v) => !v)}
+                    >
+                      {joinedListOpen ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                  {eventsJoined.length === 0 ? (
+                    <div className="rounded-2xl p-8 text-center themed-card">
+                      <p className="text-theme-secondary">You haven\'t joined any events yet.</p>
+                    </div>
+                  ) : joinedListOpen ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {eventsJoined.map((ev) => (
+                        <div key={ev._id} className="rounded-2xl overflow-hidden themed-card">
+                          <div className="bg-gradient-to-r from-emerald-600 to-cyan-600 p-5">
+                            <h3 className="text-white text-xl font-semibold line-clamp-1">{ev.title}</h3>
+                          </div>
+                          <div className="p-5 space-y-3">
+                            <div className="flex items-center gap-2 text-theme-secondary">
+                              <Calendar className="w-4 h-4 text-emerald-600" />
+                              <span>{dayjs(ev.startDate || ev.date).format('MMM D, YYYY')}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-theme-secondary">
+                              <MapPin className="w-4 h-4 text-cyan-600" />
+                              <span>{ev.location?.city || ev.location?.address || 'Online'}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-theme-secondary">
+                              <Users className="w-4 h-4 text-purple-600" />
+                              <span>{(ev.participants?.length || 0)} / {(ev.capacity?.max || ev.maxParticipants || 0)}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => setParticipantsModalEvent(ev)}
+                                className="px-3 py-2 text-sm rounded-md border"
+                                style={{ borderColor: 'var(--border)' }}
+                              >
+                                View Participants
+                              </button>
+                              <button
+                                onClick={() => handleLeave(ev._id)}
+                                disabled={deletingId === ev._id}
+                                className="px-3 py-2 text-sm rounded-md border text-red-600 disabled:opacity-50"
+                                style={{ borderColor: 'var(--border)' }}
+                              >
+                                Leave Event
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               </div>
             );
           } else if (activeTab === 'services') {
