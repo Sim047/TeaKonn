@@ -1046,28 +1046,47 @@ export default function MyEvents({
                                   )}
                                 </div>
 
-                                {/* PROMINENT MANAGE PARTICIPANTS BUTTON */}
-                                <button
-                                  onClick={async () => {
-                                    try {
-                                      const resp = await axios.get(
-                                        `${API}/api/events/${event._id}`,
-                                      );
-                                      setParticipantsModalEvent(resp.data);
-                                    } catch (e) {
-                                      console.error(
-                                        '[MyEvents] Failed to fetch event for participants modal, using existing data:',
-                                        e,
-                                      );
-                                      setParticipantsModalEvent(event);
-                                    }
-                                  }}
-                                  className="w-full py-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-semibold rounded-lg transition-all shadow-md flex items-center justify-center gap-2 text-sm"
-                                >
-                                  <Users className="w-4 h-4" />
-                                  Manage Participants
-                                  {/* Pending join requests badge removed for a cleaner UI */}
-                                </button>
+                                {/* Participants button: Only organizers get full manage tools */}
+                                {event?.organizer?._id === currentUser._id ? (
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        const resp = await axios.get(
+                                          `${API}/api/events/${event._id}`,
+                                        );
+                                        setParticipantsModalEvent(resp.data);
+                                      } catch (e) {
+                                        console.error(
+                                          '[MyEvents] Failed to fetch event for participants modal, using existing data:',
+                                          e,
+                                        );
+                                        setParticipantsModalEvent(event);
+                                      }
+                                    }}
+                                    className="w-full py-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-semibold rounded-lg transition-all shadow-md flex items-center justify-center gap-2 text-sm"
+                                  >
+                                    <Users className="w-4 h-4" />
+                                    Manage Participants
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        const resp = await axios.get(
+                                          `${API}/api/events/${event._id}`,
+                                        );
+                                        setParticipantsModalEvent(resp.data);
+                                      } catch (e) {
+                                        console.error('[MyEvents] Failed to fetch event for participants modal, using existing data:', e);
+                                        setParticipantsModalEvent(event);
+                                      }
+                                    }}
+                                    className="w-full py-2 border rounded-lg text-sm hover:opacity-80"
+                                    style={{ borderColor: 'var(--border)' }}
+                                  >
+                                    View Participants
+                                  </button>
+                                )}
 
                                 {/* Open Event Chat */}
                                 <button
@@ -1590,7 +1609,7 @@ export default function MyEvents({
           onApproveRequest={handleApproveRequest}
           onRejectRequest={handleRejectRequest}
           currentUserId={currentUser._id}
-          isOrganizer={true}
+          isOrganizer={participantsModalEvent?.organizer?._id === currentUser._id}
         />
       )}
     </div>
