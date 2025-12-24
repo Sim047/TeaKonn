@@ -1,160 +1,150 @@
 // frontend/src/pages/Dashboard.tsx
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  Users, 
-  Bell,
-  Plus,
-  Sparkles,
-  Trophy,
-  Star,
-} from "lucide-react";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import CreateEventModal from "../components/CreateEventModal";
-import EventDetailModal from "../components/EventDetailModal";
-import EventParticipantsModal from "../components/EventParticipantsModal";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Calendar, Clock, MapPin, Users, Bell, Plus, Sparkles, Trophy, Star } from 'lucide-react';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import CreateEventModal from '../components/CreateEventModal';
+import EventDetailModal from '../components/EventDetailModal';
+import EventParticipantsModal from '../components/EventParticipantsModal';
 // GlobalSearch removed from Dashboard; using inline DashboardSearch instead
-import DashboardSearch from "../components/DashboardSearch";
+import DashboardSearch from '../components/DashboardSearch';
 // Removed booking-related pages
-import AllEvents from "./AllEvents";
-import NotificationsPage from "./Notifications";
-import SportEvents from "./SportEvents";
+import AllEvents from './AllEvents';
+import NotificationsPage from './Notifications';
+import SportEvents from './SportEvents';
 
 dayjs.extend(relativeTime);
 
-import { API_URL } from "../config/api";
-const API = API_URL.replace(/\/api$/, "");
+import { API_URL } from '../config/api';
+const API = API_URL.replace(/\/api$/, '');
 
 // Comprehensive Sports Categories
 const ALL_SPORTS = [
   // Olympic Sports
-  { name: "Football/Soccer", category: "Team Sports", icon: "⚽", popular: true },
-  { name: "Basketball", category: "Team Sports", icon: "🏀", popular: true },
-  { name: "Volleyball", category: "Team Sports", icon: "🏐", popular: true },
-  { name: "Tennis", category: "Racquet Sports", icon: "🎾", popular: true },
-  { name: "Swimming", category: "Aquatic Sports", icon: "🏊", popular: true },
-  { name: "Athletics/Track & Field", category: "Individual Sports", icon: "🏃", popular: true },
-  { name: "Gymnastics", category: "Artistic Sports", icon: "🤸", popular: true },
-  { name: "Boxing", category: "Combat Sports", icon: "🥊", popular: true },
-  { name: "Cycling", category: "Individual Sports", icon: "🚴", popular: true },
-  { name: "Baseball", category: "Team Sports", icon: "⚾", popular: true },
-  
+  { name: 'Football/Soccer', category: 'Team Sports', icon: '⚽', popular: true },
+  { name: 'Basketball', category: 'Team Sports', icon: '🏀', popular: true },
+  { name: 'Volleyball', category: 'Team Sports', icon: '🏐', popular: true },
+  { name: 'Tennis', category: 'Racquet Sports', icon: '🎾', popular: true },
+  { name: 'Swimming', category: 'Aquatic Sports', icon: '🏊', popular: true },
+  { name: 'Athletics/Track & Field', category: 'Individual Sports', icon: '🏃', popular: true },
+  { name: 'Gymnastics', category: 'Artistic Sports', icon: '🤸', popular: true },
+  { name: 'Boxing', category: 'Combat Sports', icon: '🥊', popular: true },
+  { name: 'Cycling', category: 'Individual Sports', icon: '🚴', popular: true },
+  { name: 'Baseball', category: 'Team Sports', icon: '⚾', popular: true },
+
   // Major World Sports
-  { name: "Cricket", category: "Team Sports", icon: "🏏", popular: true },
-  { name: "Rugby", category: "Team Sports", icon: "🏉", popular: true },
-  { name: "Hockey (Ice)", category: "Team Sports", icon: "🏒", popular: true },
-  { name: "Hockey (Field)", category: "Team Sports", icon: "🏑", popular: true },
-  { name: "Golf", category: "Individual Sports", icon: "⛳", popular: true },
-  
+  { name: 'Cricket', category: 'Team Sports', icon: '🏏', popular: true },
+  { name: 'Rugby', category: 'Team Sports', icon: '🏉', popular: true },
+  { name: 'Hockey (Ice)', category: 'Team Sports', icon: '🏒', popular: true },
+  { name: 'Hockey (Field)', category: 'Team Sports', icon: '🏑', popular: true },
+  { name: 'Golf', category: 'Individual Sports', icon: '⛳', popular: true },
+
   // Combat Sports
-  { name: "Wrestling", category: "Combat Sports", icon: "🤼", popular: false },
-  { name: "Judo", category: "Combat Sports", icon: "🥋", popular: false },
-  { name: "Karate", category: "Combat Sports", icon: "🥋", popular: false },
-  { name: "Taekwondo", category: "Combat Sports", icon: "🥋", popular: false },
-  { name: "Kung Fu", category: "Combat Sports", icon: "🥋", popular: false },
-  { name: "Mixed Martial Arts (MMA)", category: "Combat Sports", icon: "🥊", popular: true },
-  { name: "Kickboxing", category: "Combat Sports", icon: "🥊", popular: false },
-  { name: "Muay Thai", category: "Combat Sports", icon: "🥊", popular: false },
-  { name: "Fencing", category: "Combat Sports", icon: "🤺", popular: false },
-  
+  { name: 'Wrestling', category: 'Combat Sports', icon: '🤼', popular: false },
+  { name: 'Judo', category: 'Combat Sports', icon: '🥋', popular: false },
+  { name: 'Karate', category: 'Combat Sports', icon: '🥋', popular: false },
+  { name: 'Taekwondo', category: 'Combat Sports', icon: '🥋', popular: false },
+  { name: 'Kung Fu', category: 'Combat Sports', icon: '🥋', popular: false },
+  { name: 'Mixed Martial Arts (MMA)', category: 'Combat Sports', icon: '🥊', popular: true },
+  { name: 'Kickboxing', category: 'Combat Sports', icon: '🥊', popular: false },
+  { name: 'Muay Thai', category: 'Combat Sports', icon: '🥊', popular: false },
+  { name: 'Fencing', category: 'Combat Sports', icon: '🤺', popular: false },
+
   // Racquet Sports
-  { name: "Badminton", category: "Racquet Sports", icon: "🏸", popular: true },
-  { name: "Table Tennis/Ping Pong", category: "Racquet Sports", icon: "🏓", popular: true },
-  { name: "Squash", category: "Racquet Sports", icon: "🎾", popular: false },
-  { name: "Racquetball", category: "Racquet Sports", icon: "🎾", popular: false },
-  { name: "Pickleball", category: "Racquet Sports", icon: "🏸", popular: false },
-  
+  { name: 'Badminton', category: 'Racquet Sports', icon: '🏸', popular: true },
+  { name: 'Table Tennis/Ping Pong', category: 'Racquet Sports', icon: '🏓', popular: true },
+  { name: 'Squash', category: 'Racquet Sports', icon: '🎾', popular: false },
+  { name: 'Racquetball', category: 'Racquet Sports', icon: '🎾', popular: false },
+  { name: 'Pickleball', category: 'Racquet Sports', icon: '🏸', popular: false },
+
   // Aquatic Sports
-  { name: "Diving", category: "Aquatic Sports", icon: "🤿", popular: false },
-  { name: "Water Polo", category: "Aquatic Sports", icon: "🤽", popular: false },
-  { name: "Synchronized Swimming", category: "Aquatic Sports", icon: "🏊", popular: false },
-  { name: "Surfing", category: "Aquatic Sports", icon: "🏄", popular: true },
-  { name: "Rowing", category: "Aquatic Sports", icon: "🚣", popular: false },
-  { name: "Canoeing/Kayaking", category: "Aquatic Sports", icon: "🛶", popular: false },
-  { name: "Sailing", category: "Aquatic Sports", icon: "⛵", popular: false },
-  
+  { name: 'Diving', category: 'Aquatic Sports', icon: '🤿', popular: false },
+  { name: 'Water Polo', category: 'Aquatic Sports', icon: '🤽', popular: false },
+  { name: 'Synchronized Swimming', category: 'Aquatic Sports', icon: '🏊', popular: false },
+  { name: 'Surfing', category: 'Aquatic Sports', icon: '🏄', popular: true },
+  { name: 'Rowing', category: 'Aquatic Sports', icon: '🚣', popular: false },
+  { name: 'Canoeing/Kayaking', category: 'Aquatic Sports', icon: '🛶', popular: false },
+  { name: 'Sailing', category: 'Aquatic Sports', icon: '⛵', popular: false },
+
   // Winter Sports
-  { name: "Skiing (Alpine)", category: "Winter Sports", icon: "⛷️", popular: true },
-  { name: "Skiing (Cross-Country)", category: "Winter Sports", icon: "⛷️", popular: false },
-  { name: "Snowboarding", category: "Winter Sports", icon: "🏂", popular: true },
-  { name: "Ice Skating", category: "Winter Sports", icon: "⛸️", popular: true },
-  { name: "Figure Skating", category: "Winter Sports", icon: "⛸️", popular: false },
-  { name: "Speed Skating", category: "Winter Sports", icon: "⛸️", popular: false },
-  { name: "Curling", category: "Winter Sports", icon: "🥌", popular: false },
-  { name: "Bobsled", category: "Winter Sports", icon: "🛷", popular: false },
-  { name: "Luge", category: "Winter Sports", icon: "🛷", popular: false },
-  
+  { name: 'Skiing (Alpine)', category: 'Winter Sports', icon: '⛷️', popular: true },
+  { name: 'Skiing (Cross-Country)', category: 'Winter Sports', icon: '⛷️', popular: false },
+  { name: 'Snowboarding', category: 'Winter Sports', icon: '🏂', popular: true },
+  { name: 'Ice Skating', category: 'Winter Sports', icon: '⛸️', popular: true },
+  { name: 'Figure Skating', category: 'Winter Sports', icon: '⛸️', popular: false },
+  { name: 'Speed Skating', category: 'Winter Sports', icon: '⛸️', popular: false },
+  { name: 'Curling', category: 'Winter Sports', icon: '🥌', popular: false },
+  { name: 'Bobsled', category: 'Winter Sports', icon: '🛷', popular: false },
+  { name: 'Luge', category: 'Winter Sports', icon: '🛷', popular: false },
+
   // Fitness & Wellness
-  { name: "Yoga", category: "Fitness & Wellness", icon: "🧘", popular: true },
-  { name: "Pilates", category: "Fitness & Wellness", icon: "🧘", popular: false },
-  { name: "CrossFit", category: "Fitness & Wellness", icon: "💪", popular: true },
-  { name: "Aerobics", category: "Fitness & Wellness", icon: "💃", popular: false },
-  { name: "Zumba", category: "Fitness & Wellness", icon: "💃", popular: false },
-  { name: "Bodybuilding", category: "Fitness & Wellness", icon: "💪", popular: false },
-  { name: "Powerlifting", category: "Fitness & Wellness", icon: "🏋️", popular: false },
-  { name: "Weightlifting", category: "Fitness & Wellness", icon: "🏋️", popular: false },
-  
+  { name: 'Yoga', category: 'Fitness & Wellness', icon: '🧘', popular: true },
+  { name: 'Pilates', category: 'Fitness & Wellness', icon: '🧘', popular: false },
+  { name: 'CrossFit', category: 'Fitness & Wellness', icon: '💪', popular: true },
+  { name: 'Aerobics', category: 'Fitness & Wellness', icon: '💃', popular: false },
+  { name: 'Zumba', category: 'Fitness & Wellness', icon: '💃', popular: false },
+  { name: 'Bodybuilding', category: 'Fitness & Wellness', icon: '💪', popular: false },
+  { name: 'Powerlifting', category: 'Fitness & Wellness', icon: '🏋️', popular: false },
+  { name: 'Weightlifting', category: 'Fitness & Wellness', icon: '🏋️', popular: false },
+
   // Extreme Sports
-  { name: "Skateboarding", category: "Extreme Sports", icon: "🛹", popular: true },
-  { name: "BMX", category: "Extreme Sports", icon: "🚴", popular: false },
-  { name: "Rock Climbing", category: "Extreme Sports", icon: "🧗", popular: true },
-  { name: "Parkour", category: "Extreme Sports", icon: "🤸", popular: false },
-  { name: "Bungee Jumping", category: "Extreme Sports", icon: "🪂", popular: false },
-  { name: "Skydiving", category: "Extreme Sports", icon: "🪂", popular: false },
-  { name: "Paragliding", category: "Extreme Sports", icon: "🪂", popular: false },
-  
+  { name: 'Skateboarding', category: 'Extreme Sports', icon: '🛹', popular: true },
+  { name: 'BMX', category: 'Extreme Sports', icon: '🚴', popular: false },
+  { name: 'Rock Climbing', category: 'Extreme Sports', icon: '🧗', popular: true },
+  { name: 'Parkour', category: 'Extreme Sports', icon: '🤸', popular: false },
+  { name: 'Bungee Jumping', category: 'Extreme Sports', icon: '🪂', popular: false },
+  { name: 'Skydiving', category: 'Extreme Sports', icon: '🪂', popular: false },
+  { name: 'Paragliding', category: 'Extreme Sports', icon: '🪂', popular: false },
+
   // Target Sports
-  { name: "Archery", category: "Target Sports", icon: "🏹", popular: false },
-  { name: "Shooting", category: "Target Sports", icon: "🎯", popular: false },
-  { name: "Darts", category: "Target Sports", icon: "🎯", popular: false },
-  
+  { name: 'Archery', category: 'Target Sports', icon: '🏹', popular: false },
+  { name: 'Shooting', category: 'Target Sports', icon: '🎯', popular: false },
+  { name: 'Darts', category: 'Target Sports', icon: '🎯', popular: false },
+
   // Motor Sports
-  { name: "Formula 1 Racing", category: "Motor Sports", icon: "🏎️", popular: true },
-  { name: "MotoGP", category: "Motor Sports", icon: "🏍️", popular: true },
-  { name: "NASCAR", category: "Motor Sports", icon: "🏎️", popular: false },
-  { name: "Rally Racing", category: "Motor Sports", icon: "🏎️", popular: false },
-  { name: "Karting", category: "Motor Sports", icon: "🏎️", popular: false },
-  
+  { name: 'Formula 1 Racing', category: 'Motor Sports', icon: '🏎️', popular: true },
+  { name: 'MotoGP', category: 'Motor Sports', icon: '🏍️', popular: true },
+  { name: 'NASCAR', category: 'Motor Sports', icon: '🏎️', popular: false },
+  { name: 'Rally Racing', category: 'Motor Sports', icon: '🏎️', popular: false },
+  { name: 'Karting', category: 'Motor Sports', icon: '🏎️', popular: false },
+
   // Equestrian
-  { name: "Horse Racing", category: "Equestrian", icon: "🏇", popular: true },
-  { name: "Show Jumping", category: "Equestrian", icon: "🏇", popular: false },
-  { name: "Dressage", category: "Equestrian", icon: "🏇", popular: false },
-  { name: "Polo", category: "Equestrian", icon: "🏇", popular: false },
-  
+  { name: 'Horse Racing', category: 'Equestrian', icon: '🏇', popular: true },
+  { name: 'Show Jumping', category: 'Equestrian', icon: '🏇', popular: false },
+  { name: 'Dressage', category: 'Equestrian', icon: '🏇', popular: false },
+  { name: 'Polo', category: 'Equestrian', icon: '🏇', popular: false },
+
   // Other Team Sports
-  { name: "American Football", category: "Team Sports", icon: "🏈", popular: true },
-  { name: "Australian Rules Football", category: "Team Sports", icon: "🏈", popular: false },
-  { name: "Handball", category: "Team Sports", icon: "🤾", popular: false },
-  { name: "Lacrosse", category: "Team Sports", icon: "🥍", popular: false },
-  { name: "Netball", category: "Team Sports", icon: "🏐", popular: false },
-  { name: "Softball", category: "Team Sports", icon: "🥎", popular: false },
-  
+  { name: 'American Football', category: 'Team Sports', icon: '🏈', popular: true },
+  { name: 'Australian Rules Football', category: 'Team Sports', icon: '🏈', popular: false },
+  { name: 'Handball', category: 'Team Sports', icon: '🤾', popular: false },
+  { name: 'Lacrosse', category: 'Team Sports', icon: '🥍', popular: false },
+  { name: 'Netball', category: 'Team Sports', icon: '🏐', popular: false },
+  { name: 'Softball', category: 'Team Sports', icon: '🥎', popular: false },
+
   // Mind Sports & Strategy
-  { name: "Chess", category: "Mind Sports", icon: "♟️", popular: true },
-  { name: "Checkers", category: "Mind Sports", icon: "⚫", popular: false },
-  { name: "Go (Baduk/Weiqi)", category: "Mind Sports", icon: "⚫", popular: false },
-  { name: "Poker", category: "Mind Sports", icon: "🃏", popular: false },
-  { name: "Bridge", category: "Mind Sports", icon: "🃏", popular: false },
-  { name: "Esports/Gaming", category: "Mind Sports", icon: "🎮", popular: true },
-  
+  { name: 'Chess', category: 'Mind Sports', icon: '♟️', popular: true },
+  { name: 'Checkers', category: 'Mind Sports', icon: '⚫', popular: false },
+  { name: 'Go (Baduk/Weiqi)', category: 'Mind Sports', icon: '⚫', popular: false },
+  { name: 'Poker', category: 'Mind Sports', icon: '🃏', popular: false },
+  { name: 'Bridge', category: 'Mind Sports', icon: '🃏', popular: false },
+  { name: 'Esports/Gaming', category: 'Mind Sports', icon: '🎮', popular: true },
+
   // Dance Sports
-  { name: "Ballroom Dancing", category: "Dance Sports", icon: "💃", popular: false },
-  { name: "Hip Hop Dance", category: "Dance Sports", icon: "💃", popular: false },
-  { name: "Ballet", category: "Dance Sports", icon: "🩰", popular: false },
-  { name: "Breakdancing/Breaking", category: "Dance Sports", icon: "🕺", popular: true },
-  
+  { name: 'Ballroom Dancing', category: 'Dance Sports', icon: '💃', popular: false },
+  { name: 'Hip Hop Dance', category: 'Dance Sports', icon: '💃', popular: false },
+  { name: 'Ballet', category: 'Dance Sports', icon: '🩰', popular: false },
+  { name: 'Breakdancing/Breaking', category: 'Dance Sports', icon: '🕺', popular: true },
+
   // Other Individual Sports
-  { name: "Triathlon", category: "Individual Sports", icon: "🏃", popular: true },
-  { name: "Marathon Running", category: "Individual Sports", icon: "🏃", popular: true },
-  { name: "Decathlon", category: "Individual Sports", icon: "🏃", popular: false },
-  { name: "Pentathlon", category: "Individual Sports", icon: "🏃", popular: false },
-  { name: "Bowling", category: "Individual Sports", icon: "🎳", popular: false },
-  { name: "Billiards/Pool", category: "Individual Sports", icon: "🎱", popular: false },
-  { name: "Snooker", category: "Individual Sports", icon: "🎱", popular: false },
+  { name: 'Triathlon', category: 'Individual Sports', icon: '🏃', popular: true },
+  { name: 'Marathon Running', category: 'Individual Sports', icon: '🏃', popular: true },
+  { name: 'Decathlon', category: 'Individual Sports', icon: '🏃', popular: false },
+  { name: 'Pentathlon', category: 'Individual Sports', icon: '🏃', popular: false },
+  { name: 'Bowling', category: 'Individual Sports', icon: '🎳', popular: false },
+  { name: 'Billiards/Pool', category: 'Individual Sports', icon: '🎱', popular: false },
+  { name: 'Snooker', category: 'Individual Sports', icon: '🎱', popular: false },
 ];
 
 // Booking type removed as booking system is deprecated
@@ -189,16 +179,18 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
   // (Removed duplicate GlobalSearch render) Only render inside the main layout below.
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<any[]>([]);
-    // Persist dashboard UI state
-    useEffect(() => {
-      localStorage.setItem('auralink-dashboard-events-filter', eventsFilter);
-    }, [eventsFilter]);
-    useEffect(() => {
-      localStorage.setItem('auralink-dashboard-show-events', JSON.stringify(showEvents));
-    }, [showEvents]);
+  // Persist dashboard UI state
+  useEffect(() => {
+    localStorage.setItem('auralink-dashboard-events-filter', eventsFilter);
+  }, [eventsFilter]);
+  useEffect(() => {
+    localStorage.setItem('auralink-dashboard-show-events', JSON.stringify(showEvents));
+  }, [showEvents]);
   const [createEventModalOpen, setCreateEventModalOpen] = useState(false);
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'dashboard' | 'allEvents' | 'notifications'>('dashboard');
+  const [viewMode, setViewMode] = useState<'dashboard' | 'allEvents' | 'notifications'>(
+    'dashboard',
+  );
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
   const [participantsModalEvent, setParticipantsModalEvent] = useState<any | null>(null);
@@ -240,7 +232,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
       // Set event notifications only
       setNotifications(eventNotifications.slice(0, 5));
     } catch (err) {
-      console.error("Dashboard load error:", err);
+      console.error('Dashboard load error:', err);
     } finally {
       setLoading(false);
     }
@@ -288,13 +280,13 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
       const res = await axios.post(
         `${API}/api/conversations`,
         { partnerId: organizerId },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-      localStorage.setItem("auralink-active-conversation", JSON.stringify(res.data));
-      localStorage.setItem("auralink-in-dm", "true");
-      window.location.href = "/";
+      localStorage.setItem('auralink-active-conversation', JSON.stringify(res.data));
+      localStorage.setItem('auralink-in-dm', 'true');
+      window.location.href = '/';
     } catch (err) {
-      console.error("Failed to start conversation:", err);
+      console.error('Failed to start conversation:', err);
     }
   };
 
@@ -327,7 +319,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
                 await axios.post(
                   `${API}/api/events/${eventId}/approve-request/${requestId}`,
                   {},
-                  { headers: { Authorization: `Bearer ${token}` } }
+                  { headers: { Authorization: `Bearer ${token}` } },
                 );
                 const refreshed = await axios.get(`${API}/api/events/${eventId}`, {
                   headers: { Authorization: `Bearer ${token}` },
@@ -342,7 +334,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
                 await axios.post(
                   `${API}/api/events/${eventId}/reject-request/${requestId}`,
                   {},
-                  { headers: { Authorization: `Bearer ${token}` } }
+                  { headers: { Authorization: `Bearer ${token}` } },
                 );
                 const refreshed = await axios.get(`${API}/api/events/${eventId}`, {
                   headers: { Authorization: `Bearer ${token}` },
@@ -367,11 +359,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
   // If viewing a specific sport's events, show that component
   if (selectedSport) {
     return (
-      <SportEvents
-        sport={selectedSport}
-        token={token}
-        onBack={() => setSelectedSport(null)}
-      />
+      <SportEvents sport={selectedSport} token={token} onBack={() => setSelectedSport(null)} />
     );
   }
 
@@ -382,7 +370,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
           <div className="animate-pulse space-y-6">
             <div className="h-8 rounded w-1/3" style={{ background: 'var(--muted)' }}></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map(i => (
+              {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="h-32 rounded-2xl themed-card"></div>
               ))}
             </div>
@@ -418,12 +406,18 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
           <button
             onClick={() => setViewMode('allEvents')}
             className="rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-300 text-left group relative overflow-hidden"
-            style={{ background: 'var(--card)', border: '2px solid var(--border)', color: 'var(--text)' }}
+            style={{
+              background: 'var(--card)',
+              border: '2px solid var(--border)',
+              color: 'var(--text)',
+            }}
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
             <div className="relative flex items-center justify-between">
               <div>
-                <p className="text-sm text-purple-600 dark:text-purple-400 mb-1 font-medium">All Events</p>
+                <p className="text-sm text-purple-600 dark:text-purple-400 mb-1 font-medium">
+                  All Events
+                </p>
                 <p className="text-3xl font-bold text-heading">{stats.upcomingEvents}</p>
                 <p className="text-xs text-theme-secondary mt-1">Upcoming events</p>
               </div>
@@ -437,12 +431,18 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
           <button
             onClick={() => setViewMode('notifications')}
             className="rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-300 text-left group relative overflow-hidden"
-            style={{ background: 'var(--card)', border: '2px solid var(--border)', color: 'var(--text)' }}
+            style={{
+              background: 'var(--card)',
+              border: '2px solid var(--border)',
+              color: 'var(--text)',
+            }}
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
             <div className="relative flex items-center justify-between">
               <div>
-                <p className="text-sm text-orange-600 dark:text-red-400 mb-1 font-medium">Notifications</p>
+                <p className="text-sm text-orange-600 dark:text-red-400 mb-1 font-medium">
+                  Notifications
+                </p>
                 <p className="text-3xl font-bold text-heading">{stats.notifications}</p>
                 <p className="text-xs text-theme-secondary mt-1">View all updates</p>
               </div>
@@ -458,7 +458,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
-          
+
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-4">
               <Trophy className="w-8 h-8" />
@@ -514,7 +514,9 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
               </button>
               <button
                 onClick={() => {
-                  try { localStorage.setItem('auralink-all-events-filter', 'past'); } catch {}
+                  try {
+                    localStorage.setItem('auralink-all-events-filter', 'past');
+                  } catch {}
                   setViewMode('allEvents');
                 }}
                 className="px-6 py-3 bg-gradient-to-r from-gray-700 to-gray-500 text-white font-bold rounded-xl hover:from-gray-800 hover:to-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
@@ -547,7 +549,11 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
                 <button
                   onClick={() => setShowEvents((v) => !v)}
                   className="text-sm px-3 py-2 rounded-xl border-2"
-                  style={{ borderColor: 'var(--border)', background: 'var(--card)', color: 'var(--text)' }}
+                  style={{
+                    borderColor: 'var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--text)',
+                  }}
                   aria-expanded={showEvents}
                 >
                   {showEvents ? 'Hide' : 'Show'}
@@ -556,7 +562,9 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
               <div className="flex items-center gap-3 flex-wrap justify-end w-full sm:w-auto">
                 <button
                   onClick={() => {
-                    try { localStorage.setItem('auralink-all-events-filter', 'past'); } catch {}
+                    try {
+                      localStorage.setItem('auralink-all-events-filter', 'past');
+                    } catch {}
                     setViewMode('allEvents');
                   }}
                   className="px-4 py-2 bg-gradient-to-r from-gray-700 to-gray-500 hover:from-gray-800 hover:to-gray-600 text-white text-sm font-medium rounded-xl transition-all duration-300 shadow-lg"
@@ -592,7 +600,9 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
           ) : (
             <div className="space-y-3">
               {upcomingEvents
-                .filter((e) => eventsFilter === 'all' || (e.pricing?.type || 'free') === eventsFilter)
+                .filter(
+                  (e) => eventsFilter === 'all' || (e.pricing?.type || 'free') === eventsFilter,
+                )
                 .slice(0, 5)
                 .map((event) => (
                   <div
@@ -606,7 +616,9 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
                       return (
                         (isArchived || isPast) && (
                           <div className="absolute top-3 left-3 z-10">
-                            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-900/50 dark:text-gray-400">Past</span>
+                            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-900/50 dark:text-gray-400">
+                              Past
+                            </span>
                           </div>
                         )
                       );
@@ -615,8 +627,15 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
                       <div className="w-12 h-12 bg-gradient-to-br from-accent to-accent-light rounded-xl flex items-center justify-center text-white font-bold shrink-0 shadow-lg">
                         {dayjs(event.startDate).format('DD')}
                       </div>
-                      <div className={`flex-1 min-w-0 ${(event as any).archivedAt || dayjs(event.startDate).isBefore(dayjs()) ? 'opacity-70' : ''}`}>
-                        <h3 className="font-semibold text-heading mb-1 line-clamp-1 break-words" title={event.title}>{event.title}</h3>
+                      <div
+                        className={`flex-1 min-w-0 ${(event as any).archivedAt || dayjs(event.startDate).isBefore(dayjs()) ? 'opacity-70' : ''}`}
+                      >
+                        <h3
+                          className="font-semibold text-heading mb-1 line-clamp-1 break-words"
+                          title={event.title}
+                        >
+                          {event.title}
+                        </h3>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 text-sm text-theme-secondary">
                             <Clock className="w-4 h-4 shrink-0" />
@@ -670,7 +689,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
               await axios.post(
                 `${API}/api/events/${eventId}/approve-request/${requestId}`,
                 {},
-                { headers: { Authorization: `Bearer ${token}` } }
+                { headers: { Authorization: `Bearer ${token}` } },
               );
               const refreshed = await axios.get(`${API}/api/events/${eventId}`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -685,7 +704,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
               await axios.post(
                 `${API}/api/events/${eventId}/reject-request/${requestId}`,
                 {},
-                { headers: { Authorization: `Bearer ${token}` } }
+                { headers: { Authorization: `Bearer ${token}` } },
               );
               const refreshed = await axios.get(`${API}/api/events/${eventId}`, {
                 headers: { Authorization: `Bearer ${token}` },

@@ -1,7 +1,7 @@
 // src/pages/Profile.tsx
-import React, { useEffect, useState } from "react";
-import { API_URL } from "../config/api";
-import api from "../api";
+import React, { useEffect, useState } from 'react';
+import { API_URL } from '../config/api';
+import api from '../api';
 
 type ProfileProps = {
   userId: string;
@@ -30,7 +30,7 @@ export default function Profile({ userId, onBack, onMessage }: ProfileProps) {
     if (!userId) {
       setProfile(null);
       setLoading(false);
-      setError("No user id");
+      setError('No user id');
       return;
     }
 
@@ -41,18 +41,18 @@ export default function Profile({ userId, onBack, onMessage }: ProfileProps) {
       .get(`/users/${userId}`)
       .then((res) => {
         if (!mounted) return;
-        if (res.data && typeof res.data === "object") {
+        if (res.data && typeof res.data === 'object') {
           setProfile(res.data);
         } else {
-          console.error("Invalid profile response:", res.data);
+          console.error('Invalid profile response:', res.data);
           setProfile(null);
-          setError("Invalid response from server");
+          setError('Invalid response from server');
         }
       })
       .catch((err) => {
-        console.error("Profile load error:", err);
+        console.error('Profile load error:', err);
         setProfile(null);
-        setError("Failed to load profile");
+        setError('Failed to load profile');
       })
       .finally(() => {
         if (mounted) setLoading(false);
@@ -86,12 +86,12 @@ export default function Profile({ userId, onBack, onMessage }: ProfileProps) {
     );
 
   // Resolve avatar url safely (backend may return "/uploads/xxx" or "uploads/xxx" or full url)
-  const BASE = API_URL.replace(/\/api$/, "");
+  const BASE = API_URL.replace(/\/api$/, '');
   function avatarUrl(a?: string | null) {
-    if (!a) return "/default-avatar.png";
-    if (a.startsWith("http://") || a.startsWith("https://")) return a;
-    if (a.startsWith("/")) return BASE + a;
-    return BASE + "/uploads/" + a;
+    if (!a) return '/default-avatar.png';
+    if (a.startsWith('http://') || a.startsWith('https://')) return a;
+    if (a.startsWith('/')) return BASE + a;
+    return BASE + '/uploads/' + a;
   }
 
   return (
@@ -137,7 +137,7 @@ export default function Profile({ userId, onBack, onMessage }: ProfileProps) {
           className="px-3 py-2 border rounded-md"
           onClick={() => {
             // optimistic client-side follow/unfollow could be implemented here.
-            alert("Follow/unfollow not implemented in UI — use backend endpoints if needed.");
+            alert('Follow/unfollow not implemented in UI — use backend endpoints if needed.');
           }}
         >
           Follow

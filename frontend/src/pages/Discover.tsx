@@ -1,10 +1,12 @@
 ﻿// Payment flow removed; no modal used currently
 // Payment modal removed
-  // Payment removed: proceed directly
-  // Payment flow removed
-          {/* Payment flow removed */}
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+// Payment removed: proceed directly
+// Payment flow removed
+{
+  /* Payment flow removed */
+}
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import {
   Calendar,
   MapPin,
@@ -29,16 +31,15 @@ import {
   Search,
   ChevronLeft,
   Image as ImageIcon,
-} from "lucide-react";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { API_URL } from "../config/api";
-import ServiceDetailModal from "../components/ServiceDetailModal";
-import ProductDetailModal from "../components/ProductDetailModal";
-import EventDetailModal from "../components/EventDetailModal";
-import EventParticipantsModal from "../components/EventParticipantsModal";
-import NotificationToast from "../components/NotificationToast";
- 
+} from 'lucide-react';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { API_URL } from '../config/api';
+import ServiceDetailModal from '../components/ServiceDetailModal';
+import ProductDetailModal from '../components/ProductDetailModal';
+import EventDetailModal from '../components/EventDetailModal';
+import EventParticipantsModal from '../components/EventParticipantsModal';
+import NotificationToast from '../components/NotificationToast';
 
 dayjs.extend(relativeTime);
 
@@ -58,27 +59,24 @@ const getApiErrorMessage = (error: unknown): string => {
       (error.response?.data as any)?.message ||
       (error.response?.data as any)?.error ||
       error.message ||
-      "An unexpected error occurred"
+      'An unexpected error occurred'
     );
   }
   if (error instanceof Error) return error.message;
-  return "An unexpected error occurred";
+  return 'An unexpected error occurred';
 };
 
 const startAction = (
   map: InFlightMap,
   setMap: React.Dispatch<React.SetStateAction<InFlightMap>>,
-  id: string
+  id: string,
 ): boolean => {
   if (map[id]) return false;
   setMap((prev) => ({ ...prev, [id]: true }));
   return true;
 };
 
-const finishAction = (
-  setMap: React.Dispatch<React.SetStateAction<InFlightMap>>,
-  id: string
-) => {
+const finishAction = (setMap: React.Dispatch<React.SetStateAction<InFlightMap>>, id: string) => {
   setMap((prev) => {
     const next = { ...prev };
     delete next[id];
@@ -86,8 +84,7 @@ const finishAction = (
   });
 };
 
-
-type CategoryType = "sports" | "services" | "marketplace" | "other" | null;
+type CategoryType = 'sports' | 'services' | 'marketplace' | 'other' | null;
 
 interface Event {
   _id: string;
@@ -183,7 +180,7 @@ interface DiscoverProps {
 
 export default function Discover({ token, onViewProfile, onStartConversation }: DiscoverProps) {
   const [activeCategory, setActiveCategory] = useState<CategoryType>(() => {
-    const saved = localStorage.getItem("auralink-discover-category");
+    const saved = localStorage.getItem('auralink-discover-category');
     return saved ? (saved as CategoryType) : null;
   });
   const [events, setEvents] = useState<Event[]>([]);
@@ -191,62 +188,77 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   const [marketplaceItems, setMarketplaceItems] = useState<MarketplaceItem[]>([]);
   const [otherEvents, setOtherEvents] = useState<any[]>([]);
   const [createOtherOpen, setCreateOtherOpen] = useState(false);
-  const [newOther, setNewOther] = useState({ title: "", caption: "", imageUrl: "", location: "", tags: "event" });
+  const [newOther, setNewOther] = useState({
+    title: '',
+    caption: '',
+    imageUrl: '',
+    location: '',
+    tags: 'event',
+  });
   const [uploadingOtherImage, setUploadingOtherImage] = useState(false);
   const [selectedOther, setSelectedOther] = useState<any | null>(null);
   const [joiningOther, setJoiningOther] = useState<InFlightMap>({});
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(() => localStorage.getItem("auralink-discover-search") || "");
-  const [filterCategory, setFilterCategory] = useState(() => localStorage.getItem("auralink-discover-filter") || "");
-  const [selectedSport, setSelectedSport] = useState(() => localStorage.getItem("auralink-discover-sport") || "All Sports");
+  const [searchTerm, setSearchTerm] = useState(
+    () => localStorage.getItem('auralink-discover-search') || '',
+  );
+  const [filterCategory, setFilterCategory] = useState(
+    () => localStorage.getItem('auralink-discover-filter') || '',
+  );
+  const [selectedSport, setSelectedSport] = useState(
+    () => localStorage.getItem('auralink-discover-sport') || 'All Sports',
+  );
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<MarketplaceItem | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [participantsModalEvent, setParticipantsModalEvent] = useState<Event | null>(null);
-  const [notification, setNotification] = useState<{ message: string; type: "success" | "error" | "info" | "warning" } | null>(null);
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  } | null>(null);
 
   // In-flight guards to prevent duplicate clicks
   const [joiningEvent, setJoiningEvent] = useState<InFlightMap>({});
   const [likingItem, setLikingItem] = useState<InFlightMap>({});
   const [likingService, setLikingService] = useState<InFlightMap>({});
 
-  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
-    if (activeCategory === "sports") {
+    if (activeCategory === 'sports') {
       fetchEvents();
-    } else if (activeCategory === "services") {
+    } else if (activeCategory === 'services') {
       fetchServices();
-    } else if (activeCategory === "marketplace") {
+    } else if (activeCategory === 'marketplace') {
       fetchMarketplaceItems();
-    } else if (activeCategory === "other") {
+    } else if (activeCategory === 'other') {
       fetchOtherEvents();
     }
   }, [activeCategory, selectedSport, filterCategory]);
 
   // Persist Discover UI selections across refresh
   useEffect(() => {
-    localStorage.setItem("auralink-discover-category", activeCategory ?? "");
+    localStorage.setItem('auralink-discover-category', activeCategory ?? '');
   }, [activeCategory]);
   useEffect(() => {
-    localStorage.setItem("auralink-discover-sport", selectedSport);
+    localStorage.setItem('auralink-discover-sport', selectedSport);
   }, [selectedSport]);
   useEffect(() => {
-    localStorage.setItem("auralink-discover-filter", filterCategory);
+    localStorage.setItem('auralink-discover-filter', filterCategory);
   }, [filterCategory]);
   useEffect(() => {
-    localStorage.setItem("auralink-discover-search", searchTerm);
+    localStorage.setItem('auralink-discover-search', searchTerm);
   }, [searchTerm]);
 
   // Auto-open highlighted event when arriving from profile or search
   useEffect(() => {
     try {
-      if (activeCategory === "sports" && events.length > 0) {
-        const id = localStorage.getItem("auralink-highlight-event");
+      if (activeCategory === 'sports' && events.length > 0) {
+        const id = localStorage.getItem('auralink-highlight-event');
         if (id) {
           openEventDetails(id);
-          localStorage.removeItem("auralink-highlight-event");
+          localStorage.removeItem('auralink-highlight-event');
         }
       }
     } catch {}
@@ -255,11 +267,11 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   // Auto-open highlighted other event post when arriving from search
   useEffect(() => {
     try {
-      if (activeCategory === "other" && otherEvents.length > 0) {
-        const id = localStorage.getItem("auralink-highlight-post");
+      if (activeCategory === 'other' && otherEvents.length > 0) {
+        const id = localStorage.getItem('auralink-highlight-post');
         if (id) {
           openOtherDetails(id);
-          localStorage.removeItem("auralink-highlight-post");
+          localStorage.removeItem('auralink-highlight-post');
         }
       }
     } catch {}
@@ -269,18 +281,19 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      const sport = selectedSport === "All Sports" || selectedSport === "Other Events" ? "" : selectedSport;
+      const sport =
+        selectedSport === 'All Sports' || selectedSport === 'Other Events' ? '' : selectedSport;
       if (sport) {
-        params.append("category", "sports");
-        params.append("sport", sport);
-      } else if (selectedSport === "Other Events") {
-        params.append("category", "other");
+        params.append('category', 'sports');
+        params.append('sport', sport);
+      } else if (selectedSport === 'Other Events') {
+        params.append('category', 'other');
       }
-      if (searchTerm && searchTerm.trim()) params.append("search", searchTerm.trim());
+      if (searchTerm && searchTerm.trim()) params.append('search', searchTerm.trim());
       const response = await axios.get(`${API_URL}/events?${params.toString()}`);
       setEvents(response.data.events || response.data);
     } catch (error) {
-      console.error("Error fetching events:", error);
+      console.error('Error fetching events:', error);
     } finally {
       setLoading(false);
     }
@@ -289,11 +302,11 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   const fetchServices = async () => {
     setLoading(true);
     try {
-      const params = filterCategory ? `?category=${filterCategory}` : "";
+      const params = filterCategory ? `?category=${filterCategory}` : '';
       const response = await axios.get(`${API_URL}/services${params}`);
       setServices(response.data.services || response.data);
     } catch (error) {
-      console.error("Error fetching services:", error);
+      console.error('Error fetching services:', error);
     } finally {
       setLoading(false);
     }
@@ -303,12 +316,12 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (filterCategory) params.append("category", filterCategory);
-      if (searchTerm) params.append("search", searchTerm);
+      if (filterCategory) params.append('category', filterCategory);
+      if (searchTerm) params.append('search', searchTerm);
       const response = await axios.get(`${API_URL}/marketplace?${params}`);
       setMarketplaceItems(response.data.items || response.data);
     } catch (error) {
-      console.error("Error fetching marketplace items:", error);
+      console.error('Error fetching marketplace items:', error);
     } finally {
       setLoading(false);
     }
@@ -321,10 +334,12 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
       const posts = response.data.posts || response.data || [];
-      const filtered = (posts || []).filter((p: any) => Array.isArray(p.tags) && p.tags.some((t: string) => /event/i.test(t)));
+      const filtered = (posts || []).filter(
+        (p: any) => Array.isArray(p.tags) && p.tags.some((t: string) => /event/i.test(t)),
+      );
       setOtherEvents(filtered);
     } catch (error) {
-      console.error("Error fetching other events (posts):", error);
+      console.error('Error fetching other events (posts):', error);
       setOtherEvents([]);
     } finally {
       setLoading(false);
@@ -335,53 +350,59 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
-      alert("Image must be under 10MB");
+      alert('Image must be under 10MB');
       return;
     }
     try {
       setUploadingOtherImage(true);
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append('file', file);
       const res = await axios.post(`${API_URL}/files/upload`, formData, {
         headers: {
           Authorization: token ? `Bearer ${token}` : undefined,
-          "Content-Type": "multipart/form-data",
+          'Content-Type': 'multipart/form-data',
         },
       });
       setNewOther((p) => ({ ...p, imageUrl: res.data.url }));
     } catch (err) {
-      console.error("Upload failed:", err);
-      alert("Failed to upload image");
+      console.error('Upload failed:', err);
+      alert('Failed to upload image');
     } finally {
       setUploadingOtherImage(false);
     }
   };
 
-    const handleCreateOther = async () => {
+  const handleCreateOther = async () => {
     if (!token) {
-      alert("Please log in to create an event post");
+      alert('Please log in to create an event post');
       return;
     }
     if (!newOther.title.trim() && !newOther.caption.trim() && !newOther.imageUrl) {
-      alert("Please add a caption or image");
+      alert('Please add a caption or image');
       return;
     }
     try {
-      const tags = (newOther.tags || "")
-        .split(",")
+      const tags = (newOther.tags || '')
+        .split(',')
         .map((t) => t.trim())
         .filter(Boolean);
       const res = await axios.post(
         `${API_URL}/posts`,
-        { title: newOther.title || "", caption: newOther.caption, imageUrl: newOther.imageUrl, tags, location: newOther.location },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          title: newOther.title || '',
+          caption: newOther.caption,
+          imageUrl: newOther.imageUrl,
+          tags,
+          location: newOther.location,
+        },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setOtherEvents((prev) => [res.data, ...prev]);
-      setNewOther({ title: "", caption: "", imageUrl: "", location: "", tags: "event" });
+      setNewOther({ title: '', caption: '', imageUrl: '', location: '', tags: 'event' });
       setCreateOtherOpen(false);
     } catch (err) {
-      console.error("Failed to create event post:", err);
-      alert("Failed to create event post");
+      console.error('Failed to create event post:', err);
+      alert('Failed to create event post');
     }
   };
 
@@ -392,7 +413,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
       });
       setSelectedOther(resp.data);
     } catch (e) {
-      console.error("Failed to fetch post details, falling back to cached post:", e);
+      console.error('Failed to fetch post details, falling back to cached post:', e);
       const fallback = otherEvents.find((p) => p._id === postId) || null;
       setSelectedOther(fallback);
     }
@@ -400,56 +421,72 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
 
   const handleJoinOther = async (postId: string) => {
     if (!token) {
-      alert("Please log in to join");
+      alert('Please log in to join');
       return;
     }
     const post = otherEvents.find((p) => p._id === postId) || selectedOther;
-    const title = (post && (post.title || post.caption)) ? (post.title || post.caption) : "this event";
+    const title = post && (post.title || post.caption) ? post.title || post.caption : 'this event';
     const confirmJoin = window.confirm(`Do you want to join ${title}?`);
     if (!confirmJoin) return;
     if (joiningOther[postId]) return;
     setJoiningOther((m) => ({ ...m, [postId]: true }));
     try {
-      const resp = await axios.post(`${API_URL}/posts/${postId}/join`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      const resp = await axios.post(
+        `${API_URL}/posts/${postId}/join`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       const updated = resp.data.post || resp.data;
       setOtherEvents((list) => list.map((p) => (p._id === postId ? updated : p)));
       if (selectedOther && selectedOther._id === postId) setSelectedOther(updated);
     } catch (err) {
-      console.error("Join other event failed:", err);
-      alert("Failed to join");
+      console.error('Join other event failed:', err);
+      alert('Failed to join');
     } finally {
-      setJoiningOther((m) => { const n = { ...m }; delete n[postId]; return n; });
+      setJoiningOther((m) => {
+        const n = { ...m };
+        delete n[postId];
+        return n;
+      });
     }
   };
 
   const handleLeaveOther = async (postId: string) => {
     if (!token) {
-      alert("Please log in to leave");
+      alert('Please log in to leave');
       return;
     }
     if (joiningOther[postId]) return;
     setJoiningOther((m) => ({ ...m, [postId]: true }));
     try {
-      const resp = await axios.post(`${API_URL}/posts/${postId}/leave`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      const resp = await axios.post(
+        `${API_URL}/posts/${postId}/leave`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       const updated = resp.data.post || resp.data;
       setOtherEvents((list) => list.map((p) => (p._id === postId ? updated : p)));
       if (selectedOther && selectedOther._id === postId) setSelectedOther(updated);
     } catch (err) {
-      console.error("Leave other event failed:", err);
-      alert("Failed to leave");
+      console.error('Leave other event failed:', err);
+      alert('Failed to leave');
     } finally {
-      setJoiningOther((m) => { const n = { ...m }; delete n[postId]; return n; });
+      setJoiningOther((m) => {
+        const n = { ...m };
+        delete n[postId];
+        return n;
+      });
     }
   };
 
   const handleJoinEvent = async (eventId: string) => {
     if (!token) {
-      setNotification({ message: "Please log in to join events", type: "warning" });
+      setNotification({ message: 'Please log in to join events', type: 'warning' });
       return;
     }
 
-    const ev = events.find(e => e._id === eventId) || selectedEvent;
-    const title = ev?.title ? ev.title : "this event";
+    const ev = events.find((e) => e._id === eventId) || selectedEvent;
+    const title = ev?.title ? ev.title : 'this event';
     const confirmJoin = window.confirm(`Do you want to join ${title}?`);
     if (!confirmJoin) return;
 
@@ -457,62 +494,75 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
 
     try {
       safeLog('[Discover] API_URL:', API_URL);
-      safeLog('[Discover] Auth token present (first 8 chars):', token ? token.slice(0,8) : 'no-token');
-      safeLog("[Discover] === JOIN EVENT START ===");
-      safeLog("[Discover] Event ID:", eventId);
+      safeLog(
+        '[Discover] Auth token present (first 8 chars):',
+        token ? token.slice(0, 8) : 'no-token',
+      );
+      safeLog('[Discover] === JOIN EVENT START ===');
+      safeLog('[Discover] Event ID:', eventId);
 
       // Find the event to check if it's paid
-      const event = events.find(e => e._id === eventId) || selectedEvent;
-      safeLog("[Discover] Event found:", event);
+      const event = events.find((e) => e._id === eventId) || selectedEvent;
+      safeLog('[Discover] Event found:', event);
       // Paid flow removed; pricing logs no longer relevant
 
       // Proceed directly (all events are free now)
       const response = await axios.post(
         `${API_URL}/events/${eventId}/join`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-      safeLog("[Discover] Join event response:", response.data);
+      safeLog('[Discover] Join event response:', response.data);
       // Show success message with proper notification
-      const message = response.data.message || "Successfully joined event!";
-      setNotification({ message, type: "success" });
+      const message = response.data.message || 'Successfully joined event!';
+      setNotification({ message, type: 'success' });
 
       // Optimistically update local events list for immediate joins
-      setEvents((prev) => prev.map((ev) => {
-        if (ev._id !== eventId) return ev;
-        const already = (ev.participants || []).some((p: any) => p?._id === currentUser._id || p === currentUser._id);
-        if (already) return ev;
-        return { ...ev, participants: [...(ev.participants || []), currentUser] } as any;
-      }));
+      setEvents((prev) =>
+        prev.map((ev) => {
+          if (ev._id !== eventId) return ev;
+          const already = (ev.participants || []).some(
+            (p: any) => p?._id === currentUser._id || p === currentUser._id,
+          );
+          if (already) return ev;
+          return { ...ev, participants: [...(ev.participants || []), currentUser] } as any;
+        }),
+      );
 
       // Background refresh
       fetchEvents();
 
       // Update selected event if modal is open
       if (selectedEvent && selectedEvent._id === eventId) {
-        const already = (selectedEvent.participants || []).some((p: any) => p?._id === currentUser._id || p === currentUser._id);
+        const already = (selectedEvent.participants || []).some(
+          (p: any) => p?._id === currentUser._id || p === currentUser._id,
+        );
         if (!already) {
-          setSelectedEvent({ ...selectedEvent, participants: [...(selectedEvent.participants || []), currentUser] } as any);
+          setSelectedEvent({
+            ...selectedEvent,
+            participants: [...(selectedEvent.participants || []), currentUser],
+          } as any);
         }
         try {
           const updatedEvent = await axios.get(`${API_URL}/events/${eventId}`);
           setSelectedEvent(updatedEvent.data);
         } catch (err) {
-          console.error("Failed to refresh event details:", err);
+          console.error('Failed to refresh event details:', err);
         }
       }
     } catch (error: any) {
-      safeLog("[Discover] Join event error:", error);
-      safeLog('[Discover] Join error response:', error.response && { status: error.response.status, data: error.response.data });
-      setNotification({ message: getApiErrorMessage(error), type: "error" });
+      safeLog('[Discover] Join event error:', error);
+      safeLog(
+        '[Discover] Join error response:',
+        error.response && { status: error.response.status, data: error.response.data },
+      );
+      setNotification({ message: getApiErrorMessage(error), type: 'error' });
     } finally {
       finishAction(setJoiningEvent, eventId);
     }
   };
 
   // Payment flow removed entirely
-
-  
 
   // Ensure we display fully populated event (participants with usernames)
   const openEventDetails = async (eventId: string) => {
@@ -529,31 +579,33 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
     try {
       const resp = await axios.get(`${API_URL}/events/${eventId}`, { timeout: 8000 });
       setSelectedEvent(resp.data);
-      try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data: resp.data })); } catch {}
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data: resp.data }));
+      } catch {}
     } catch (e) {
-      console.error("[Discover] Failed to fetch event details, falling back to cached event:", e);
-      const fallback = events.find(e => e._id === eventId) || null;
+      console.error('[Discover] Failed to fetch event details, falling back to cached event:', e);
+      const fallback = events.find((e) => e._id === eventId) || null;
       setSelectedEvent(fallback as any);
     }
   };
 
   const handleApproveRequest = async (eventId: string, requestId: string) => {
     if (!token) {
-      setNotification({ message: "Please log in to manage requests", type: "warning" });
+      setNotification({ message: 'Please log in to manage requests', type: 'warning' });
       return;
     }
 
     try {
-      safeLog("[Discover] Approving request:", { eventId, requestId });
+      safeLog('[Discover] Approving request:', { eventId, requestId });
       const response = await axios.post(
         `${API_URL}/events/${eventId}/approve-request/${requestId}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-      safeLog("[Discover] Approve response:", response.data);
+      safeLog('[Discover] Approve response:', response.data);
       setNotification({
-        message: response.data.message || "Request approved! Participant added to event.",
-        type: "success"
+        message: response.data.message || 'Request approved! Participant added to event.',
+        type: 'success',
       });
 
       // Refresh event data
@@ -563,12 +615,12 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
       if (participantsModalEvent && participantsModalEvent._id === eventId) {
         try {
           const updatedEventResponse = await axios.get(`${API_URL}/events/${eventId}`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
           });
-          safeLog("[Discover] Updated event data:", updatedEventResponse.data);
+          safeLog('[Discover] Updated event data:', updatedEventResponse.data);
           setParticipantsModalEvent(updatedEventResponse.data);
         } catch (err) {
-          console.error("[Discover] Failed to fetch updated event:", err);
+          console.error('[Discover] Failed to fetch updated event:', err);
         }
       }
 
@@ -576,39 +628,39 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
       if (selectedEvent && selectedEvent._id === eventId) {
         try {
           const updatedEventResponse = await axios.get(`${API_URL}/events/${eventId}`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
           });
           setSelectedEvent(updatedEventResponse.data);
         } catch (err) {
-          console.error("[Discover] Failed to update selected event:", err);
+          console.error('[Discover] Failed to update selected event:', err);
         }
       }
     } catch (error: any) {
-      console.error("[Discover] Approve request error:", error);
+      console.error('[Discover] Approve request error:', error);
       setNotification({
         message: getApiErrorMessage(error),
-        type: "error"
+        type: 'error',
       });
     }
   };
 
   const handleRejectRequest = async (eventId: string, requestId: string) => {
     if (!token) {
-      setNotification({ message: "Please log in to manage requests", type: "warning" });
+      setNotification({ message: 'Please log in to manage requests', type: 'warning' });
       return;
     }
 
     try {
-      safeLog("[Discover] Rejecting request:", { eventId, requestId });
+      safeLog('[Discover] Rejecting request:', { eventId, requestId });
       const response = await axios.post(
         `${API_URL}/events/${eventId}/reject-request/${requestId}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-      safeLog("[Discover] Reject response:", response.data);
+      safeLog('[Discover] Reject response:', response.data);
       setNotification({
-        message: response.data.message || "Request rejected",
-        type: "info"
+        message: response.data.message || 'Request rejected',
+        type: 'info',
       });
 
       // Refresh event data
@@ -618,12 +670,12 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
       if (participantsModalEvent && participantsModalEvent._id === eventId) {
         try {
           const updatedEventResponse = await axios.get(`${API_URL}/events/${eventId}`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
           });
-          safeLog("[Discover] Updated event data after rejection:", updatedEventResponse.data);
+          safeLog('[Discover] Updated event data after rejection:', updatedEventResponse.data);
           setParticipantsModalEvent(updatedEventResponse.data);
         } catch (err) {
-          console.error("[Discover] Failed to fetch updated event:", err);
+          console.error('[Discover] Failed to fetch updated event:', err);
         }
       }
 
@@ -631,38 +683,38 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
       if (selectedEvent && selectedEvent._id === eventId) {
         try {
           const updatedEventResponse = await axios.get(`${API_URL}/events/${eventId}`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
           });
           setSelectedEvent(updatedEventResponse.data);
         } catch (err) {
-          console.error("[Discover] Failed to update selected event:", err);
+          console.error('[Discover] Failed to update selected event:', err);
         }
       }
     } catch (error: any) {
-      console.error("[Discover] Reject request error:", error);
+      console.error('[Discover] Reject request error:', error);
       setNotification({
         message: getApiErrorMessage(error),
-        type: "error"
+        type: 'error',
       });
     }
   };
 
   const handleLikeItem = async (itemId: string) => {
     if (!token) {
-      setNotification({ message: "Please log in to like items", type: "warning" });
+      setNotification({ message: 'Please log in to like items', type: 'warning' });
       return;
     }
 
     if (!startAction(likingItem, setLikingItem, itemId)) return;
 
     try {
-      safeLog("[Discover] Liking item:", itemId);
+      safeLog('[Discover] Liking item:', itemId);
       const response = await axios.post(
         `${API_URL}/marketplace/${itemId}/like`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-      safeLog("[Discover] Like response:", response.data);
+      safeLog('[Discover] Like response:', response.data);
 
       await fetchMarketplaceItems();
 
@@ -672,10 +724,10 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
         setSelectedProduct(productResponse.data);
       }
     } catch (error: any) {
-      safeLog("[Discover] Error liking item:", error);
+      safeLog('[Discover] Error liking item:', error);
       setNotification({
         message: getApiErrorMessage(error),
-        type: "error"
+        type: 'error',
       });
     } finally {
       finishAction(setLikingItem, itemId);
@@ -684,20 +736,20 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
 
   const handleLikeService = async (serviceId: string) => {
     if (!token) {
-      setNotification({ message: "Please log in to like services", type: "warning" });
+      setNotification({ message: 'Please log in to like services', type: 'warning' });
       return;
     }
 
     if (!startAction(likingService, setLikingService, serviceId)) return;
 
     try {
-      safeLog("[Discover] Liking service:", serviceId);
+      safeLog('[Discover] Liking service:', serviceId);
       const response = await axios.post(
         `${API_URL}/services/${serviceId}/like`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-      safeLog("[Discover] Like service response:", response.data);
+      safeLog('[Discover] Like service response:', response.data);
 
       await fetchServices();
 
@@ -707,10 +759,10 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
         setSelectedService(serviceResponse.data);
       }
     } catch (error: any) {
-      safeLog("[Discover] Error liking service:", error);
+      safeLog('[Discover] Error liking service:', error);
       setNotification({
         message: getApiErrorMessage(error),
-        type: "error"
+        type: 'error',
       });
     } finally {
       finishAction(setLikingService, serviceId);
@@ -718,46 +770,46 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   };
 
   const handleMessageUser = async (userId: string) => {
-    safeLog("[Discover] handleMessageUser called with userId:", userId);
+    safeLog('[Discover] handleMessageUser called with userId:', userId);
 
     if (!token) {
-      setNotification({ message: "Please log in to send messages", type: "warning" });
+      setNotification({ message: 'Please log in to send messages', type: 'warning' });
       return;
     }
 
     // Use the callback if available
     if (onStartConversation) {
-      safeLog("[Discover] Using onStartConversation callback");
+      safeLog('[Discover] Using onStartConversation callback');
       onStartConversation(userId);
       return;
     }
 
     // Fallback: create conversation directly
-    safeLog("[Discover] Fallback: creating conversation directly");
+    safeLog('[Discover] Fallback: creating conversation directly');
     try {
       const response = await axios.post(
         `${API_URL}/conversations`,
         { partnerId: userId },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       const conversation = response.data;
-      safeLog("[Discover] Conversation created:", conversation);
+      safeLog('[Discover] Conversation created:', conversation);
 
       // Store in localStorage
-      localStorage.setItem("auralink-active-conversation", JSON.stringify(conversation));
-      localStorage.setItem("auralink-in-dm", "true");
+      localStorage.setItem('auralink-active-conversation', JSON.stringify(conversation));
+      localStorage.setItem('auralink-in-dm', 'true');
 
       // Navigate to main view
-      setNotification({ message: "Opening conversation...", type: "info" });
+      setNotification({ message: 'Opening conversation...', type: 'info' });
       setTimeout(() => {
-        window.location.href = "/";
+        window.location.href = '/';
       }, 1000);
     } catch (error: any) {
-      safeLog("[Discover] Error creating conversation:", error);
+      safeLog('[Discover] Error creating conversation:', error);
       setNotification({
         message: getApiErrorMessage(error),
-        type: "error"
+        type: 'error',
       });
     }
   };
@@ -769,7 +821,9 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
         <div className="max-w-6xl mx-auto px-4 py-12">
           {/* Header */}
           <div className="text-center mb-16">
-            <h1 className="text-5xl font-bold text-heading mb-4">Discover <span className="text-cyan-300">More</span></h1>
+            <h1 className="text-5xl font-bold text-heading mb-4">
+              Discover <span className="text-cyan-300">More</span>
+            </h1>
             <p className="text-theme-secondary text-lg">
               Explore sports events, professional services, and marketplace
             </p>
@@ -779,7 +833,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
           <div className="grid md:grid-cols-3 gap-8 lg:grid-cols-4">
             {/* Other Events Card */}
             <div
-              onClick={() => setActiveCategory("other")}
+              onClick={() => setActiveCategory('other')}
               className="group cursor-pointer rounded-2xl p-8 border hover:border-blue-500/40 transition-all themed-card"
             >
               <div className="flex justify-center mb-6">
@@ -787,9 +841,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                   <Calendar className="w-12 h-12 text-blue-300" />
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-heading text-center mb-3">
-                Other Events
-              </h2>
+              <h2 className="text-2xl font-bold text-heading text-center mb-3">Other Events</h2>
               <p className="text-theme-secondary text-center mb-6">
                 See community posts tagged as events
               </p>
@@ -801,7 +853,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
 
             {/* Sports Events Card */}
             <div
-              onClick={() => setActiveCategory("sports")}
+              onClick={() => setActiveCategory('sports')}
               className="group cursor-pointer rounded-2xl p-8 border hover:border-cyan-500/40 transition-all themed-card"
             >
               <div className="flex justify-center mb-6">
@@ -809,9 +861,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                   <Trophy className="w-12 h-12 text-cyan-300" />
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-heading text-center mb-3">
-                Sports Events
-              </h2>
+              <h2 className="text-2xl font-bold text-heading text-center mb-3">Sports Events</h2>
               <p className="text-theme-secondary text-center mb-6">
                 Find and join sports activities, tournaments, and training sessions
               </p>
@@ -823,7 +873,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
 
             {/* Services Card */}
             <div
-              onClick={() => setActiveCategory("services")}
+              onClick={() => setActiveCategory('services')}
               className="group cursor-pointer rounded-2xl p-8 border hover:border-violet-500/40 transition-all themed-card"
             >
               <div className="flex justify-center mb-6">
@@ -831,9 +881,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                   <Stethoscope className="w-12 h-12 text-violet-300" />
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-heading text-center mb-3">
-                Services
-              </h2>
+              <h2 className="text-2xl font-bold text-heading text-center mb-3">Services</h2>
               <p className="text-theme-secondary text-center mb-6">
                 Physiotherapy, massage, nutrition, personal training & more
               </p>
@@ -845,7 +893,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
 
             {/* Marketplace Card */}
             <div
-              onClick={() => setActiveCategory("marketplace")}
+              onClick={() => setActiveCategory('marketplace')}
               className="group cursor-pointer rounded-2xl p-8 border hover:border-amber-500/40 transition-all themed-card"
             >
               <div className="flex justify-center mb-6">
@@ -853,9 +901,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                   <ShoppingBag className="w-12 h-12 text-amber-300" />
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-heading text-center mb-3">
-                Marketplace
-              </h2>
+              <h2 className="text-2xl font-bold text-heading text-center mb-3">Marketplace</h2>
               <p className="text-theme-secondary text-center mb-6">
                 Buy and sell sports equipment, apparel, supplements & gear
               </p>
@@ -864,7 +910,6 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
-
           </div>
 
           {/* Quick Stats removed as requested */}
@@ -874,8 +919,19 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   }
 
   // Sports Events View
-  if (activeCategory === "sports") {
-    const sportsList = ["All Sports", "Football/Soccer", "Basketball", "Tennis", "Running", "Swimming", "Cycling", "Volleyball", "Baseball", "Other Events"];
+  if (activeCategory === 'sports') {
+    const sportsList = [
+      'All Sports',
+      'Football/Soccer',
+      'Basketball',
+      'Tennis',
+      'Running',
+      'Swimming',
+      'Cycling',
+      'Volleyball',
+      'Baseball',
+      'Other Events',
+    ];
 
     return (
       <div className="min-h-screen themed-page">
@@ -904,7 +960,11 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by title, sport, or location"
                 className="w-full pl-10 pr-4 py-2 rounded-xl border"
-                style={{ borderColor: 'var(--border)', background: 'var(--card)', color: 'var(--text)' }}
+                style={{
+                  borderColor: 'var(--border)',
+                  background: 'var(--card)',
+                  color: 'var(--text)',
+                }}
               />
             </div>
           </div>
@@ -914,13 +974,23 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
             {sportsList.map((sport) => (
               <button
                 key={sport}
-                onClick={() => sport === "Other Events" ? setActiveCategory("other") : setSelectedSport(sport)}
+                onClick={() =>
+                  sport === 'Other Events' ? setActiveCategory('other') : setSelectedSport(sport)
+                }
                 className={`px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all ${
-                    selectedSport === sport
-                      ? "bg-gradient-to-r from-cyan-500 to-purple-500 text-white"
-                      : "border"
-                  }`}
-                style={selectedSport === sport ? undefined : { borderColor: 'var(--border)', background: 'var(--card)', color: 'var(--text)' }}
+                  selectedSport === sport
+                    ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white'
+                    : 'border'
+                }`}
+                style={
+                  selectedSport === sport
+                    ? undefined
+                    : {
+                        borderColor: 'var(--border)',
+                        background: 'var(--card)',
+                        color: 'var(--text)',
+                      }
+                }
               >
                 {sport}
               </button>
@@ -933,10 +1003,15 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
           ) : events.filter((e) => {
               const q = searchTerm.trim().toLowerCase();
               if (!q) return true;
-              const loc = e.location?.city || e.location?.name || e.location?.address || e.location || "";
+              const loc =
+                e.location?.city || e.location?.name || e.location?.address || e.location || '';
               return (
-                String(e.title || "").toLowerCase().includes(q) ||
-                String(e.sport || "").toLowerCase().includes(q) ||
+                String(e.title || '')
+                  .toLowerCase()
+                  .includes(q) ||
+                String(e.sport || '')
+                  .toLowerCase()
+                  .includes(q) ||
                 String(loc).toLowerCase().includes(q)
               );
             }).length === 0 ? (
@@ -946,105 +1021,139 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {events.filter((e) => {
-                const q = searchTerm.trim().toLowerCase();
-                if (!q) return true;
-                const loc = e.location?.city || e.location?.name || e.location?.address || e.location || "";
-                return (
-                  String(e.title || "").toLowerCase().includes(q) ||
-                  String(e.sport || "").toLowerCase().includes(q) ||
-                  String(loc).toLowerCase().includes(q)
-                );
-              }).map((event) => (
-                <div
-                  key={event._id}
-                  onClick={() => openEventDetails(event._id)}
-                  className="rounded-xl p-6 hover:scale-105 cursor-pointer border relative"
-                  style={{ borderColor: 'var(--border)', background: 'var(--card)', color: 'var(--text)' }}
-                >
-                  {(() => {
-                    const isArchived = !!(event as any).archivedAt;
-                    const isPast = !isArchived && dayjs(event.startDate).isBefore(dayjs());
-                    return (
-                      <>
-                        {(isArchived || isPast) && (
-                          <div className="absolute top-3 left-3 z-10">
-                            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-900/50 dark:text-gray-400">
-                              {isArchived ? 'Past' : 'Past'}
+              {events
+                .filter((e) => {
+                  const q = searchTerm.trim().toLowerCase();
+                  if (!q) return true;
+                  const loc =
+                    e.location?.city || e.location?.name || e.location?.address || e.location || '';
+                  return (
+                    String(e.title || '')
+                      .toLowerCase()
+                      .includes(q) ||
+                    String(e.sport || '')
+                      .toLowerCase()
+                      .includes(q) ||
+                    String(loc).toLowerCase().includes(q)
+                  );
+                })
+                .map((event) => (
+                  <div
+                    key={event._id}
+                    onClick={() => openEventDetails(event._id)}
+                    className="rounded-xl p-6 hover:scale-105 cursor-pointer border relative"
+                    style={{
+                      borderColor: 'var(--border)',
+                      background: 'var(--card)',
+                      color: 'var(--text)',
+                    }}
+                  >
+                    {(() => {
+                      const isArchived = !!(event as any).archivedAt;
+                      const isPast = !isArchived && dayjs(event.startDate).isBefore(dayjs());
+                      return (
+                        <>
+                          {(isArchived || isPast) && (
+                            <div className="absolute top-3 left-3 z-10">
+                              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-900/50 dark:text-gray-400">
+                                {isArchived ? 'Past' : 'Past'}
+                              </span>
+                            </div>
+                          )}
+                          <div className={isPast || isArchived ? 'opacity-70' : ''}></div>
+                        </>
+                      );
+                    })()}
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-heading mb-1">{event.title}</h3>
+                        <p className="text-sm text-theme-secondary">{event.sport}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        {event.participants?.some(
+                          (p: any) => p?._id === currentUser._id || p === currentUser._id,
+                        ) && (
+                          <div className="bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-600/30">
+                            <span className="text-emerald-300 font-semibold text-[11px] tracking-wide">
+                              Joined
                             </span>
                           </div>
                         )}
-                        <div className={isPast || isArchived ? 'opacity-70' : ''}></div>
-                      </>
-                    );
-                  })()}
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-bold text-heading mb-1">{event.title}</h3>
-                      <p className="text-sm text-theme-secondary">{event.sport}</p>
+                      </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      {event.participants?.some((p: any) => p?._id === currentUser._id || p === currentUser._id) && (
-                        <div className="bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-600/30">
-                          <span className="text-emerald-300 font-semibold text-[11px] tracking-wide">Joined</span>
+
+                    <p className="text-theme-secondary text-sm mb-4 line-clamp-2">
+                      {event.description}
+                    </p>
+
+                    <div className="space-y-2 text-sm text-theme-secondary mb-4">
+                      <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-2 text-theme-secondary" />
+                        {dayjs(event.startDate || event.date).format('MMM D, YYYY')} at {event.time}
+                      </div>
+                      <div className="flex items-center">
+                        <MapPin className="w-4 h-4 mr-2 text-theme-secondary" />
+                        {event.location?.city ||
+                          event.location?.name ||
+                          event.location?.address ||
+                          event.location ||
+                          'Location TBA'}
+                      </div>
+                      <div className="flex items-center">
+                        <Users className="w-4 h-4 mr-2 text-theme-secondary" />
+                        {event.participants?.length || 0}/{event.capacity?.max || 0} participants
+                      </div>
+                      {event.organizer && (
+                        <div className="flex items-center">
+                          <img
+                            src={
+                              event.organizer.avatar ||
+                              `https://ui-avatars.com/api/?name=${event.organizer.username}`
+                            }
+                            alt={event.organizer.username}
+                            className="w-5 h-5 rounded-full mr-2 border border-neutral-600"
+                          />
+                          <span className="text-theme-secondary text-xs">
+                            by {event.organizer.username}
+                          </span>
                         </div>
                       )}
                     </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleJoinEvent(event._id);
+                      }}
+                      disabled={
+                        !!(event as any).archivedAt ||
+                        event.participants.some(
+                          (p: any) => p._id === currentUser._id || p === currentUser._id,
+                        ) ||
+                        !!joiningEvent[event._id]
+                      }
+                      className={`w-full py-2 rounded-lg font-semibold transition-all ${
+                        (event as any).archivedAt
+                          ? 'btn opacity-50 cursor-not-allowed'
+                          : event.participants.some(
+                                (p: any) => p._id === currentUser._id || p === currentUser._id,
+                              )
+                            ? 'btn opacity-50 cursor-not-allowed'
+                            : 'btn'
+                      }`}
+                    >
+                      {(event as any).archivedAt
+                        ? 'Past Event'
+                        : event.participants.some(
+                              (p: any) => p._id === currentUser._id || p === currentUser._id,
+                            )
+                          ? 'Joined'
+                          : !!joiningEvent[event._id]
+                            ? 'Joining...'
+                            : 'Join Event'}
+                    </button>
                   </div>
-
-                  <p className="text-theme-secondary text-sm mb-4 line-clamp-2">{event.description}</p>
-
-                  <div className="space-y-2 text-sm text-theme-secondary mb-4">
-                    <div className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-2 text-theme-secondary" />
-                      {dayjs(event.startDate || event.date).format("MMM D, YYYY")} at {event.time}
-                    </div>
-                    <div className="flex items-center">
-                      <MapPin className="w-4 h-4 mr-2 text-theme-secondary" />
-                      {event.location?.city || event.location?.name || event.location?.address || event.location || "Location TBA"}
-                    </div>
-                    <div className="flex items-center">
-                      <Users className="w-4 h-4 mr-2 text-theme-secondary" />
-                      {event.participants?.length || 0}/{event.capacity?.max || 0} participants
-                    </div>
-                    {event.organizer && (
-                      <div className="flex items-center">
-                        <img
-                          src={event.organizer.avatar || `https://ui-avatars.com/api/?name=${event.organizer.username}`}
-                          alt={event.organizer.username}
-                          className="w-5 h-5 rounded-full mr-2 border border-neutral-600"
-                        />
-                        <span className="text-theme-secondary text-xs">by {event.organizer.username}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleJoinEvent(event._id);
-                    }}
-                    disabled={
-                      !!(event as any).archivedAt ||
-                      event.participants.some((p: any) => p._id === currentUser._id || p === currentUser._id) ||
-                      !!joiningEvent[event._id]
-                    }
-                    className={`w-full py-2 rounded-lg font-semibold transition-all ${
-                      (event as any).archivedAt
-                        ? "btn opacity-50 cursor-not-allowed"
-                        : event.participants.some((p: any) => p._id === currentUser._id || p === currentUser._id)
-                        ? "btn opacity-50 cursor-not-allowed"
-                        : "btn"
-                    }`}
-                  >
-                    {(event as any).archivedAt
-                      ? "Past Event"
-                      : event.participants.some((p: any) => p._id === currentUser._id || p === currentUser._id)
-                      ? "Joined"
-                      : (!!joiningEvent[event._id] ? "Joining..." : "Join Event")}
-                  </button>
-                </div>
-              ))}
+                ))}
             </div>
           )}
 
@@ -1061,7 +1170,10 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                   const resp = await axios.get(`${API_URL}/events/${evt._id}`);
                   setParticipantsModalEvent(resp.data);
                 } catch (e) {
-                  console.error("[Discover] Failed to fetch event for participants modal, using passed event:", e);
+                  console.error(
+                    '[Discover] Failed to fetch event for participants modal, using passed event:',
+                    e,
+                  );
                   setParticipantsModalEvent(evt);
                 }
                 setSelectedEvent(null);
@@ -1089,10 +1201,16 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   }
 
   // Services View
-  if (activeCategory === "services") {
+  if (activeCategory === 'services') {
     const servicesList = [
-      "All", "personal-training", "group-classes", "nutrition",
-      "physiotherapy", "sports-massage", "mental-coaching", "technique-analysis"
+      'All',
+      'personal-training',
+      'group-classes',
+      'nutrition',
+      'physiotherapy',
+      'sports-massage',
+      'mental-coaching',
+      'technique-analysis',
     ];
 
     return (
@@ -1112,10 +1230,12 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                 <h1 className="text-4xl font-bold text-heading mb-2">
                   Services <Stethoscope className="inline w-8 h-8 text-violet-300 ml-2" />
                 </h1>
-                <p className="text-theme-secondary">Find professional health and training services</p>
+                <p className="text-theme-secondary">
+                  Find professional health and training services
+                </p>
               </div>
               <button
-                onClick={() => window.location.href = "/#/my-events"}
+                onClick={() => (window.location.href = '/#/my-events')}
                 className="btn flex items-center gap-2"
               >
                 <Plus className="w-5 h-5" />
@@ -1142,14 +1262,14 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
             {servicesList.map((category) => (
               <button
                 key={category}
-                onClick={() => setFilterCategory(category === "All" ? "" : category)}
+                onClick={() => setFilterCategory(category === 'All' ? '' : category)}
                 className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all capitalize ${
-                  (category === "All" && !filterCategory) || filterCategory === category
-                    ? "bg-gradient-to-r from-cyan-500 to-purple-500 text-white"
-                    : "themed-card hover:opacity-90"
+                  (category === 'All' && !filterCategory) || filterCategory === category
+                    ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white'
+                    : 'themed-card hover:opacity-90'
                 }`}
               >
-                {category.replace(/-/g, " ")}
+                {category.replace(/-/g, ' ')}
               </button>
             ))}
           </div>
@@ -1160,12 +1280,18 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
           ) : services.filter((s) => {
               const q = searchTerm.trim().toLowerCase();
               if (!q) return true;
-              const city = s.location?.city || s.location?.address || "";
+              const city = s.location?.city || s.location?.address || '';
               return (
-                String(s.name || "").toLowerCase().includes(q) ||
-                String(s.category || "").toLowerCase().includes(q) ||
+                String(s.name || '')
+                  .toLowerCase()
+                  .includes(q) ||
+                String(s.category || '')
+                  .toLowerCase()
+                  .includes(q) ||
                 String(city).toLowerCase().includes(q) ||
-                String(s.provider?.username || "").toLowerCase().includes(q)
+                String(s.provider?.username || '')
+                  .toLowerCase()
+                  .includes(q)
               );
             }).length === 0 ? (
             <div className="text-center text-theme-secondary py-12">
@@ -1174,82 +1300,97 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
-              {services.filter((s) => {
-                const q = searchTerm.trim().toLowerCase();
-                if (!q) return true;
-                const city = s.location?.city || s.location?.address || "";
-                return (
-                  String(s.name || "").toLowerCase().includes(q) ||
-                  String(s.category || "").toLowerCase().includes(q) ||
-                  String(city).toLowerCase().includes(q) ||
-                  String(s.provider?.username || "").toLowerCase().includes(q)
-                );
-              }).map((service) => (
-                <div
-                  key={service._id}
-                  onClick={() => setSelectedService(service)}
-                  className="rounded-xl p-6 transition-all cursor-pointer themed-card"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-heading mb-2">{service.name}</h3>
-                      <p className="text-sm text-theme-secondary capitalize">{service.category.replace(/-/g, " ")}</p>
+              {services
+                .filter((s) => {
+                  const q = searchTerm.trim().toLowerCase();
+                  if (!q) return true;
+                  const city = s.location?.city || s.location?.address || '';
+                  return (
+                    String(s.name || '')
+                      .toLowerCase()
+                      .includes(q) ||
+                    String(s.category || '')
+                      .toLowerCase()
+                      .includes(q) ||
+                    String(city).toLowerCase().includes(q) ||
+                    String(s.provider?.username || '')
+                      .toLowerCase()
+                      .includes(q)
+                  );
+                })
+                .map((service) => (
+                  <div
+                    key={service._id}
+                    onClick={() => setSelectedService(service)}
+                    className="rounded-xl p-6 transition-all cursor-pointer themed-card"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-heading mb-2">{service.name}</h3>
+                        <p className="text-sm text-theme-secondary capitalize">
+                          {service.category.replace(/-/g, ' ')}
+                        </p>
+                      </div>
+                      <div className="badge">
+                        <span className="font-bold">
+                          ${service.pricing.amount}
+                          <span className="text-xs font-normal">/{service.pricing.type}</span>
+                        </span>
+                      </div>
                     </div>
-                    <div className="badge">
-                      <span className="font-bold">
-                        ${service.pricing.amount}
-                        <span className="text-xs font-normal">/{service.pricing.type}</span>
-                      </span>
-                    </div>
-                  </div>
 
-                  <p className="text-theme-secondary text-sm mb-4">{service.description}</p>
+                    <p className="text-theme-secondary text-sm mb-4">{service.description}</p>
 
-                  <div className="space-y-2 text-sm mb-4">
-                    <div className="flex items-center text-theme-secondary">
-                      <MapPin className="w-4 h-4 mr-2 text-theme-secondary" />
-                      {service.location?.city || service.location?.type || "Location not specified"}
-                    </div>
-                    {service.experience && (
+                    <div className="space-y-2 text-sm mb-4">
                       <div className="flex items-center text-theme-secondary">
-                        <Star className="w-4 h-4 mr-2 text-yellow-400" />
-                        {service.experience}
+                        <MapPin className="w-4 h-4 mr-2 text-theme-secondary" />
+                        {service.location?.city ||
+                          service.location?.type ||
+                          'Location not specified'}
+                      </div>
+                      {service.experience && (
+                        <div className="flex items-center text-theme-secondary">
+                          <Star className="w-4 h-4 mr-2 text-yellow-400" />
+                          {service.experience}
+                        </div>
+                      )}
+                    </div>
+
+                    {service.qualifications && service.qualifications.length > 0 && (
+                      <div className="mb-4">
+                        <div className="flex flex-wrap gap-2">
+                          {service.qualifications.slice(0, 3).map((qual, idx) => (
+                            <span key={idx} className="badge text-xs">
+                              {qual}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     )}
-                  </div>
 
-                  {service.qualifications && service.qualifications.length > 0 && (
-                    <div className="mb-4">
-                      <div className="flex flex-wrap gap-2">
-                        {service.qualifications.slice(0, 3).map((qual, idx) => (
-                          <span key={idx} className="badge text-xs">
-                            {qual}
-                          </span>
-                        ))}
-                      </div>
+                    <div className="flex items-center text-theme-secondary text-sm mb-4">
+                      <img
+                        src={
+                          service.provider.avatar ||
+                          `https://ui-avatars.com/api/?name=${service.provider.username}`
+                        }
+                        alt={service.provider.username}
+                        className="w-6 h-6 rounded-full mr-2"
+                      />
+                      <span>{service.provider.username}</span>
                     </div>
-                  )}
 
-                  <div className="flex items-center text-theme-secondary text-sm mb-4">
-                    <img
-                      src={service.provider.avatar || `https://ui-avatars.com/api/?name=${service.provider.username}`}
-                      alt={service.provider.username}
-                      className="w-6 h-6 rounded-full mr-2"
-                    />
-                    <span>{service.provider.username}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMessageUser(service.provider._id);
+                      }}
+                      className="btn w-full text-sm justify-center"
+                    >
+                      Contact Provider
+                    </button>
                   </div>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleMessageUser(service.provider._id);
-                    }}
-                    className="btn w-full text-sm justify-center"
-                  >
-                    Contact Provider
-                  </button>
-                </div>
-              ))}
+                ))}
             </div>
           )}
 
@@ -1269,10 +1410,15 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   }
 
   // Marketplace View
-  if (activeCategory === "marketplace") {
+  if (activeCategory === 'marketplace') {
     const categories = [
-      "All", "Sports Equipment", "Apparel & Clothing", "Footwear",
-      "Accessories", "Supplements & Nutrition", "Fitness Tech & Wearables"
+      'All',
+      'Sports Equipment',
+      'Apparel & Clothing',
+      'Footwear',
+      'Accessories',
+      'Supplements & Nutrition',
+      'Fitness Tech & Wearables',
     ];
 
     return (
@@ -1302,7 +1448,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                 placeholder="Search items..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && fetchMarketplaceItems()}
+                onKeyDown={(e) => e.key === 'Enter' && fetchMarketplaceItems()}
                 className="w-full input pl-12 pr-4 py-3 rounded-lg"
               />
             </div>
@@ -1311,11 +1457,11 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
               {categories.map((category) => (
                 <button
                   key={category}
-                  onClick={() => setFilterCategory(category === "All" ? "" : category)}
+                  onClick={() => setFilterCategory(category === 'All' ? '' : category)}
                   className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
-                    (category === "All" && !filterCategory) || filterCategory === category
-                      ? "bg-gradient-to-r from-cyan-500 to-purple-500 text-white"
-                      : "themed-card hover:opacity-90"
+                    (category === 'All' && !filterCategory) || filterCategory === category
+                      ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white'
+                      : 'themed-card hover:opacity-90'
                   }`}
                 >
                   {category}
@@ -1375,15 +1521,18 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                         <span className="text-xs text-theme-secondary ml-1">{item.currency}</span>
                       </div>
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleLikeItem(item._id); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLikeItem(item._id);
+                        }}
                         disabled={!!likingItem[item._id]}
                         className="p-2 themed-card hover:opacity-80 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Heart
                           className={`w-5 h-5 ${
                             item.likes.includes(currentUser._id)
-                              ? "fill-red-500 text-red-500"
-                              : "text-theme-secondary"
+                              ? 'fill-red-500 text-red-500'
+                              : 'text-theme-secondary'
                           }`}
                         />
                       </button>
@@ -1391,7 +1540,10 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
 
                     <div className="flex items-center text-xs text-theme-secondary mb-3">
                       <img
-                        src={item.seller.avatar || `https://ui-avatars.com/api/?name=${item.seller.username}`}
+                        src={
+                          item.seller.avatar ||
+                          `https://ui-avatars.com/api/?name=${item.seller.username}`
+                        }
                         alt={item.seller.username}
                         className="w-5 h-5 rounded-full mr-2"
                       />
@@ -1461,9 +1613,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   }
 
   // Other Events View (posts tagged as events)
-  if (activeCategory === "other") {
-    
-
+  if (activeCategory === 'other') {
     return (
       <div className="min-h-screen themed-page">
         <div className="max-w-6xl mx-auto px-4 py-8">
@@ -1481,7 +1631,9 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                 <h1 className="text-4xl font-bold text-heading mb-2">
                   Other Events <Calendar className="inline w-8 h-8 text-blue-300 ml-2" />
                 </h1>
-                <p className="text-theme-secondary">Community posts related to events and announcements</p>
+                <p className="text-theme-secondary">
+                  Community posts related to events and announcements
+                </p>
               </div>
               <button
                 onClick={() => setCreateOtherOpen((v) => !v)}
@@ -1535,15 +1687,17 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                     placeholder="Comma-separated tags (default: event)"
                   />
                   {/* Tag chips preview (derived, not hard-coded) */}
-                  {String(newOther.tags || "").trim() && (
+                  {String(newOther.tags || '').trim() && (
                     <div className="flex flex-wrap gap-2 mt-2">
                       {String(newOther.tags)
-                        .split(",")
+                        .split(',')
                         .map((t) => t.trim())
                         .filter(Boolean)
                         .slice(0, 8)
                         .map((t, idx) => (
-                          <span key={idx} className="badge text-xs">{t}</span>
+                          <span key={idx} className="badge text-xs">
+                            {t}
+                          </span>
                         ))}
                     </div>
                   )}
@@ -1551,15 +1705,26 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                 <div>
                   <label className="text-sm text-theme-secondary">Image</label>
                   <div className="flex items-center gap-3 mt-1">
-                    <input id="other-image-upload" type="file" accept="image/*" onChange={handleOtherImageUpload} className="hidden" />
-                    <label htmlFor="other-image-upload" className="px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium cursor-pointer inline-flex items-center gap-2">
+                    <input
+                      id="other-image-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleOtherImageUpload}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="other-image-upload"
+                      className="px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium cursor-pointer inline-flex items-center gap-2"
+                    >
                       <ImageIcon className="w-4 h-4" /> Upload Image
                     </label>
-                    {uploadingOtherImage && <span className="text-xs text-theme-secondary">Uploading...</span>}
+                    {uploadingOtherImage && (
+                      <span className="text-xs text-theme-secondary">Uploading...</span>
+                    )}
                     {newOther.imageUrl && (
                       <button
                         type="button"
-                        onClick={() => setNewOther((p) => ({ ...p, imageUrl: "" }))}
+                        onClick={() => setNewOther((p) => ({ ...p, imageUrl: '' }))}
                         className="px-2 py-1 bg-slate-700 hover:bg-slate-800 text-white rounded text-xs"
                       >
                         Remove
@@ -1567,8 +1732,15 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                     )}
                   </div>
                   {newOther.imageUrl && (
-                    <div className="mt-3 rounded-lg overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
-                      <img src={newOther.imageUrl} alt="Preview" className="w-full h-40 object-cover" />
+                    <div
+                      className="mt-3 rounded-lg overflow-hidden border"
+                      style={{ borderColor: 'var(--border)' }}
+                    >
+                      <img
+                        src={newOther.imageUrl}
+                        alt="Preview"
+                        className="w-full h-40 object-cover"
+                      />
                     </div>
                   )}
                 </div>
@@ -1577,11 +1749,16 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                 <button
                   className="btn"
                   onClick={handleCreateOther}
-                  disabled={uploadingOtherImage || !(newOther.title.trim() || newOther.caption.trim() || newOther.imageUrl)}
+                  disabled={
+                    uploadingOtherImage ||
+                    !(newOther.title.trim() || newOther.caption.trim() || newOther.imageUrl)
+                  }
                 >
-                  {uploadingOtherImage ? "Uploading..." : "Publish"}
+                  {uploadingOtherImage ? 'Uploading...' : 'Publish'}
                 </button>
-                <button className="btn" onClick={() => setCreateOtherOpen(false)}>Cancel</button>
+                <button className="btn" onClick={() => setCreateOtherOpen(false)}>
+                  Cancel
+                </button>
               </div>
             </div>
           )}
@@ -1605,11 +1782,15 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
           ) : otherEvents.filter((p) => {
               const q = searchTerm.trim().toLowerCase();
               if (!q) return true;
-              const tagStr = Array.isArray(p.tags) ? p.tags.join(" ") : "";
+              const tagStr = Array.isArray(p.tags) ? p.tags.join(' ') : '';
               return (
-                String(p.caption || "").toLowerCase().includes(q) ||
+                String(p.caption || '')
+                  .toLowerCase()
+                  .includes(q) ||
                 String(tagStr).toLowerCase().includes(q) ||
-                String(p.location || "").toLowerCase().includes(q)
+                String(p.location || '')
+                  .toLowerCase()
+                  .includes(q)
               );
             }).length === 0 ? (
             <div className="text-center text-theme-secondary py-12">
@@ -1618,93 +1799,151 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {otherEvents.filter((p) => {
-                const q = searchTerm.trim().toLowerCase();
-                if (!q) return true;
-                const tagStr = Array.isArray(p.tags) ? p.tags.join(" ") : "";
-                return (
-                  String(p.title || "").toLowerCase().includes(q) ||
-                  String(p.caption || "").toLowerCase().includes(q) ||
-                  String(tagStr).toLowerCase().includes(q) ||
-                  String(p.location || "").toLowerCase().includes(q)
-                );
-              }).map((post) => (
-                <div key={post._id} className="rounded-xl overflow-hidden themed-card cursor-pointer" onClick={() => openOtherDetails(post._id)}>
-                  {/* Poster Image */}
-                  {post.imageUrl && (
-                    <div className="w-full h-48 sm:h-56 md:h-64 bg-black/10">
-                      <img src={post.imageUrl} alt={post.title || post.caption || 'Event'} className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                  <div className="p-4">
-                    <h3 className="text-base sm:text-lg font-bold text-heading mb-2 line-clamp-2">{post.title || post.caption || "Untitled"}</h3>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="text-xs text-theme-secondary flex items-center gap-2">
-                        <Users className="w-4 h-4" />
-                        <span>{(post.participants?.length || 0)} joined</span>
+              {otherEvents
+                .filter((p) => {
+                  const q = searchTerm.trim().toLowerCase();
+                  if (!q) return true;
+                  const tagStr = Array.isArray(p.tags) ? p.tags.join(' ') : '';
+                  return (
+                    String(p.title || '')
+                      .toLowerCase()
+                      .includes(q) ||
+                    String(p.caption || '')
+                      .toLowerCase()
+                      .includes(q) ||
+                    String(tagStr).toLowerCase().includes(q) ||
+                    String(p.location || '')
+                      .toLowerCase()
+                      .includes(q)
+                  );
+                })
+                .map((post) => (
+                  <div
+                    key={post._id}
+                    className="rounded-xl overflow-hidden themed-card cursor-pointer"
+                    onClick={() => openOtherDetails(post._id)}
+                  >
+                    {/* Poster Image */}
+                    {post.imageUrl && (
+                      <div className="w-full h-48 sm:h-56 md:h-64 bg-black/10">
+                        <img
+                          src={post.imageUrl}
+                          alt={post.title || post.caption || 'Event'}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      {(post.participants || []).some((p: any) => p?._id === currentUser._id || p === currentUser._id) ? (
-                        <span className="px-2 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/20 border border-emerald-600/30 text-emerald-300">Joined</span>
-                      ) : null}
-                    </div>
-                  {Array.isArray(post.tags) && post.tags.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      {post.tags.slice(0, 4).map((t: string, idx: number) => (
-                        <span key={idx} className="px-2 py-0.5 rounded-full text-xs text-cyan-600 dark:text-cyan-400" style={{ border: '1px solid var(--border)' }}>{t}</span>
-                      ))}
-                      {post.tags.length > 4 && (
-                        <span className="px-2 py-0.5 rounded-full text-xs text-theme-secondary" style={{ border: '1px solid var(--border)' }}>…</span>
+                    )}
+                    <div className="p-4">
+                      <h3 className="text-base sm:text-lg font-bold text-heading mb-2 line-clamp-2">
+                        {post.title || post.caption || 'Untitled'}
+                      </h3>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="text-xs text-theme-secondary flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          <span>{post.participants?.length || 0} joined</span>
+                        </div>
+                        {(post.participants || []).some(
+                          (p: any) => p?._id === currentUser._id || p === currentUser._id,
+                        ) ? (
+                          <span className="px-2 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/20 border border-emerald-600/30 text-emerald-300">
+                            Joined
+                          </span>
+                        ) : null}
+                      </div>
+                      {Array.isArray(post.tags) && post.tags.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                          {post.tags.slice(0, 4).map((t: string, idx: number) => (
+                            <span
+                              key={idx}
+                              className="px-2 py-0.5 rounded-full text-xs text-cyan-600 dark:text-cyan-400"
+                              style={{ border: '1px solid var(--border)' }}
+                            >
+                              {t}
+                            </span>
+                          ))}
+                          {post.tags.length > 4 && (
+                            <span
+                              className="px-2 py-0.5 rounded-full text-xs text-theme-secondary"
+                              style={{ border: '1px solid var(--border)' }}
+                            >
+                              …
+                            </span>
+                          )}
+                        </div>
                       )}
+                      <div className="flex items-center text-xs text-theme-secondary mb-3">
+                        <img
+                          src={
+                            post.author?.avatar ||
+                            `https://ui-avatars.com/api/?name=${post.author?.username || 'User'}`
+                          }
+                          alt={post.author?.username || 'User'}
+                          className="w-5 h-5 rounded-full mr-2 border"
+                        />
+                        <span>{post.author?.username || 'Unknown'}</span>
+                        <span className="mx-2">•</span>
+                        <span>{dayjs(post.createdAt).fromNow()}</span>
+                      </div>
+                      <div className="grid grid-cols-1 gap-2">
+                        {(post.participants || []).some(
+                          (p: any) => p?._id === currentUser._id || p === currentUser._id,
+                        ) ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleLeaveOther(post._id);
+                            }}
+                            disabled={!!joiningOther[post._id]}
+                            className="px-3 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-sm font-medium w-full"
+                          >
+                            Leave
+                          </button>
+                        ) : (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleJoinOther(post._id);
+                            }}
+                            disabled={!!joiningOther[post._id]}
+                            className="px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium w-full"
+                          >
+                            Join
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  )}
-                  <div className="flex items-center text-xs text-theme-secondary mb-3">
-                    <img
-                      src={(post.author?.avatar) || `https://ui-avatars.com/api/?name=${post.author?.username || 'User'}`}
-                      alt={post.author?.username || 'User'}
-                      className="w-5 h-5 rounded-full mr-2 border"
-                    />
-                    <span>{post.author?.username || 'Unknown'}</span>
-                    <span className="mx-2">•</span>
-                    <span>{dayjs(post.createdAt).fromNow()}</span>
                   </div>
-                    <div className="grid grid-cols-1 gap-2">
-                      {(post.participants || []).some((p: any) => p?._id === currentUser._id || p === currentUser._id) ? (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleLeaveOther(post._id); }}
-                          disabled={!!joiningOther[post._id]}
-                          className="px-3 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-sm font-medium w-full"
-                        >
-                          Leave
-                        </button>
-                      ) : (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleJoinOther(post._id); }}
-                          disabled={!!joiningOther[post._id]}
-                          className="px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium w-full"
-                        >
-                          Join
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
           {/* Other Event Detail Modal */}
           {selectedOther && (
             <div className="fixed inset-0 z-50 flex items-center justify-center">
-              <div className="absolute inset-0 bg-black/50" onClick={() => setSelectedOther(null)} />
+              <div
+                className="absolute inset-0 bg-black/50"
+                onClick={() => setSelectedOther(null)}
+              />
               <div className="relative w-full max-w-2xl mx-3 sm:mx-4 mt-14 mb-10 rounded-2xl themed-card overflow-hidden shadow-2xl">
                 {selectedOther.imageUrl && (
                   <div className="w-full h-40 sm:h-48">
-                    <img src={selectedOther.imageUrl} alt={selectedOther.title || selectedOther.caption || 'Event'} className="w-full h-full object-cover" />
+                    <img
+                      src={selectedOther.imageUrl}
+                      alt={selectedOther.title || selectedOther.caption || 'Event'}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 )}
                 <div className="p-4 sm:p-6">
                   <div className="flex items-start justify-between mb-3">
-                    <h2 className="text-lg sm:text-xl font-bold text-heading line-clamp-2">{selectedOther.title || selectedOther.caption || 'Untitled'}</h2>
-                    <button onClick={() => setSelectedOther(null)} className="px-3 py-1 rounded-lg themed-card text-sm">Close</button>
+                    <h2 className="text-lg sm:text-xl font-bold text-heading line-clamp-2">
+                      {selectedOther.title || selectedOther.caption || 'Untitled'}
+                    </h2>
+                    <button
+                      onClick={() => setSelectedOther(null)}
+                      className="px-3 py-1 rounded-lg themed-card text-sm"
+                    >
+                      Close
+                    </button>
                   </div>
                   {selectedOther.location && (
                     <div className="text-sm text-theme-secondary mb-2 flex items-center gap-2">
@@ -1715,21 +1954,38 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                   {Array.isArray(selectedOther.tags) && selectedOther.tags.length > 0 && (
                     <div className="flex flex-wrap items-center gap-2 mb-3">
                       {selectedOther.tags.slice(0, 6).map((t: string, idx: number) => (
-                        <span key={idx} className="px-2 py-0.5 rounded-full text-xs text-cyan-600 dark:text-cyan-400" style={{ border: '1px solid var(--border)' }}>{t}</span>
+                        <span
+                          key={idx}
+                          className="px-2 py-0.5 rounded-full text-xs text-cyan-600 dark:text-cyan-400"
+                          style={{ border: '1px solid var(--border)' }}
+                        >
+                          {t}
+                        </span>
                       ))}
                       {selectedOther.tags.length > 6 && (
-                        <span className="px-2 py-0.5 rounded-full text-xs text-theme-secondary" style={{ border: '1px solid var(--border)' }}>…</span>
+                        <span
+                          className="px-2 py-0.5 rounded-full text-xs text-theme-secondary"
+                          style={{ border: '1px solid var(--border)' }}
+                        >
+                          …
+                        </span>
                       )}
                     </div>
                   )}
-                  <p className="text-sm text-theme-secondary whitespace-pre-line mb-4">{selectedOther.caption}</p>
+                  <p className="text-sm text-theme-secondary whitespace-pre-line mb-4">
+                    {selectedOther.caption}
+                  </p>
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-xs text-theme-secondary flex items-center gap-2">
                       <Users className="w-4 h-4" />
-                      <span>{(selectedOther.participants?.length || 0)} joined</span>
+                      <span>{selectedOther.participants?.length || 0} joined</span>
                     </div>
-                    {(selectedOther.participants || []).some((p: any) => p?._id === currentUser._id || p === currentUser._id) ? (
-                      <span className="px-2 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/20 border border-emerald-600/30 text-emerald-300">Joined</span>
+                    {(selectedOther.participants || []).some(
+                      (p: any) => p?._id === currentUser._id || p === currentUser._id,
+                    ) ? (
+                      <span className="px-2 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/20 border border-emerald-600/30 text-emerald-300">
+                        Joined
+                      </span>
                     ) : null}
                   </div>
                   {/* Author Info (uniform with Sports Events) */}
@@ -1741,7 +1997,10 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                           onClick={() => onViewProfile && onViewProfile(selectedOther.author._id)}
                         >
                           <img
-                            src={selectedOther.author.avatar || `https://ui-avatars.com/api/?name=${selectedOther.author.username || 'User'}`}
+                            src={
+                              selectedOther.author.avatar ||
+                              `https://ui-avatars.com/api/?name=${selectedOther.author.username || 'User'}`
+                            }
                             alt={selectedOther.author.username || 'User'}
                             className="w-10 h-10 rounded-full border"
                           />
@@ -1749,11 +2008,15 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                             <p className="text-heading font-semibold hover:text-cyan-400 transition-colors">
                               {selectedOther.author.username || 'User'}
                             </p>
-                            <p className="text-theme-secondary text-sm">Post Author · Click to view profile</p>
+                            <p className="text-theme-secondary text-sm">
+                              Post Author · Click to view profile
+                            </p>
                           </div>
                         </div>
                         <button
-                          onClick={() => onStartConversation && onStartConversation(selectedOther.author._id)}
+                          onClick={() =>
+                            onStartConversation && onStartConversation(selectedOther.author._id)
+                          }
                           className="btn text-sm w-full sm:w-auto mt-2 sm:mt-0"
                         >
                           Message Author
@@ -1763,7 +2026,9 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                   )}
 
                   <div className="grid grid-cols-2 gap-2">
-                    {(selectedOther.participants || []).some((p: any) => p?._id === currentUser._id || p === currentUser._id) ? (
+                    {(selectedOther.participants || []).some(
+                      (p: any) => p?._id === currentUser._id || p === currentUser._id,
+                    ) ? (
                       <button
                         className="px-3 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-sm font-medium"
                         disabled={!!joiningOther[selectedOther._id]}

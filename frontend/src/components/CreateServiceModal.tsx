@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { X, Stethoscope, DollarSign, MapPin, Award, Clock, Camera, Info } from "lucide-react";
-import axios from "axios";
-import { API_URL } from "../config/api";
-import ImageUpload from "./ImageUpload";
+import React, { useState } from 'react';
+import { X, Stethoscope, DollarSign, MapPin, Award, Clock, Camera, Info } from 'lucide-react';
+import axios from 'axios';
+import { API_URL } from '../config/api';
+import ImageUpload from './ImageUpload';
 
-const API = API_URL.replace(/\/api$/, "");
+const API = API_URL.replace(/\/api$/, '');
 
 interface CreateServiceModalProps {
   isOpen: boolean;
@@ -15,56 +15,73 @@ interface CreateServiceModalProps {
 }
 
 const serviceCategories = [
-  { value: "personal-training", label: "Personal Training", icon: "💪" },
-  { value: "group-classes", label: "Group Classes", icon: "👥" },
-  { value: "nutrition", label: "Nutrition & Diet", icon: "🥗" },
-  { value: "physiotherapy", label: "Physiotherapy", icon: "🏥" },
-  { value: "sports-massage", label: "Sports Massage", icon: "💆" },
-  { value: "mental-coaching", label: "Mental Coaching", icon: "🧠" },
-  { value: "technique-analysis", label: "Technique Analysis", icon: "📊" },
-  { value: "custom-program", label: "Custom Program", icon: "📋" },
-  { value: "online-coaching", label: "Online Coaching", icon: "💻" },
-  { value: "other", label: "Other", icon: "🔧" },
+  { value: 'personal-training', label: 'Personal Training', icon: '💪' },
+  { value: 'group-classes', label: 'Group Classes', icon: '👥' },
+  { value: 'nutrition', label: 'Nutrition & Diet', icon: '🥗' },
+  { value: 'physiotherapy', label: 'Physiotherapy', icon: '🏥' },
+  { value: 'sports-massage', label: 'Sports Massage', icon: '💆' },
+  { value: 'mental-coaching', label: 'Mental Coaching', icon: '🧠' },
+  { value: 'technique-analysis', label: 'Technique Analysis', icon: '📊' },
+  { value: 'custom-program', label: 'Custom Program', icon: '📋' },
+  { value: 'online-coaching', label: 'Online Coaching', icon: '💻' },
+  { value: 'other', label: 'Other', icon: '🔧' },
 ];
 
 const sports = [
-  "Football", "Basketball", "Tennis", "Running", "Swimming", "Cycling",
-  "Gym/Fitness", "Volleyball", "Baseball", "Golf", "Boxing", "MMA",
-  "Yoga", "Pilates", "Crossfit", "Martial Arts", "Rugby", "Cricket",
-  "General Sports", "Multiple Sports", "Other"
+  'Football',
+  'Basketball',
+  'Tennis',
+  'Running',
+  'Swimming',
+  'Cycling',
+  'Gym/Fitness',
+  'Volleyball',
+  'Baseball',
+  'Golf',
+  'Boxing',
+  'MMA',
+  'Yoga',
+  'Pilates',
+  'Crossfit',
+  'Martial Arts',
+  'Rugby',
+  'Cricket',
+  'General Sports',
+  'Multiple Sports',
+  'Other',
 ];
 
 const pricingTypes = [
-  { value: "per-session", label: "Per Session" },
-  { value: "per-hour", label: "Per Hour" },
-  { value: "package", label: "Package Deal" },
-  { value: "monthly", label: "Monthly Subscription" },
-  { value: "custom", label: "Custom Pricing" },
+  { value: 'per-session', label: 'Per Session' },
+  { value: 'per-hour', label: 'Per Hour' },
+  { value: 'package', label: 'Package Deal' },
+  { value: 'monthly', label: 'Monthly Subscription' },
+  { value: 'custom', label: 'Custom Pricing' },
 ];
 
 const locationTypes = [
-  { value: "in-person", label: "In-Person" },
-  { value: "online", label: "Online" },
-  { value: "hybrid", label: "Hybrid (Both)" },
+  { value: 'in-person', label: 'In-Person' },
+  { value: 'online', label: 'Online' },
+  { value: 'hybrid', label: 'Hybrid (Both)' },
 ];
 
 const CURRENCIES = [
-  { code: "USD", symbol: "$", name: "US Dollar" },
-  { code: "EUR", symbol: "€", name: "Euro" },
-  { code: "GBP", symbol: "£", name: "British Pound" },
-  { code: "KES", symbol: "KSh", name: "Kenyan Shilling" },
-  { code: "NGN", symbol: "₦", name: "Nigerian Naira" },
-  { code: "ZAR", symbol: "R", name: "South African Rand" },
-  { code: "GHS", symbol: "GH₵", name: "Ghanaian Cedi" },
-  { code: "TZS", symbol: "TSh", name: "Tanzanian Shilling" },
-  { code: "UGX", symbol: "USh", name: "Ugandan Shilling" },
-  { code: "INR", symbol: "₹", name: "Indian Rupee" },
-  { code: "JPY", symbol: "¥", name: "Japanese Yen" },
-  { code: "CNY", symbol: "¥", name: "Chinese Yuan" },
-  { code: "AUD", symbol: "A$", name: "Australian Dollar" },
-  { code: "CAD", symbol: "C$", name: "Canadian Dollar" },
-  { code: "BRL", symbol: "R$", name: "Brazilian Real" },
-  { code: "MXN", symbol: "MX$", name: "Mexican Peso" },
+  { code: 'USD', symbol: '$', name: 'US Dollar' },
+  { code: 'EUR', symbol: '€', name: 'Euro' },
+  { code: 'GBP', symbol: '£', name: 'British Pound' },
+  { code: 'KES', symbol: 'KSh', name: 'Kenyan Shilling' },
+  { code: 'NGN', symbol: '₦', name: 'Nigerian Naira' },
+  { code: 'ZAR', symbol: 'R', name: 'South African Rand' },
+  { code: 'GHS', symbol: 'GH₵', name: 'Ghanaian Cedi' },
+  { code: 'TZS', symbol: 'TSh', name: 'Tanzanian Shilling' },
+  { code: 'UGX', symbol: 'USh', name: 'Ugandan Shilling' },
+  { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+  { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
+  { code: 'CNY', symbol: '¥', name: 'Chinese Yuan' },
+  { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
+  { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
+  { code: 'BRL', symbol: 'R$', name: 'Brazilian Real' },
+  { code: 'MXN', symbol: 'MX$', name: 'Mexican Peso' },
 ];
 
 export default function CreateServiceModal({
@@ -75,32 +92,32 @@ export default function CreateServiceModal({
   editService,
 }: CreateServiceModalProps) {
   const [formData, setFormData] = useState({
-    name: editService?.name || "",
-    description: editService?.description || "",
-    category: editService?.category || "",
-    sport: editService?.sport || "",
-    pricingType: editService?.pricing?.type || "per-session",
-    amount: editService?.pricing?.amount || "",
-    currency: editService?.pricing?.currency || "USD",
-    paymentInstructions: editService?.paymentInstructions || "",
-    locationType: editService?.location?.type || "in-person",
-    city: editService?.location?.city || "",
-    address: editService?.location?.address || "",
-    duration: editService?.duration?.value || "60",
-    durationUnit: editService?.duration?.unit || "minutes",
-    qualifications: editService?.qualifications?.join(", ") || "",
-    experience: editService?.experience || "",
+    name: editService?.name || '',
+    description: editService?.description || '',
+    category: editService?.category || '',
+    sport: editService?.sport || '',
+    pricingType: editService?.pricing?.type || 'per-session',
+    amount: editService?.pricing?.amount || '',
+    currency: editService?.pricing?.currency || 'USD',
+    paymentInstructions: editService?.paymentInstructions || '',
+    locationType: editService?.location?.type || 'in-person',
+    city: editService?.location?.city || '',
+    address: editService?.location?.address || '',
+    duration: editService?.duration?.value || '60',
+    durationUnit: editService?.duration?.unit || 'minutes',
+    qualifications: editService?.qualifications?.join(', ') || '',
+    experience: editService?.experience || '',
   });
 
   const [images, setImages] = useState<string[]>(editService?.images || []);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
@@ -125,7 +142,7 @@ export default function CreateServiceModal({
           address: formData.address,
         },
         qualifications: formData.qualifications
-          .split(",")
+          .split(',')
           .map((q: string) => q.trim())
           .filter((q: string) => q),
         experience: formData.experience,
@@ -146,16 +163,14 @@ export default function CreateServiceModal({
       onServiceCreated();
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to create service");
+      setError(err.response?.data?.error || 'Failed to create service');
     } finally {
       setLoading(false);
     }
   };
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -168,13 +183,10 @@ export default function CreateServiceModal({
           <div className="flex items-center">
             <Stethoscope className="w-6 h-6 text-white mr-3" />
             <h2 className="text-2xl font-bold text-white">
-              {editService ? "Edit Service" : "Create New Service"}
+              {editService ? 'Edit Service' : 'Create New Service'}
             </h2>
           </div>
-          <button
-            onClick={onClose}
-            className="text-white/80 hover:text-white transition-colors"
-          >
+          <button onClick={onClose} className="text-white/80 hover:text-white transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -189,9 +201,7 @@ export default function CreateServiceModal({
 
           {/* Service Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Service Name *
-            </label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Service Name *</label>
             <input
               type="text"
               name="name"
@@ -213,13 +223,11 @@ export default function CreateServiceModal({
                 <button
                   key={cat.value}
                   type="button"
-                  onClick={() =>
-                    setFormData({ ...formData, category: cat.value })
-                  }
+                  onClick={() => setFormData({ ...formData, category: cat.value })}
                   className={`p-3 rounded-lg border transition-all ${
                     formData.category === cat.value
-                      ? "bg-purple-600 border-purple-400 text-white"
-                      : "bg-white/5 border-white/10 text-gray-300 hover:border-purple-400/50"
+                      ? 'bg-purple-600 border-purple-400 text-white'
+                      : 'bg-white/5 border-white/10 text-gray-300 hover:border-purple-400/50'
                   }`}
                 >
                   <div className="text-2xl mb-1">{cat.icon}</div>
@@ -231,9 +239,7 @@ export default function CreateServiceModal({
 
           {/* Sport */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Sport/Activity *
-            </label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Sport/Activity *</label>
             <select
               name="sport"
               value={formData.sport}
@@ -252,9 +258,7 @@ export default function CreateServiceModal({
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Description *
-            </label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Description *</label>
             <textarea
               name="description"
               value={formData.description}
@@ -272,12 +276,7 @@ export default function CreateServiceModal({
               <Camera className="w-4 h-4 text-purple-400" />
               Service Image
             </label>
-            <ImageUpload
-              images={images}
-              onImagesChange={setImages}
-              maxImages={1}
-              token={token}
-            />
+            <ImageUpload images={images} onImagesChange={setImages} maxImages={1} token={token} />
           </div>
 
           {/* Pricing & Payment */}
@@ -308,9 +307,7 @@ export default function CreateServiceModal({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Currency *
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Currency *</label>
                 <select
                   name="currency"
                   value={formData.currency}
@@ -328,7 +325,7 @@ export default function CreateServiceModal({
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Amount ({CURRENCIES.find(c => c.code === formData.currency)?.symbol}) *
+                  Amount ({CURRENCIES.find((c) => c.code === formData.currency)?.symbol}) *
                 </label>
                 <input
                   type="number"
@@ -378,19 +375,25 @@ export default function CreateServiceModal({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Unit
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Unit</label>
               <select
                 name="durationUnit"
                 value={formData.durationUnit}
                 onChange={handleChange}
                 className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400/50"
               >
-                <option value="minutes" className="bg-slate-800">Minutes</option>
-                <option value="hours" className="bg-slate-800">Hours</option>
-                <option value="days" className="bg-slate-800">Days</option>
-                <option value="weeks" className="bg-slate-800">Weeks</option>
+                <option value="minutes" className="bg-slate-800">
+                  Minutes
+                </option>
+                <option value="hours" className="bg-slate-800">
+                  Hours
+                </option>
+                <option value="days" className="bg-slate-800">
+                  Days
+                </option>
+                <option value="weeks" className="bg-slate-800">
+                  Weeks
+                </option>
               </select>
             </div>
           </div>
@@ -406,13 +409,11 @@ export default function CreateServiceModal({
                 <button
                   key={type.value}
                   type="button"
-                  onClick={() =>
-                    setFormData({ ...formData, locationType: type.value })
-                  }
+                  onClick={() => setFormData({ ...formData, locationType: type.value })}
                   className={`py-3 rounded-lg border transition-all ${
                     formData.locationType === type.value
-                      ? "bg-purple-600 border-purple-400 text-white"
-                      : "bg-white/5 border-white/10 text-gray-300 hover:border-purple-400/50"
+                      ? 'bg-purple-600 border-purple-400 text-white'
+                      : 'bg-white/5 border-white/10 text-gray-300 hover:border-purple-400/50'
                   }`}
                 >
                   {type.label}
@@ -422,12 +423,10 @@ export default function CreateServiceModal({
           </div>
 
           {/* City & Address */}
-          {formData.locationType !== "online" && (
+          {formData.locationType !== 'online' && (
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  City
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">City</label>
                 <input
                   type="text"
                   name="city"
@@ -438,9 +437,7 @@ export default function CreateServiceModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Address
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Address</label>
                 <input
                   type="text"
                   name="address"
@@ -498,7 +495,7 @@ export default function CreateServiceModal({
               disabled={loading}
               className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Saving..." : editService ? "Update Service" : "Create Service"}
+              {loading ? 'Saving...' : editService ? 'Update Service' : 'Create Service'}
             </button>
           </div>
         </form>

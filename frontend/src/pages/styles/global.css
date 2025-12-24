@@ -22,15 +22,15 @@
 /* Dark theme variables (your dark-blue base) */
 :root.dark {
   --bg: #071029;
-  --card: rgba(15,23,42,0.35); /* slate-ish */
+  --card: rgba(15, 23, 42, 0.35); /* slate-ish */
   --muted: #9aa7bb;
   --text: #e6eef8;
-  --border: rgba(255,255,255,0.04);
-  --sidebar: rgba(3,7,18,0.6);
+  --border: rgba(255, 255, 255, 0.04);
+  --sidebar: rgba(3, 7, 18, 0.6);
   --accent-start: #22d3ee;
   --accent-end: #7c3aed;
   --btn-text: #0b1220;
-  --card-date-bg: rgba(148,163,184,0.06);
+  --card-date-bg: rgba(148, 163, 184, 0.06);
 }
 
 /* Apply global bg/text from variables */
@@ -75,17 +75,22 @@ body {
   font-weight: 600;
   padding: 0.55rem 0.9rem;
   border-radius: 0.6rem;
-  transition: transform .12s ease, box-shadow .12s ease;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(31, 41, 55, 0.12); }
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(31, 41, 55, 0.12);
+}
 
 /* Inputs */
 .input {
-  background: rgba(255,255,255,0.02);
+  background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border);
   color: var(--text);
   padding: 0.6rem;
@@ -107,12 +112,15 @@ body {
 
 /* Own messages */
 .msg-mine {
-  background: linear-gradient(135deg, rgba(34,211,238,0.10), rgba(124,58,237,0.08));
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(124, 58, 237, 0.08));
   border-color: rgba(34, 211, 238, 0.25);
 }
 
 /* Avatar */
-.avatar { border-radius: 0.5rem; object-fit: cover; }
+.avatar {
+  border-radius: 0.5rem;
+  object-fit: cover;
+}
 
 /* Card date pill */
 .card-date {
@@ -135,7 +143,10 @@ body {
 }
 
 /* Reaction active */
-.reacted { background: linear-gradient(90deg, var(--accent-start), var(--accent-end)); color: #071029; }
+.reacted {
+  background: linear-gradient(90deg, var(--accent-start), var(--accent-end));
+  color: #071029;
+}
 
 /* Reactions UI */
 .reaction-btn {
@@ -147,12 +158,20 @@ body {
   padding: 0.35rem 0.55rem;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: rgba(148,163,184,0.08);
+  background: rgba(148, 163, 184, 0.08);
   color: var(--text);
-  transition: background .15s ease, transform .15s ease;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
 }
-.reaction-btn:hover { background: rgba(148,163,184,0.14); transform: translateY(-1px); }
-.reaction-btn .count { font-size: 0.75rem; opacity: .7; }
+.reaction-btn:hover {
+  background: rgba(148, 163, 184, 0.14);
+  transform: translateY(-1px);
+}
+.reaction-btn .count {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
 
 .reaction-picker {
   position: absolute;
@@ -178,9 +197,14 @@ body {
   padding: 0.35rem 0.55rem;
   border-radius: 999px;
   border: 1px solid transparent;
-  transition: background .15s ease, border-color .15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
-.reaction-option:hover { background: rgba(148,163,184,0.12); border-color: var(--border); }
+.reaction-option:hover {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: var(--border);
+}
 
 .reaction-chip {
   display: inline-flex;
@@ -189,10 +213,12 @@ body {
   padding: 0.25rem 0.5rem;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: rgba(148,163,184,0.10);
+  background: rgba(148, 163, 184, 0.1);
   font-size: 0.8rem;
 }
-.reaction-chip.mine { outline: 2px solid rgba(124,58,237,0.35); }
+.reaction-chip.mine {
+  outline: 2px solid rgba(124, 58, 237, 0.35);
+}
 
 /* composer */
 .composer {
@@ -202,10 +228,17 @@ body {
 }
 
 /* small util */
-.text-muted { color: var(--muted); }
+.text-muted {
+  color: var(--muted);
+}
 
 /* small responsiveness */
 @media (max-width: 820px) {
-  .sidebar { width: 100%; }
-  .layout { flex-direction: column; padding: 1rem; }
+  .sidebar {
+    width: 100%;
+  }
+  .layout {
+    flex-direction: column;
+    padding: 1rem;
+  }
 }

@@ -1,5 +1,5 @@
-import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {
   user: any;
@@ -36,13 +36,13 @@ export default function ProfileModal({
           initial={{ scale: 0.85, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.85, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 140, damping: 14 }}
+          transition={{ type: 'spring', stiffness: 140, damping: 14 }}
           className="shadow-xl w-[380px] rounded-xl p-7 themed-card"
         >
           {/* Avatar */}
           <div className="flex flex-col items-center">
             <img
-              src={user.avatar || "/default.png"}
+              src={user.avatar || '/default.png'}
               className="w-24 h-24 rounded-xl object-cover shadow border"
               style={{ borderColor: 'var(--border)' }}
             />
@@ -64,18 +64,12 @@ export default function ProfileModal({
 
           {/* Buttons */}
           <div className="mt-8 flex gap-3 justify-center">
-            <button
-              onClick={onMessage}
-              className="btn"
-            >
+            <button onClick={onMessage} className="btn">
               Message
             </button>
 
             {isFollowed ? (
-              <button
-                onClick={onUnfollow}
-                className="themed-card"
-              >
+              <button onClick={onUnfollow} className="themed-card">
                 Unfollow
               </button>
             ) : (
@@ -90,10 +84,7 @@ export default function ProfileModal({
 
           {/* Close */}
           <div className="mt-5 text-center">
-            <button
-              className="text-xs text-theme-secondary hover:opacity-100"
-              onClick={onClose}
-            >
+            <button className="text-xs text-theme-secondary hover:opacity-100" onClick={onClose}>
               Close
             </button>
           </div>

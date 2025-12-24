@@ -1,0 +1,7 @@
+module.exports = {
+  root: true,
+  env: { node: true, es2021: true },
+  parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+  extends: ['eslint:recommended'],
+  ignorePatterns: ['node_modules/', 'dist/'],
+};

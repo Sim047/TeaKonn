@@ -1,8 +1,8 @@
 // frontend/src/components/ImageUpload.tsx
-import React, { useState, useRef } from "react";
-import { Upload, X, Image as ImageIcon, Loader } from "lucide-react";
-import axios from "axios";
-import { API_URL } from "../config/api";
+import React, { useState, useRef } from 'react';
+import { Upload, X, Image as ImageIcon, Loader } from 'lucide-react';
+import axios from 'axios';
+import { API_URL } from '../config/api';
 
 interface ImageUploadProps {
   images: string[];
@@ -11,11 +11,11 @@ interface ImageUploadProps {
   token: string;
 }
 
-export default function ImageUpload({ 
-  images, 
-  onImagesChange, 
+export default function ImageUpload({
+  images,
+  onImagesChange,
   maxImages = 1,
-  token 
+  token,
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -37,12 +37,12 @@ export default function ImageUpload({
       if (maxImages === 1) {
         // Single image upload
         const formData = new FormData();
-        formData.append("file", files[0]);
+        formData.append('file', files[0]);
 
         const response = await axios.post(`${API_URL}/files/upload`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
+            'Content-Type': 'multipart/form-data',
           },
         });
 
@@ -51,27 +51,27 @@ export default function ImageUpload({
         // Multiple image upload
         const formData = new FormData();
         const filesToUpload = Array.from(files).slice(0, remainingSlots);
-        
+
         filesToUpload.forEach((file) => {
-          formData.append("files", file);
+          formData.append('files', file);
         });
 
         const response = await axios.post(`${API_URL}/files/upload-multiple`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
+            'Content-Type': 'multipart/form-data',
           },
         });
 
         onImagesChange([...images, ...response.data.urls]);
       }
     } catch (error) {
-      console.error("Upload error:", error);
-      alert("Failed to upload image(s)");
+      console.error('Upload error:', error);
+      alert('Failed to upload image(s)');
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+        fileInputRef.current.value = '';
       }
     }
   };
@@ -98,8 +98,8 @@ export default function ImageUpload({
             htmlFor="image-upload"
             className={`flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
               uploading
-                ? "border-gray-400 bg-gray-50 dark:bg-gray-800 cursor-not-allowed"
-                : "border-gray-300 dark:border-gray-600 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/10"
+                ? 'border-gray-400 bg-gray-50 dark:bg-gray-800 cursor-not-allowed'
+                : 'border-gray-300 dark:border-gray-600 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/10'
             }`}
           >
             {uploading ? (
@@ -111,7 +111,9 @@ export default function ImageUpload({
               <>
                 <Upload className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                 <span className="text-gray-700 dark:text-gray-300">
-                  {images.length === 0 ? "Upload Image" : `Add Image (${images.length}/${maxImages})`}
+                  {images.length === 0
+                    ? 'Upload Image'
+                    : `Add Image (${images.length}/${maxImages})`}
                 </span>
               </>
             )}
@@ -121,7 +123,9 @@ export default function ImageUpload({
 
       {/* Image Preview Grid */}
       {images.length > 0 && (
-        <div className={`mt-4 grid gap-3 ${maxImages > 1 ? "grid-cols-3 sm:grid-cols-4" : "grid-cols-1"}`}>
+        <div
+          className={`mt-4 grid gap-3 ${maxImages > 1 ? 'grid-cols-3 sm:grid-cols-4' : 'grid-cols-1'}`}
+        >
           {images.map((url, index) => (
             <div
               key={index}

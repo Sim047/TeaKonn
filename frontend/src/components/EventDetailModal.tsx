@@ -1,7 +1,20 @@
 // frontend/src/components/EventDetailModal.tsx
-import React, { useState } from "react";
-import { X, MapPin, Calendar, Users, Trophy, Clock, DollarSign, Award, MessageCircle, User as UserIcon, ChevronDown, ChevronUp } from "lucide-react";
-import dayjs from "dayjs";
+import React, { useState } from 'react';
+import {
+  X,
+  MapPin,
+  Calendar,
+  Users,
+  Trophy,
+  Clock,
+  DollarSign,
+  Award,
+  MessageCircle,
+  User as UserIcon,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
+import dayjs from 'dayjs';
 
 interface Event {
   _id: string;
@@ -49,28 +62,34 @@ interface EventDetailModalProps {
   currentUserId?: string;
 }
 
-export default function EventDetailModal({ 
-  event, 
-  onClose, 
-  onJoin, 
+export default function EventDetailModal({
+  event,
+  onClose,
+  onJoin,
   onMessage,
   onViewParticipants,
   onViewProfile,
-  currentUserId 
+  currentUserId,
 }: EventDetailModalProps) {
-    if (!event) return null; // Guard against null event prop
-    // Preload organizer avatar to avoid layout shift and slow renders
-    React.useEffect(() => {
-      try {
-        const img = new Image();
-        const src = event?.organizer?.avatar || (event?.organizer?.username ? `https://ui-avatars.com/api/?name=${event.organizer.username}` : "");
-        if (src) img.src = src;
-      } catch {}
-    }, [event?.organizer?.avatar, event?.organizer?.username]);
+  if (!event) return null; // Guard against null event prop
+  // Preload organizer avatar to avoid layout shift and slow renders
+  React.useEffect(() => {
+    try {
+      const img = new Image();
+      const src =
+        event?.organizer?.avatar ||
+        (event?.organizer?.username
+          ? `https://ui-avatars.com/api/?name=${event.organizer.username}`
+          : '');
+      if (src) img.src = src;
+    } catch {}
+  }, [event?.organizer?.avatar, event?.organizer?.username]);
 
   const [participantsCollapsed, setParticipantsCollapsed] = useState(true);
 
-  const isParticipant = currentUserId && event.participants?.some((p: any) => p._id === currentUserId || p === currentUserId);
+  const isParticipant =
+    currentUserId &&
+    event.participants?.some((p: any) => p._id === currentUserId || p === currentUserId);
   const isOrganizer = currentUserId && event.organizer._id === currentUserId;
   const isFull = (event.participants?.length || 0) >= (event.capacity?.max || 0);
   const isArchived = !!(event as any).archivedAt;
@@ -128,12 +147,15 @@ export default function EventDetailModal({
           {/* Organizer Info */}
           <div className="bg-white/5 backdrop-blur rounded-xl p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div 
+              <div
                 className="flex items-center gap-3 cursor-pointer hover:bg-white/5 rounded-lg p-2 transition-colors"
                 onClick={() => onViewProfile && onViewProfile(event.organizer._id)}
               >
                 <img
-                  src={event.organizer.avatar || `https://ui-avatars.com/api/?name=${event.organizer.username}`}
+                  src={
+                    event.organizer.avatar ||
+                    `https://ui-avatars.com/api/?name=${event.organizer.username}`
+                  }
                   alt={event.organizer.username}
                   className="w-12 h-12 rounded-full border-2 border-cyan-400"
                 />
@@ -177,7 +199,9 @@ export default function EventDetailModal({
                   </div>
                   <div>
                     <p className="text-xs text-gray-400">Date</p>
-                      <p className="text-white font-semibold">{dayjs(event.startDate || event.date).format("MMM D, YYYY")}</p>
+                    <p className="text-white font-semibold">
+                      {dayjs(event.startDate || event.date).format('MMM D, YYYY')}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -202,7 +226,11 @@ export default function EventDetailModal({
                   <div>
                     <p className="text-xs text-gray-400">Location</p>
                     <p className="text-white font-semibold">
-                      {event.location?.city || event.location?.name || event.location?.address || event.location || "Location TBA"}
+                      {event.location?.city ||
+                        event.location?.name ||
+                        event.location?.address ||
+                        event.location ||
+                        'Location TBA'}
                     </p>
                   </div>
                 </div>
@@ -239,9 +267,7 @@ export default function EventDetailModal({
               <div className="flex items-center gap-3">
                 <Users className="w-5 h-5 text-cyan-400" />
                 <div className="text-left">
-                  <h3 className="text-lg font-bold text-white">
-                    Participants
-                  </h3>
+                  <h3 className="text-lg font-bold text-white">Participants</h3>
                   <p className="text-gray-400 text-xs">
                     {event.participants?.length || 0} / {event.capacity?.max || 0} joined
                   </p>
@@ -249,7 +275,7 @@ export default function EventDetailModal({
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-cyan-400 text-sm font-semibold">
-                  {participantsCollapsed ? "Show" : "Hide"}
+                  {participantsCollapsed ? 'Show' : 'Hide'}
                 </span>
                 {participantsCollapsed ? (
                   <ChevronDown className="w-5 h-5 text-cyan-400" />
@@ -266,12 +292,15 @@ export default function EventDetailModal({
                 {event.participants?.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {event.participants.slice(0, 8).map((participant: any, idx: number) => (
-                      <div 
-                        key={idx} 
+                      <div
+                        key={idx}
                         className="bg-white/5 backdrop-blur rounded-lg p-3 flex items-center gap-2 hover:bg-white/10 transition-colors"
                       >
                         <img
-                          src={participant.avatar || `https://ui-avatars.com/api/?name=${participant.username || 'User'}`}
+                          src={
+                            participant.avatar ||
+                            `https://ui-avatars.com/api/?name=${participant.username || 'User'}`
+                          }
                           alt={participant.username || 'User'}
                           className="w-8 h-8 rounded-full border-2 border-cyan-400/50"
                         />
@@ -310,12 +339,11 @@ export default function EventDetailModal({
                   className="w-full py-3 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-semibold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
                 >
                   <Users className="w-5 h-5" />
-                  {isOrganizer 
-                    ? "Manage Participants & Requests" 
+                  {isOrganizer
+                    ? 'Manage Participants & Requests'
                     : event.participants.length > 0
-                    ? "View All Participants"
-                    : "View Participant List"
-                  }
+                      ? 'View All Participants'
+                      : 'View Participant List'}
                 </button>
               </div>
             )}
@@ -329,26 +357,25 @@ export default function EventDetailModal({
                 disabled={isParticipant || isFull || isArchived}
                 className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
                   isArchived
-                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                    ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                     : isParticipant
-                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                    : isFull
-                    ? "bg-red-600/50 text-red-300 cursor-not-allowed"
-                    : "bg-gradient-to-r from-cyan-500 to-purple-600 text-white hover:from-cyan-600 hover:to-purple-700 shadow-lg"
+                      ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                      : isFull
+                        ? 'bg-red-600/50 text-red-300 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white hover:from-cyan-600 hover:to-purple-700 shadow-lg'
                 }`}
               >
                 {isArchived
-                  ? "Past Event"
-                  : isParticipant 
-                    ? event.requiresApproval 
-                      ? "Request Pending / Joined"
-                      : "Already Joined"
-                    : isFull 
-                    ? "Event Full" 
-                    : event.requiresApproval
-                    ? "Request to Join"
-                    : "Join Event"
-                }
+                  ? 'Past Event'
+                  : isParticipant
+                    ? event.requiresApproval
+                      ? 'Request Pending / Joined'
+                      : 'Already Joined'
+                    : isFull
+                      ? 'Event Full'
+                      : event.requiresApproval
+                        ? 'Request to Join'
+                        : 'Join Event'}
               </button>
             </div>
           )}
@@ -362,7 +389,8 @@ export default function EventDetailModal({
                     You are the organizer
                   </p>
                   <p className="text-gray-300 text-sm">
-                    Manage join requests, view participants, and export attendee lists from the "Manage Participants" button above.
+                    Manage join requests, view participants, and export attendee lists from the
+                    "Manage Participants" button above.
                   </p>
                 </div>
               </div>

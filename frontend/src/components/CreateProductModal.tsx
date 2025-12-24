@@ -1,51 +1,51 @@
-import React, { useState } from "react";
-import { X, ShoppingBag, DollarSign, Package, MapPin, Camera, Tag } from "lucide-react";
-import axios from "axios";
-import { API_URL } from "../config/api";
-import ImageUpload from "./ImageUpload";
+import React, { useState } from 'react';
+import { X, ShoppingBag, DollarSign, Package, MapPin, Camera, Tag } from 'lucide-react';
+import axios from 'axios';
+import { API_URL } from '../config/api';
+import ImageUpload from './ImageUpload';
 
-const API = API_URL.replace(/\/api$/, "");
+const API = API_URL.replace(/\/api$/, '');
 
 const CURRENCIES = [
-  { code: "USD", symbol: "$", name: "US Dollar" },
-  { code: "EUR", symbol: "€", name: "Euro" },
-  { code: "GBP", symbol: "£", name: "British Pound" },
-  { code: "KES", symbol: "KSh", name: "Kenyan Shilling" },
-  { code: "NGN", symbol: "₦", name: "Nigerian Naira" },
-  { code: "ZAR", symbol: "R", name: "South African Rand" },
-  { code: "GHS", symbol: "GH₵", name: "Ghanaian Cedi" },
-  { code: "TZS", symbol: "TSh", name: "Tanzanian Shilling" },
-  { code: "UGX", symbol: "USh", name: "Ugandan Shilling" },
-  { code: "INR", symbol: "₹", name: "Indian Rupee" },
-  { code: "JPY", symbol: "¥", name: "Japanese Yen" },
-  { code: "CNY", symbol: "¥", name: "Chinese Yuan" },
-  { code: "AUD", symbol: "A$", name: "Australian Dollar" },
-  { code: "CAD", symbol: "C$", name: "Canadian Dollar" },
-  { code: "BRL", symbol: "R$", name: "Brazilian Real" },
-  { code: "MXN", symbol: "MX$", name: "Mexican Peso" },
+  { code: 'USD', symbol: '$', name: 'US Dollar' },
+  { code: 'EUR', symbol: '€', name: 'Euro' },
+  { code: 'GBP', symbol: '£', name: 'British Pound' },
+  { code: 'KES', symbol: 'KSh', name: 'Kenyan Shilling' },
+  { code: 'NGN', symbol: '₦', name: 'Nigerian Naira' },
+  { code: 'ZAR', symbol: 'R', name: 'South African Rand' },
+  { code: 'GHS', symbol: 'GH₵', name: 'Ghanaian Cedi' },
+  { code: 'TZS', symbol: 'TSh', name: 'Tanzanian Shilling' },
+  { code: 'UGX', symbol: 'USh', name: 'Ugandan Shilling' },
+  { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+  { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
+  { code: 'CNY', symbol: '¥', name: 'Chinese Yuan' },
+  { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
+  { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
+  { code: 'BRL', symbol: 'R$', name: 'Brazilian Real' },
+  { code: 'MXN', symbol: 'MX$', name: 'Mexican Peso' },
 ];
 
 const CATEGORIES = [
-  { value: "Sports Equipment", label: "Sports Equipment", icon: "🏅" },
-  { value: "Apparel & Clothing", label: "Apparel & Clothing", icon: "👕" },
-  { value: "Footwear", label: "Footwear", icon: "👟" },
-  { value: "Accessories", label: "Accessories", icon: "🎒" },
-  { value: "Supplements & Nutrition", label: "Supplements & Nutrition", icon: "💊" },
-  { value: "Fitness Tech & Wearables", label: "Fitness Tech & Wearables", icon: "⌚" },
-  { value: "Training Gear", label: "Training Gear", icon: "🏋️" },
-  { value: "Recovery & Wellness", label: "Recovery & Wellness", icon: "💆" },
-  { value: "Team Sports Gear", label: "Team Sports Gear", icon: "⚽" },
-  { value: "Individual Sports Gear", label: "Individual Sports Gear", icon: "🎾" },
-  { value: "Outdoor & Adventure", label: "Outdoor & Adventure", icon: "🏕️" },
-  { value: "Other", label: "Other", icon: "📦" },
+  { value: 'Sports Equipment', label: 'Sports Equipment', icon: '🏅' },
+  { value: 'Apparel & Clothing', label: 'Apparel & Clothing', icon: '👕' },
+  { value: 'Footwear', label: 'Footwear', icon: '👟' },
+  { value: 'Accessories', label: 'Accessories', icon: '🎒' },
+  { value: 'Supplements & Nutrition', label: 'Supplements & Nutrition', icon: '💊' },
+  { value: 'Fitness Tech & Wearables', label: 'Fitness Tech & Wearables', icon: '⌚' },
+  { value: 'Training Gear', label: 'Training Gear', icon: '🏋️' },
+  { value: 'Recovery & Wellness', label: 'Recovery & Wellness', icon: '💆' },
+  { value: 'Team Sports Gear', label: 'Team Sports Gear', icon: '⚽' },
+  { value: 'Individual Sports Gear', label: 'Individual Sports Gear', icon: '🎾' },
+  { value: 'Outdoor & Adventure', label: 'Outdoor & Adventure', icon: '🏕️' },
+  { value: 'Other', label: 'Other', icon: '📦' },
 ];
 
 const CONDITIONS = [
-  { value: "New", label: "Brand New" },
-  { value: "Like New", label: "Like New" },
-  { value: "Good", label: "Good" },
-  { value: "Fair", label: "Fair" },
-  { value: "For Parts", label: "For Parts/Repair" },
+  { value: 'New', label: 'Brand New' },
+  { value: 'Like New', label: 'Like New' },
+  { value: 'Good', label: 'Good' },
+  { value: 'Fair', label: 'Fair' },
+  { value: 'For Parts', label: 'For Parts/Repair' },
 ];
 
 interface CreateProductModalProps {
@@ -64,32 +64,32 @@ export default function CreateProductModal({
   editProduct,
 }: CreateProductModalProps) {
   const [formData, setFormData] = useState({
-    title: editProduct?.title || "",
-    description: editProduct?.description || "",
-    category: editProduct?.category || "",
-    price: editProduct?.price || "",
-    currency: editProduct?.currency || "USD",
-    condition: editProduct?.condition || "Good",
-    brand: editProduct?.brand || "",
-    size: editProduct?.size || "",
-    color: editProduct?.color || "",
-    quantity: editProduct?.quantity || "1",
-    location: editProduct?.location || "",
+    title: editProduct?.title || '',
+    description: editProduct?.description || '',
+    category: editProduct?.category || '',
+    price: editProduct?.price || '',
+    currency: editProduct?.currency || 'USD',
+    condition: editProduct?.condition || 'Good',
+    brand: editProduct?.brand || '',
+    size: editProduct?.size || '',
+    color: editProduct?.color || '',
+    quantity: editProduct?.quantity || '1',
+    location: editProduct?.location || '',
     shippingAvailable: editProduct?.shippingAvailable || false,
-    shippingCost: editProduct?.shippingCost || "",
-    paymentInstructions: editProduct?.paymentInstructions || "",
-    tags: editProduct?.tags?.join(", ") || "",
+    shippingCost: editProduct?.shippingCost || '',
+    paymentInstructions: editProduct?.paymentInstructions || '',
+    tags: editProduct?.tags?.join(', ') || '',
   });
 
   const [images, setImages] = useState<string[]>(editProduct?.images || []);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
@@ -106,14 +106,14 @@ export default function CreateProductModal({
         quantity: parseInt(formData.quantity),
         location: formData.location,
         shippingAvailable: formData.shippingAvailable,
-        shippingCost: formData.shippingAvailable ? parseFloat(formData.shippingCost || "0") : 0,
+        shippingCost: formData.shippingAvailable ? parseFloat(formData.shippingCost || '0') : 0,
         paymentInstructions: formData.paymentInstructions,
         tags: formData.tags
-          .split(",")
+          .split(',')
           .map((t: string) => t.trim())
           .filter((t: string) => t),
         images: images,
-        status: "active",
+        status: 'active',
       };
 
       if (editProduct) {
@@ -129,19 +129,17 @@ export default function CreateProductModal({
       onProductCreated();
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to create product");
+      setError(err.response?.data?.error || 'Failed to create product');
     } finally {
       setLoading(false);
     }
   };
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value, type } = e.target;
-    if (type === "checkbox") {
+    if (type === 'checkbox') {
       setFormData({ ...formData, [name]: (e.target as HTMLInputElement).checked });
     } else {
       setFormData({ ...formData, [name]: value });
@@ -156,13 +154,10 @@ export default function CreateProductModal({
           <div className="flex items-center">
             <ShoppingBag className="w-6 h-6 text-white mr-3" />
             <h2 className="text-2xl font-bold text-white">
-              {editProduct ? "Edit Product" : "Sell Product"}
+              {editProduct ? 'Edit Product' : 'Sell Product'}
             </h2>
           </div>
-          <button
-            onClick={onClose}
-            className="text-white/80 hover:text-white transition-colors"
-          >
+          <button onClick={onClose} className="text-white/80 hover:text-white transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -177,9 +172,7 @@ export default function CreateProductModal({
 
           {/* Product Title */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Product Title *
-            </label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Product Title *</label>
             <input
               type="text"
               name="title"
@@ -193,9 +186,7 @@ export default function CreateProductModal({
 
           {/* Category Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Category *
-            </label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Category *</label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {CATEGORIES.map((cat) => (
                 <button
@@ -204,8 +195,8 @@ export default function CreateProductModal({
                   onClick={() => setFormData({ ...formData, category: cat.value })}
                   className={`p-3 rounded-lg border transition-all ${
                     formData.category === cat.value
-                      ? "bg-green-600 border-green-400 text-white"
-                      : "bg-white/5 border-white/10 text-gray-300 hover:border-green-400/50"
+                      ? 'bg-green-600 border-green-400 text-white'
+                      : 'bg-white/5 border-white/10 text-gray-300 hover:border-green-400/50'
                   }`}
                 >
                   <div className="text-2xl mb-1">{cat.icon}</div>
@@ -217,9 +208,7 @@ export default function CreateProductModal({
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Description *
-            </label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Description *</label>
             <textarea
               name="description"
               value={formData.description}
@@ -237,15 +226,8 @@ export default function CreateProductModal({
               <Camera className="w-4 h-4 text-green-400" />
               Product Images (Up to 5)
             </label>
-            <ImageUpload
-              images={images}
-              onImagesChange={setImages}
-              maxImages={5}
-              token={token}
-            />
-            <p className="text-xs text-gray-400 mt-2">
-              First image will be the main product photo
-            </p>
+            <ImageUpload images={images} onImagesChange={setImages} maxImages={5} token={token} />
+            <p className="text-xs text-gray-400 mt-2">First image will be the main product photo</p>
           </div>
 
           {/* Pricing Section */}
@@ -257,9 +239,7 @@ export default function CreateProductModal({
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Currency *
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Currency *</label>
                 <select
                   name="currency"
                   value={formData.currency}
@@ -277,7 +257,7 @@ export default function CreateProductModal({
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Price ({CURRENCIES.find(c => c.code === formData.currency)?.symbol}) *
+                  Price ({CURRENCIES.find((c) => c.code === formData.currency)?.symbol}) *
                 </label>
                 <input
                   type="number"
@@ -312,9 +292,7 @@ export default function CreateProductModal({
           {/* Product Details */}
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Condition *
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Condition *</label>
               <select
                 name="condition"
                 value={formData.condition}
@@ -331,9 +309,7 @@ export default function CreateProductModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Quantity *
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Quantity *</label>
               <input
                 type="number"
                 name="quantity"
@@ -346,9 +322,7 @@ export default function CreateProductModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Brand
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Brand</label>
               <input
                 type="text"
                 name="brand"
@@ -360,9 +334,7 @@ export default function CreateProductModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Size
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Size</label>
               <input
                 type="text"
                 name="size"
@@ -374,9 +346,7 @@ export default function CreateProductModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Color
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Color</label>
               <input
                 type="text"
                 name="color"
@@ -419,7 +389,7 @@ export default function CreateProductModal({
             {formData.shippingAvailable && (
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Shipping Cost ({CURRENCIES.find(c => c.code === formData.currency)?.symbol})
+                  Shipping Cost ({CURRENCIES.find((c) => c.code === formData.currency)?.symbol})
                 </label>
                 <input
                   type="number"
@@ -465,7 +435,7 @@ export default function CreateProductModal({
               disabled={loading}
               className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Saving..." : editProduct ? "Update Product" : "List Product"}
+              {loading ? 'Saving...' : editProduct ? 'Update Product' : 'List Product'}
             </button>
           </div>
         </form>

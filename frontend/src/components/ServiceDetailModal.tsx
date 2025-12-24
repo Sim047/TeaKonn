@@ -1,6 +1,6 @@
 // frontend/src/components/ServiceDetailModal.tsx
-import React from "react";
-import { X, MapPin, Star, DollarSign, Clock, Award, MessageCircle, Heart, Eye } from "lucide-react";
+import React from 'react';
+import { X, MapPin, Star, DollarSign, Clock, Award, MessageCircle, Heart, Eye } from 'lucide-react';
 
 interface Service {
   _id: string;
@@ -44,7 +44,13 @@ interface ServiceDetailModalProps {
   currentUserId?: string;
 }
 
-export default function ServiceDetailModal({ service, onClose, onMessage, onLike, currentUserId }: ServiceDetailModalProps) {
+export default function ServiceDetailModal({
+  service,
+  onClose,
+  onMessage,
+  onLike,
+  currentUserId,
+}: ServiceDetailModalProps) {
   if (!service) return null;
 
   const isLiked = currentUserId && service.likes && service.likes.includes(currentUserId);
@@ -56,7 +62,7 @@ export default function ServiceDetailModal({ service, onClose, onMessage, onLike
         <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-pink-600 p-6 flex items-start justify-between z-10">
           <div className="flex-1">
             <h2 className="text-3xl font-bold text-white mb-2">{service.name}</h2>
-            <p className="text-purple-100 capitalize">{service.category.replace(/-/g, " ")}</p>
+            <p className="text-purple-100 capitalize">{service.category.replace(/-/g, ' ')}</p>
           </div>
           <button
             onClick={onClose}
@@ -84,7 +90,10 @@ export default function ServiceDetailModal({ service, onClose, onMessage, onLike
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <img
-                  src={service.provider.avatar || `https://ui-avatars.com/api/?name=${service.provider.username}`}
+                  src={
+                    service.provider.avatar ||
+                    `https://ui-avatars.com/api/?name=${service.provider.username}`
+                  }
                   alt={service.provider.username}
                   className="w-12 h-12 rounded-full border-2 border-purple-400"
                 />
@@ -96,8 +105,11 @@ export default function ServiceDetailModal({ service, onClose, onMessage, onLike
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log("[ServiceDetailModal] Message button clicked, provider ID:", service.provider._id);
-                  console.log("[ServiceDetailModal] onMessage function:", onMessage);
+                  console.log(
+                    '[ServiceDetailModal] Message button clicked, provider ID:',
+                    service.provider._id,
+                  );
+                  console.log('[ServiceDetailModal] onMessage function:', onMessage);
                   onMessage(service.provider._id);
                 }}
                 className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all shadow-lg"
@@ -112,7 +124,7 @@ export default function ServiceDetailModal({ service, onClose, onMessage, onLike
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white/5 backdrop-blur rounded-xl p-3 border border-white/10">
               <div className="flex items-center gap-2 text-red-400 mb-1">
-                <Heart className={`w-4 h-4 ${isLiked ? "fill-red-400" : ""}`} />
+                <Heart className={`w-4 h-4 ${isLiked ? 'fill-red-400' : ''}`} />
                 <span className="text-sm font-semibold">Likes</span>
               </div>
               <p className="text-xl font-bold text-white">{service.likes?.length || 0}</p>
@@ -145,7 +157,7 @@ export default function ServiceDetailModal({ service, onClose, onMessage, onLike
                 <span className="font-semibold">Location</span>
               </div>
               <p className="text-white font-medium">
-                {service.location?.city || service.location?.type || "Not specified"}
+                {service.location?.city || service.location?.type || 'Not specified'}
               </p>
               <p className="text-gray-400 text-sm capitalize">{service.location?.type}</p>
             </div>
@@ -236,12 +248,12 @@ export default function ServiceDetailModal({ service, onClose, onMessage, onLike
             onClick={() => onLike(service._id)}
             className={`w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
               isLiked
-                ? "bg-red-500 hover:bg-red-600 text-white"
-                : "bg-white/10 hover:bg-white/20 text-gray-300 border border-white/20"
+                ? 'bg-red-500 hover:bg-red-600 text-white'
+                : 'bg-white/10 hover:bg-white/20 text-gray-300 border border-white/20'
             }`}
           >
-            <Heart className={`w-5 h-5 ${isLiked ? "fill-white" : ""}`} />
-            {isLiked ? "Unlike this service" : "Like this service"}
+            <Heart className={`w-5 h-5 ${isLiked ? 'fill-white' : ''}`} />
+            {isLiked ? 'Unlike this service' : 'Like this service'}
           </button>
         </div>
       </div>

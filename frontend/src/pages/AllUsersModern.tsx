@@ -1,20 +1,20 @@
 // frontend/src/pages/AllUsersModern.tsx
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { API_URL } from "../config/api";
-import { 
-  Search, 
-  MessageCircle, 
-  UserPlus, 
-  UserMinus, 
-  X, 
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { API_URL } from '../config/api';
+import {
+  Search,
+  MessageCircle,
+  UserPlus,
+  UserMinus,
+  X,
   Grid,
   List,
   Filter,
-  Star
-} from "lucide-react";
+  Star,
+} from 'lucide-react';
 
-const API = API_URL.replace(/\/api$/, "");
+const API = API_URL.replace(/\/api$/, '');
 
 type User = {
   _id: string;
@@ -28,12 +28,17 @@ type User = {
   following?: number;
 };
 
-export default function AllUsersModern({ token, onOpenConversation, currentUserId, onShowProfile }: any) {
+export default function AllUsersModern({
+  token,
+  onOpenConversation,
+  currentUserId,
+  onShowProfile,
+}: any) {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [processingId, setProcessingId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [statuses, setStatuses] = useState<Record<string, any>>({});
 
   useEffect(() => {
@@ -41,11 +46,11 @@ export default function AllUsersModern({ token, onOpenConversation, currentUserI
     loadUsers();
   }, [token]);
 
-  async function loadUsers(q = "") {
+  async function loadUsers(q = '') {
     try {
       setLoading(true);
 
-      const url = `${API}/api/users/all${q ? "?search=" + encodeURIComponent(q) : ""}`;
+      const url = `${API}/api/users/all${q ? '?search=' + encodeURIComponent(q) : ''}`;
 
       const res = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
@@ -58,7 +63,7 @@ export default function AllUsersModern({ token, onOpenConversation, currentUserI
 
       setUsers(normalized);
     } catch (err) {
-      console.error("AllUsers load err", err);
+      console.error('AllUsers load err', err);
     } finally {
       setLoading(false);
     }
@@ -90,10 +95,11 @@ export default function AllUsersModern({ token, onOpenConversation, currentUserI
   }, [search]);
 
   function avatarUrl(u: any) {
-    if (!u?.avatar) return `https://ui-avatars.com/api/?name=${u?.username || 'User'}&background=0D8ABC&color=fff`;
-    if (u.avatar.startsWith("http")) return u.avatar;
-    if (u.avatar.startsWith("/")) return API + u.avatar;
-    return API + "/uploads/" + u.avatar;
+    if (!u?.avatar)
+      return `https://ui-avatars.com/api/?name=${u?.username || 'User'}&background=0D8ABC&color=fff`;
+    if (u.avatar.startsWith('http')) return u.avatar;
+    if (u.avatar.startsWith('/')) return API + u.avatar;
+    return API + '/uploads/' + u.avatar;
   }
 
   async function startConversation(user: User) {
@@ -102,14 +108,14 @@ export default function AllUsersModern({ token, onOpenConversation, currentUserI
 
     try {
       const res = await axios.post(
-        API + "/api/users/conversations/start",
+        API + '/api/users/conversations/start',
         { partnerId: user._id },
-        { headers: { Authorization: "Bearer " + token } }
+        { headers: { Authorization: 'Bearer ' + token } },
       );
 
       onOpenConversation(res.data);
     } catch (err) {
-      console.error("startConversation error", err);
+      console.error('startConversation error', err);
     } finally {
       setProcessingId(null);
     }
@@ -120,17 +126,13 @@ export default function AllUsersModern({ token, onOpenConversation, currentUserI
     setProcessingId(user._id);
 
     try {
-      const url = `${API}/api/users/${user._id}/${follow ? "follow" : "unfollow"}`;
+      const url = `${API}/api/users/${user._id}/${follow ? 'follow' : 'unfollow'}`;
 
-      await axios.post(url, {}, { headers: { Authorization: "Bearer " + token } });
+      await axios.post(url, {}, { headers: { Authorization: 'Bearer ' + token } });
 
-      setUsers((prev) =>
-        prev.map((u) =>
-          u._id === user._id ? { ...u, isFollowed: follow } : u
-        )
-      );
+      setUsers((prev) => prev.map((u) => (u._id === user._id ? { ...u, isFollowed: follow } : u)));
     } catch (err) {
-      console.error("followToggle error", err);
+      console.error('followToggle error', err);
     } finally {
       setProcessingId(null);
     }
@@ -142,25 +144,23 @@ export default function AllUsersModern({ token, onOpenConversation, currentUserI
       <div className="sticky top-0 z-10 themed-sticky">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-heading">
-              All Users
-            </h1>
-            
+            <h1 className="text-2xl font-bold text-heading">All Users</h1>
+
             <div className="flex items-center gap-2">
               <button className="p-2 rounded-lg themed-card hover:opacity-90 transition">
                 <Filter className="w-5 h-5 text-theme-secondary" />
               </button>
-              
+
               <div className="flex rounded-lg p-1 themed-card">
                 <button
-                  onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded ${viewMode === "grid" ? "themed-card" : ""}`}
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded ${viewMode === 'grid' ? 'themed-card' : ''}`}
                 >
                   <Grid className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-2 rounded ${viewMode === "list" ? "themed-card" : ""}`}
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 rounded ${viewMode === 'list' ? 'themed-card' : ''}`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -180,7 +180,7 @@ export default function AllUsersModern({ token, onOpenConversation, currentUserI
             />
             {search && (
               <button
-                onClick={() => setSearch("")}
+                onClick={() => setSearch('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2"
               >
                 <X className="w-5 h-5 text-theme-secondary" />
@@ -193,7 +193,9 @@ export default function AllUsersModern({ token, onOpenConversation, currentUserI
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {loading ? (
-          <div className={`grid ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"} gap-4`}>
+          <div
+            className={`grid ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-4`}
+          >
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div key={i} className="rounded-2xl p-6 animate-pulse themed-card">
                 <div className="flex items-center gap-3 mb-4">
@@ -208,7 +210,9 @@ export default function AllUsersModern({ token, onOpenConversation, currentUserI
             ))}
           </div>
         ) : (
-          <div className={`grid ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"} gap-4`}>
+          <div
+            className={`grid ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-4`}
+          >
             {users.map((user) => (
               <UserCard
                 key={user._id}
@@ -248,7 +252,7 @@ function UserCard({
   isProcessing,
   isCurrentUser,
 }: any) {
-  if (viewMode === "list") {
+  if (viewMode === 'list') {
     return (
       <div className="rounded-2xl p-5 hover:shadow-xl transition-all duration-300 hover:scale-[1.01] themed-card">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -261,7 +265,7 @@ function UserCard({
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 
+              <h3
                 className="font-semibold text-heading truncate cursor-pointer hover:text-teal-500 transition"
                 onClick={onViewProfile}
               >
@@ -272,7 +276,10 @@ function UserCard({
               )}
             </div>
             <p className="text-sm text-theme-secondary truncate">
-              {user.bio || (userStatus ? `${userStatus.emoji ? userStatus.emoji + ' ' : ''}${userStatus.mood || 'Status set'}` : 'No status')}
+              {user.bio ||
+                (userStatus
+                  ? `${userStatus.emoji ? userStatus.emoji + ' ' : ''}${userStatus.mood || 'Status set'}`
+                  : 'No status')}
             </p>
           </div>
 
@@ -286,16 +293,16 @@ function UserCard({
               >
                 <MessageCircle className="w-5 h-5 text-gray-700 dark:text-gray-300" />
               </button>
-              
+
               <button
                 onClick={onFollow}
                 disabled={isProcessing}
                 className={`flex-1 sm:flex-initial p-2.5 rounded-xl transition-all duration-300 disabled:opacity-50 ${
                   user.isFollowed
-                    ? "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
-                    : "bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 shadow-lg shadow-teal-500/30"
+                    ? 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    : 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 shadow-lg shadow-teal-500/30'
                 }`}
-                title={user.isFollowed ? "Unfollow" : "Follow"}
+                title={user.isFollowed ? 'Unfollow' : 'Follow'}
               >
                 {user.isFollowed ? (
                   <UserMinus className="w-5 h-5 text-gray-700 dark:text-gray-300" />
@@ -322,47 +329,38 @@ function UserCard({
         />
 
         <div className="flex items-center gap-2 mb-1">
-          <h3 
+          <h3
             className="font-semibold text-heading cursor-pointer hover:text-teal-500 transition"
             onClick={onViewProfile}
           >
             {user.username}
           </h3>
-          {user.verified && (
-            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-          )}
+          {user.verified && <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />}
         </div>
 
         {user.sport && (
-          <p className="text-xs text-teal-600 dark:text-teal-400 mb-2 font-medium">
-            {user.sport}
-          </p>
+          <p className="text-xs text-teal-600 dark:text-teal-400 mb-2 font-medium">{user.sport}</p>
         )}
 
         <p className="text-sm text-theme-secondary mb-4 line-clamp-2 min-h-[40px]">
-          {user.bio || (userStatus ? `${userStatus.emoji ? userStatus.emoji + ' ' : ''}${userStatus.mood || 'Status set'}` : 'No status')}
+          {user.bio ||
+            (userStatus
+              ? `${userStatus.emoji ? userStatus.emoji + ' ' : ''}${userStatus.mood || 'Status set'}`
+              : 'No status')}
         </p>
 
         {(user.followers !== undefined || user.following !== undefined) && (
           <div className="flex gap-4 mb-4 text-xs">
             {user.followers !== undefined && (
               <div>
-                <span className="font-semibold text-heading">
-                  {user.followers}
-                </span>
-                <span className="text-theme-secondary ml-1">
-                  Followers
-                </span>
+                <span className="font-semibold text-heading">{user.followers}</span>
+                <span className="text-theme-secondary ml-1">Followers</span>
               </div>
             )}
             {user.following !== undefined && (
               <div>
-                <span className="font-semibold text-heading">
-                  {user.following}
-                </span>
-                <span className="text-theme-secondary ml-1">
-                  Following
-                </span>
+                <span className="font-semibold text-heading">{user.following}</span>
+                <span className="text-theme-secondary ml-1">Following</span>
               </div>
             )}
           </div>
@@ -378,14 +376,14 @@ function UserCard({
               <MessageCircle className="w-4 h-4" />
               <span className="text-sm">Message</span>
             </button>
-            
+
             <button
               onClick={onFollow}
               disabled={isProcessing}
               className={`flex-1 px-4 py-2 rounded-xl font-medium transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2 ${
                 user.isFollowed
-                  ? "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                  : "bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-lg shadow-teal-500/30"
+                  ? 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  : 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-lg shadow-teal-500/30'
               }`}
             >
               {user.isFollowed ? (

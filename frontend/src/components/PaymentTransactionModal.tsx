@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { X, DollarSign, CreditCard, AlertCircle } from "lucide-react";
+import React, { useState } from 'react';
+import { X, DollarSign, CreditCard, AlertCircle } from 'lucide-react';
 
 interface PaymentTransactionModalProps {
   event: {
@@ -20,20 +20,20 @@ const PaymentTransactionModal: React.FC<PaymentTransactionModalProps> = ({
   onSubmit,
   onCancel,
 }) => {
-  const [transactionCode, setTransactionCode] = useState("");
-  const [transactionDetails, setTransactionDetails] = useState("");
-  const [error, setError] = useState("");
+  const [transactionCode, setTransactionCode] = useState('');
+  const [transactionDetails, setTransactionDetails] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = () => {
     if (!transactionCode.trim()) {
-      setError("Transaction code is required for paid events");
+      setError('Transaction code is required for paid events');
       return;
     }
     onSubmit(transactionCode.trim(), transactionDetails.trim());
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
@@ -50,7 +50,7 @@ const PaymentTransactionModal: React.FC<PaymentTransactionModalProps> = ({
           >
             <X className="w-6 h-6" />
           </button>
-          
+
           <div className="flex items-center space-x-3">
             <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
               <DollarSign className="w-8 h-8 text-white" />
@@ -71,7 +71,7 @@ const PaymentTransactionModal: React.FC<PaymentTransactionModalProps> = ({
               Event: {event.title}
             </h3>
             <div className="text-2xl font-bold text-cyan-400">
-              {(event.pricing.currency || '$')} {Number(event.pricing.amount || 0).toLocaleString()}
+              {event.pricing.currency || '$'} {Number(event.pricing.amount || 0).toLocaleString()}
             </div>
           </div>
 
@@ -98,7 +98,7 @@ const PaymentTransactionModal: React.FC<PaymentTransactionModalProps> = ({
               value={transactionCode}
               onChange={(e) => {
                 setTransactionCode(e.target.value);
-                setError("");
+                setError('');
               }}
               onKeyDown={handleKeyDown}
               placeholder="Enter M-PESA code, reference number, etc."
@@ -133,7 +133,8 @@ const PaymentTransactionModal: React.FC<PaymentTransactionModalProps> = ({
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 flex items-start">
             <AlertCircle className="w-5 h-5 text-yellow-400 mr-2 flex-shrink-0 mt-0.5" />
             <p className="text-yellow-400 text-sm">
-              Your join request will be sent to the organizer for verification. You'll be notified once approved.
+              Your join request will be sent to the organizer for verification. You'll be notified
+              once approved.
             </p>
           </div>
 

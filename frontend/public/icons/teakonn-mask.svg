@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <title>TeaKonn Mask Icon</title>
+  <path d="M40 55a25 25 0 0 1 25-25h70a25 25 0 0 1 25 25v60a25 25 0 0 1-25 25H95l-25 25 5-25H65a25 25 0 0 1-25-25V55z" fill="#000" />
+  <path d="M80 90c0-20 17-35 40-35 5 0 10 1 14 2-9 7-15 16-17 27a38 38 0 0 0 16-4c-6 16-22 28-38 28-9 0-15-6-15-18z" fill="#000" />
+</svg>

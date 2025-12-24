@@ -1,17 +1,17 @@
 // Simple My Requests Component
-import { useState, useEffect } from "react";
-import axios from "axios";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { Clock, RefreshCw, CheckCircle, XCircle, AlertCircle, Loader } from "lucide-react";
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { Clock, RefreshCw, CheckCircle, XCircle, AlertCircle, Loader } from 'lucide-react';
 
 dayjs.extend(relativeTime);
 
-const API = (import.meta as any).env?.VITE_API_URL || "http://localhost:5000";
+const API = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
 
 interface SimpleBooking {
   _id: string;
-  status: "pending" | "approved" | "rejected";
+  status: 'pending' | 'approved' | 'rejected';
   transactionCode: string;
   isPaid: boolean;
   rejectionReason: string;
@@ -35,8 +35,8 @@ interface SimpleBooking {
 export default function SimpleMyRequests() {
   const [bookings, setBookings] = useState<SimpleBooking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const token = localStorage.getItem("token");
+  const [error, setError] = useState('');
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
     loadRequests();
@@ -45,15 +45,15 @@ export default function SimpleMyRequests() {
   async function loadRequests() {
     try {
       setLoading(true);
-      console.log("[SimpleMyRequests] Loading...");
+      console.log('[SimpleMyRequests] Loading...');
       const { data } = await axios.get(`${API}/api/bookings-simple/my-requests`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log(`[SimpleMyRequests] Loaded ${data.bookings.length} requests`);
       setBookings(data.bookings);
     } catch (err: any) {
-      console.error("[SimpleMyRequests] Error:", err);
-      setError(err.response?.data?.error || "Failed to load");
+      console.error('[SimpleMyRequests] Error:', err);
+      setError(err.response?.data?.error || 'Failed to load');
       setBookings([]);
     } finally {
       setLoading(false);
@@ -61,7 +61,7 @@ export default function SimpleMyRequests() {
   }
 
   function getStatusBadge(booking: SimpleBooking) {
-    if (booking.status === "approved") {
+    if (booking.status === 'approved') {
       return (
         <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
           <CheckCircle className="w-4 h-4" />
@@ -69,7 +69,7 @@ export default function SimpleMyRequests() {
         </div>
       );
     }
-    if (booking.status === "rejected") {
+    if (booking.status === 'rejected') {
       return (
         <div className="flex items-center gap-1 text-red-600 dark:text-red-400">
           <XCircle className="w-4 h-4" />
@@ -104,7 +104,7 @@ export default function SimpleMyRequests() {
             My Join Requests
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            {bookings.length} request{bookings.length !== 1 ? "s" : ""} sent
+            {bookings.length} request{bookings.length !== 1 ? 's' : ''} sent
           </p>
         </div>
         <button
@@ -146,10 +146,12 @@ export default function SimpleMyRequests() {
               </div>
 
               <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                <p>📅 {dayjs(booking.event.startDate).format("MMM D, YYYY")}</p>
+                <p>📅 {dayjs(booking.event.startDate).format('MMM D, YYYY')}</p>
                 {booking.event.location && <p>📍 {booking.event.location.name}</p>}
                 {booking.event.pricing && booking.event.pricing.amount > 0 && (
-                  <p>💰 ${booking.event.pricing.amount} {booking.event.pricing.currency}</p>
+                  <p>
+                    💰 ${booking.event.pricing.amount} {booking.event.pricing.currency}
+                  </p>
                 )}
               </div>
 

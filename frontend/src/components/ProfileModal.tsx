@@ -1,28 +1,22 @@
 // frontend/src/components/ProfileModal.tsx
-import React from "react";
-import { X, MessageCircle, UserPlus, UserMinus } from "lucide-react";
-import { API_URL } from "../config/api";
-const API = API_URL.replace(/\/api$/, "");
+import React from 'react';
+import { X, MessageCircle, UserPlus, UserMinus } from 'lucide-react';
+import { API_URL } from '../config/api';
+const API = API_URL.replace(/\/api$/, '');
 
-export default function ProfileModal({
-  user,
-  onClose,
-  onMessage,
-  onFollowToggle,
-}: any) {
+export default function ProfileModal({ user, onClose, onMessage, onFollowToggle }: any) {
   if (!user) return null;
 
   function avatarUrl(u: any) {
-    if (!u?.avatar) return "https://placehold.co/120x120?text=User";
-    if (u.avatar.startsWith("http")) return u.avatar;
-    if (u.avatar.startsWith("/")) return API + u.avatar;
-    return API + "/uploads/" + u.avatar;
+    if (!u?.avatar) return 'https://placehold.co/120x120?text=User';
+    if (u.avatar.startsWith('http')) return u.avatar;
+    if (u.avatar.startsWith('/')) return API + u.avatar;
+    return API + '/uploads/' + u.avatar;
   }
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl w-full max-w-md overflow-hidden border border-cyan-500/30 shadow-2xl">
-        
         {/* Header with gradient */}
         <div className="bg-gradient-to-r from-cyan-600 to-purple-600 p-6 text-center relative">
           <button
@@ -31,7 +25,7 @@ export default function ProfileModal({
           >
             <X className="w-5 h-5" />
           </button>
-          
+
           <img
             src={avatarUrl(user)}
             className="w-24 h-24 rounded-full mx-auto object-cover border-4 border-white/20 shadow-xl"
@@ -48,17 +42,15 @@ export default function ProfileModal({
           {/* FOLLOWERS & FOLLOWING */}
           <div className="grid grid-cols-2 gap-4">
             <button
-              onClick={() => onFollowToggle("followers", user)}
+              onClick={() => onFollowToggle('followers', user)}
               className="bg-white/5 backdrop-blur rounded-xl p-4 text-center hover:bg-white/10 transition-all"
             >
-              <div className="text-3xl font-bold text-cyan-400">
-                {user.followers?.length || 0}
-              </div>
+              <div className="text-3xl font-bold text-cyan-400">{user.followers?.length || 0}</div>
               <div className="text-gray-400 text-sm mt-1">Followers</div>
             </button>
 
             <button
-              onClick={() => onFollowToggle("following", user)}
+              onClick={() => onFollowToggle('following', user)}
               className="bg-white/5 backdrop-blur rounded-xl p-4 text-center hover:bg-white/10 transition-all"
             >
               <div className="text-3xl font-bold text-purple-400">
@@ -77,11 +69,11 @@ export default function ProfileModal({
             <div className="space-y-3">
               {/* FOLLOW / UNFOLLOW */}
               <button
-                onClick={() => onFollowToggle("toggle")}
+                onClick={() => onFollowToggle('toggle')}
                 className={`w-full py-3 rounded-xl font-bold text-lg transition-all shadow-lg flex items-center justify-center gap-2 ${
                   user.isFollowing
-                    ? "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white"
-                    : "bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white"
+                    ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white'
+                    : 'bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white'
                 }`}
               >
                 {user.isFollowing ? (

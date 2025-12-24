@@ -9,6 +9,8 @@ import mongoose from "mongoose";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 
 // ROUTES
 import authRoutes from "./routes/auth.js";
@@ -86,9 +88,6 @@ function isOriginAllowed(origin) {
   
   // exact match check
   if (allowedOrigins.includes(origin)) return true;
-
-  // allow all .vercel.app domains
-  if (origin.includes('.vercel.app')) return true;
 
   // check patterns (with or without protocol)
   for (const pattern of allowedOrigins) {
@@ -198,6 +197,29 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+// Security headers — disable CORP for static uploads to avoid blocking cross-origin asset access
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
+// Basic rate limits: protect auth and AI endpoints from abuse
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+const aiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use("/api/auth", authLimiter);
+if (AI_ENABLED) {
+  app.use("/api/ai", aiLimiter);
+}
 app.use(express.json({ limit: "10mb" }));
 
 // static uploads

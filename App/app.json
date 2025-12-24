@@ -42,7 +42,7 @@
     "extra": {
       "apiUrl": "https://teakonn-production.up.railway.app/api",
       "apiBase": "https://teakonn-production.up.railway.app",
-      "webUrl": "https://tea-konn.vercel.app/login",
+      "webUrl": "https://tea-konn.vercel.app/?view=login",
       "eas": {
         "projectId": "ce6cf9cc-c389-4a33-84f5-5f73939968d7"
       }

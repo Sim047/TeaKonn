@@ -1,143 +1,221 @@
 // frontend/src/components/CreateEventModal.tsx
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { API_URL } from "../config/api";
-import { X, Calendar, MapPin, Users, DollarSign, Clock, Trophy, Camera } from "lucide-react";
-import ImageUpload from "./ImageUpload";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { API_URL } from '../config/api';
+import { X, Calendar, MapPin, Users, DollarSign, Clock, Trophy, Camera } from 'lucide-react';
+import ImageUpload from './ImageUpload';
 
-const API = API_URL.replace(/\/api$/, "");
+const API = API_URL.replace(/\/api$/, '');
 
 // Comprehensive Sports List (matching Dashboard)
 const SPORTS = [
-  "Football/Soccer", "Basketball", "Volleyball", "Tennis", "Swimming",
-  "Athletics/Track & Field", "Gymnastics", "Boxing", "Cycling", "Baseball",
-  "Cricket", "Rugby", "Hockey (Ice)", "Hockey (Field)", "Golf",
-  "Wrestling", "Judo", "Karate", "Taekwondo", "Kung Fu",
-  "Mixed Martial Arts (MMA)", "Kickboxing", "Muay Thai", "Fencing",
-  "Badminton", "Table Tennis/Ping Pong", "Squash", "Racquetball", "Pickleball",
-  "Diving", "Water Polo", "Synchronized Swimming", "Surfing", "Rowing", "Canoeing/Kayaking", "Sailing",
-  "Skiing (Alpine)", "Skiing (Cross-Country)", "Snowboarding", "Ice Skating", "Figure Skating", "Speed Skating", "Curling", "Bobsled", "Luge",
-  "Yoga", "Pilates", "CrossFit", "Aerobics", "Zumba", "Bodybuilding", "Powerlifting", "Weightlifting",
-  "Skateboarding", "BMX", "Rock Climbing", "Parkour", "Bungee Jumping", "Skydiving", "Paragliding",
-  "Archery", "Shooting", "Darts",
-  "Formula 1 Racing", "MotoGP", "NASCAR", "Rally Racing", "Karting",
-  "Horse Racing", "Show Jumping", "Dressage", "Polo",
-  "American Football", "Australian Rules Football", "Handball", "Lacrosse", "Netball", "Softball",
-  "Chess", "Checkers", "Go (Baduk/Weiqi)", "Poker", "Bridge", "Esports/Gaming",
-  "Ballroom Dancing", "Hip Hop Dance", "Ballet", "Breakdancing/Breaking",
-  "Triathlon", "Marathon Running", "Decathlon", "Pentathlon", "Bowling", "Billiards/Pool", "Snooker"
+  'Football/Soccer',
+  'Basketball',
+  'Volleyball',
+  'Tennis',
+  'Swimming',
+  'Athletics/Track & Field',
+  'Gymnastics',
+  'Boxing',
+  'Cycling',
+  'Baseball',
+  'Cricket',
+  'Rugby',
+  'Hockey (Ice)',
+  'Hockey (Field)',
+  'Golf',
+  'Wrestling',
+  'Judo',
+  'Karate',
+  'Taekwondo',
+  'Kung Fu',
+  'Mixed Martial Arts (MMA)',
+  'Kickboxing',
+  'Muay Thai',
+  'Fencing',
+  'Badminton',
+  'Table Tennis/Ping Pong',
+  'Squash',
+  'Racquetball',
+  'Pickleball',
+  'Diving',
+  'Water Polo',
+  'Synchronized Swimming',
+  'Surfing',
+  'Rowing',
+  'Canoeing/Kayaking',
+  'Sailing',
+  'Skiing (Alpine)',
+  'Skiing (Cross-Country)',
+  'Snowboarding',
+  'Ice Skating',
+  'Figure Skating',
+  'Speed Skating',
+  'Curling',
+  'Bobsled',
+  'Luge',
+  'Yoga',
+  'Pilates',
+  'CrossFit',
+  'Aerobics',
+  'Zumba',
+  'Bodybuilding',
+  'Powerlifting',
+  'Weightlifting',
+  'Skateboarding',
+  'BMX',
+  'Rock Climbing',
+  'Parkour',
+  'Bungee Jumping',
+  'Skydiving',
+  'Paragliding',
+  'Archery',
+  'Shooting',
+  'Darts',
+  'Formula 1 Racing',
+  'MotoGP',
+  'NASCAR',
+  'Rally Racing',
+  'Karting',
+  'Horse Racing',
+  'Show Jumping',
+  'Dressage',
+  'Polo',
+  'American Football',
+  'Australian Rules Football',
+  'Handball',
+  'Lacrosse',
+  'Netball',
+  'Softball',
+  'Chess',
+  'Checkers',
+  'Go (Baduk/Weiqi)',
+  'Poker',
+  'Bridge',
+  'Esports/Gaming',
+  'Ballroom Dancing',
+  'Hip Hop Dance',
+  'Ballet',
+  'Breakdancing/Breaking',
+  'Triathlon',
+  'Marathon Running',
+  'Decathlon',
+  'Pentathlon',
+  'Bowling',
+  'Billiards/Pool',
+  'Snooker',
 ].sort();
 
 const CURRENCIES = [
-  { code: "USD", symbol: "$", name: "US Dollar" },
-  { code: "EUR", symbol: "€", name: "Euro" },
-  { code: "GBP", symbol: "£", name: "British Pound" },
-  { code: "KES", symbol: "KSh", name: "Kenyan Shilling" },
-  { code: "NGN", symbol: "₦", name: "Nigerian Naira" },
-  { code: "ZAR", symbol: "R", name: "South African Rand" },
-  { code: "GHS", symbol: "GH₵", name: "Ghanaian Cedi" },
-  { code: "TZS", symbol: "TSh", name: "Tanzanian Shilling" },
-  { code: "UGX", symbol: "USh", name: "Ugandan Shilling" },
-  { code: "INR", symbol: "₹", name: "Indian Rupee" },
-  { code: "JPY", symbol: "¥", name: "Japanese Yen" },
-  { code: "CNY", symbol: "¥", name: "Chinese Yuan" },
-  { code: "AUD", symbol: "A$", name: "Australian Dollar" },
-  { code: "CAD", symbol: "C$", name: "Canadian Dollar" },
-  { code: "BRL", symbol: "R$", name: "Brazilian Real" },
-  { code: "MXN", symbol: "MX$", name: "Mexican Peso" },
+  { code: 'USD', symbol: '$', name: 'US Dollar' },
+  { code: 'EUR', symbol: '€', name: 'Euro' },
+  { code: 'GBP', symbol: '£', name: 'British Pound' },
+  { code: 'KES', symbol: 'KSh', name: 'Kenyan Shilling' },
+  { code: 'NGN', symbol: '₦', name: 'Nigerian Naira' },
+  { code: 'ZAR', symbol: 'R', name: 'South African Rand' },
+  { code: 'GHS', symbol: 'GH₵', name: 'Ghanaian Cedi' },
+  { code: 'TZS', symbol: 'TSh', name: 'Tanzanian Shilling' },
+  { code: 'UGX', symbol: 'USh', name: 'Ugandan Shilling' },
+  { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+  { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
+  { code: 'CNY', symbol: '¥', name: 'Chinese Yuan' },
+  { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
+  { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
+  { code: 'BRL', symbol: 'R$', name: 'Brazilian Real' },
+  { code: 'MXN', symbol: 'MX$', name: 'Mexican Peso' },
 ];
 
 const EVENT_TYPES = [
-  { value: "tournament", label: "🏆 Tournament" },
-  { value: "clinic", label: "🎓 Clinic" },
-  { value: "workshop", label: "🛠️ Workshop" },
-  { value: "bootcamp", label: "💪 Bootcamp" },
-  { value: "social", label: "🤝 Social" },
+  { value: 'tournament', label: '🏆 Tournament' },
+  { value: 'clinic', label: '🎓 Clinic' },
+  { value: 'workshop', label: '🛠️ Workshop' },
+  { value: 'bootcamp', label: '💪 Bootcamp' },
+  { value: 'social', label: '🤝 Social' },
 ];
 
 const SKILL_LEVELS = [
-  { value: "all", label: "All Levels" },
-  { value: "beginner", label: "Beginner" },
-  { value: "intermediate", label: "Intermediate" },
-  { value: "advanced", label: "Advanced" },
+  { value: 'all', label: 'All Levels' },
+  { value: 'beginner', label: 'Beginner' },
+  { value: 'intermediate', label: 'Intermediate' },
+  { value: 'advanced', label: 'Advanced' },
 ];
 
 export default function CreateEventModal({ isOpen, onClose, token, onSuccess, editingEvent }: any) {
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    sport: "Football/Soccer",
-    eventType: "tournament",
-    startDate: "",
-    endDate: "",
-    time: "",
-    locationName: "",
-    address: "",
-    city: "",
-    state: "",
-    country: "",
+    title: '',
+    description: '',
+    sport: 'Football/Soccer',
+    eventType: 'tournament',
+    startDate: '',
+    endDate: '',
+    time: '',
+    locationName: '',
+    address: '',
+    city: '',
+    state: '',
+    country: '',
     maxCapacity: 20,
-    pricingType: "free",
+    pricingType: 'free',
     amount: 0,
-    currency: "USD",
-    paymentInstructions: "",
-    skillLevel: "all",
+    currency: 'USD',
+    paymentInstructions: '',
+    skillLevel: 'all',
   });
   const [images, setImages] = useState<string[]>(editingEvent?.image ? [editingEvent.image] : []);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   // Load editing data when modal opens
   useEffect(() => {
     if (editingEvent && isOpen) {
       setFormData({
-        title: editingEvent.title || "",
-        description: editingEvent.description || "",
-        sport: editingEvent.sport || "Football/Soccer",
-        eventType: editingEvent.eventType || "tournament",
-        startDate: editingEvent.startDate ? editingEvent.startDate.split('T')[0] : "",
-        endDate: editingEvent.endDate ? editingEvent.endDate.split('T')[0] : "",
-        time: editingEvent.time || "",
-        locationName: editingEvent.location?.name || "",
-        address: editingEvent.location?.address || "",
-        city: editingEvent.location?.city || "",
-        state: editingEvent.location?.state || "",
-        country: editingEvent.location?.country || "",
+        title: editingEvent.title || '',
+        description: editingEvent.description || '',
+        sport: editingEvent.sport || 'Football/Soccer',
+        eventType: editingEvent.eventType || 'tournament',
+        startDate: editingEvent.startDate ? editingEvent.startDate.split('T')[0] : '',
+        endDate: editingEvent.endDate ? editingEvent.endDate.split('T')[0] : '',
+        time: editingEvent.time || '',
+        locationName: editingEvent.location?.name || '',
+        address: editingEvent.location?.address || '',
+        city: editingEvent.location?.city || '',
+        state: editingEvent.location?.state || '',
+        country: editingEvent.location?.country || '',
         maxCapacity: editingEvent.capacity?.max || 20,
-        pricingType: editingEvent.pricing?.type || "free",
+        pricingType: editingEvent.pricing?.type || 'free',
         amount: editingEvent.pricing?.amount || 0,
-        currency: editingEvent.pricing?.currency || "USD",
-        paymentInstructions: editingEvent.pricing?.paymentInstructions || "",
-        skillLevel: editingEvent.skillLevel || "all",
+        currency: editingEvent.pricing?.currency || 'USD',
+        paymentInstructions: editingEvent.pricing?.paymentInstructions || '',
+        skillLevel: editingEvent.skillLevel || 'all',
       });
     } else if (!editingEvent && isOpen) {
       // Reset for new event
       setFormData({
-        title: "",
-        description: "",
-        sport: "Football/Soccer",
-        eventType: "tournament",
-        startDate: "",
-        endDate: "",
-        time: "",
-        locationName: "",
-        address: "",
-        city: "",
-        state: "",
-        country: "",
+        title: '',
+        description: '',
+        sport: 'Football/Soccer',
+        eventType: 'tournament',
+        startDate: '',
+        endDate: '',
+        time: '',
+        locationName: '',
+        address: '',
+        city: '',
+        state: '',
+        country: '',
         maxCapacity: 20,
-        pricingType: "free",
+        pricingType: 'free',
         amount: 0,
-        currency: "USD",
-        paymentInstructions: "",
-        skillLevel: "all",
+        currency: 'USD',
+        paymentInstructions: '',
+        skillLevel: 'all',
       });
     }
   }, [editingEvent, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
@@ -147,7 +225,9 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
         sport: formData.sport,
         eventType: formData.eventType,
         startDate: new Date(formData.startDate).toISOString(),
-        endDate: formData.endDate ? new Date(formData.endDate).toISOString() : new Date(formData.startDate).toISOString(),
+        endDate: formData.endDate
+          ? new Date(formData.endDate).toISOString()
+          : new Date(formData.startDate).toISOString(),
         time: formData.time,
         location: {
           name: formData.locationName,
@@ -162,13 +242,13 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
         },
         pricing: {
           type: formData.pricingType,
-          amount: formData.pricingType === "paid" ? Number(formData.amount) : 0,
-          currency: formData.pricingType === "paid" ? formData.currency : "USD",
-          paymentInstructions: formData.pricingType === "paid" ? formData.paymentInstructions : "",
+          amount: formData.pricingType === 'paid' ? Number(formData.amount) : 0,
+          currency: formData.pricingType === 'paid' ? formData.currency : 'USD',
+          paymentInstructions: formData.pricingType === 'paid' ? formData.paymentInstructions : '',
         },
         skillLevel: formData.skillLevel,
         image: images.length > 0 ? images[0] : undefined,
-        status: "published",
+        status: 'published',
       };
 
       if (editingEvent) {
@@ -185,29 +265,29 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
 
       onSuccess && onSuccess();
       onClose();
-      
+
       // Reset form
       setFormData({
-        title: "",
-        description: "",
-        sport: "Football/Soccer",
-        eventType: "tournament",
-        startDate: "",
-        endDate: "",
-        time: "",
-        locationName: "",
-        address: "",
-        city: "",
-        state: "",
-        country: "",
+        title: '',
+        description: '',
+        sport: 'Football/Soccer',
+        eventType: 'tournament',
+        startDate: '',
+        endDate: '',
+        time: '',
+        locationName: '',
+        address: '',
+        city: '',
+        state: '',
+        country: '',
         maxCapacity: 20,
-        pricingType: "free",
+        pricingType: 'free',
         amount: 0,
-        currency: "USD",
-        skillLevel: "all",
+        currency: 'USD',
+        skillLevel: 'all',
       });
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to create event");
+      setError(err.response?.data?.error || 'Failed to create event');
     } finally {
       setLoading(false);
     }
@@ -222,10 +302,10 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
         <div className="sticky top-0 bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500 p-6 flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-white mb-1">
-              {editingEvent ? "Edit Event" : "Create New Event"}
+              {editingEvent ? 'Edit Event' : 'Create New Event'}
             </h2>
             <p className="text-white/90 text-sm">
-              {editingEvent ? "Update your event details" : "Share your event with the community"}
+              {editingEvent ? 'Update your event details' : 'Share your event with the community'}
             </p>
           </div>
           <button
@@ -285,12 +365,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                 <Camera className="w-4 h-4 text-teal-500" />
                 Event Image
               </label>
-              <ImageUpload
-                images={images}
-                onImagesChange={setImages}
-                maxImages={1}
-                token={token}
-              />
+              <ImageUpload images={images} onImagesChange={setImages} maxImages={1} token={token} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -304,7 +379,9 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                   className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
                 >
                   {SPORTS.map((sport) => (
-                    <option key={sport} value={sport}>{sport}</option>
+                    <option key={sport} value={sport}>
+                      {sport}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -319,7 +396,9 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                   className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
                 >
                   {EVENT_TYPES.map((type) => (
-                    <option key={type.value} value={type.value}>{type.label}</option>
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -334,7 +413,9 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                   className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
                 >
                   {SKILL_LEVELS.map((level) => (
-                    <option key={level.value} value={level.value}>{level.label}</option>
+                    <option key={level.value} value={level.value}>
+                      {level.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -483,7 +564,9 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                   required
                   min="1"
                   value={formData.maxCapacity}
-                  onChange={(e) => setFormData({ ...formData, maxCapacity: Number(e.target.value) })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, maxCapacity: Number(e.target.value) })
+                  }
                   className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
                 />
               </div>
@@ -502,7 +585,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                 </select>
               </div>
 
-              {formData.pricingType === "paid" && (
+              {formData.pricingType === 'paid' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Currency
@@ -522,10 +605,10 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
               )}
             </div>
 
-            {formData.pricingType === "paid" && (
+            {formData.pricingType === 'paid' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Price ({CURRENCIES.find(c => c.code === formData.currency)?.symbol || '$'})
+                  Price ({CURRENCIES.find((c) => c.code === formData.currency)?.symbol || '$'})
                 </label>
                 <input
                   type="number"
@@ -539,20 +622,23 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
               </div>
             )}
 
-            {formData.pricingType === "paid" && (
+            {formData.pricingType === 'paid' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Payment Instructions
                 </label>
                 <textarea
                   value={formData.paymentInstructions}
-                  onChange={(e) => setFormData({ ...formData, paymentInstructions: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, paymentInstructions: e.target.value })
+                  }
                   className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white resize-none"
                   rows={3}
                   placeholder="E.g., Send M-Pesa payment to 0712345678, Account Name: John Doe. Include your name in the description."
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Provide clear instructions for how participants should pay (bank transfer, mobile money, etc.)
+                  Provide clear instructions for how participants should pay (bank transfer, mobile
+                  money, etc.)
                 </p>
               </div>
             )}
@@ -572,10 +658,13 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
               disabled={loading}
               className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-medium rounded-xl transition-all duration-300 shadow-lg shadow-teal-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading 
-                ? (editingEvent ? "Updating..." : "Creating...") 
-                : (editingEvent ? "Update Event" : "Create Event")
-              }
+              {loading
+                ? editingEvent
+                  ? 'Updating...'
+                  : 'Creating...'
+                : editingEvent
+                  ? 'Update Event'
+                  : 'Create Event'}
             </button>
           </div>
         </form>

@@ -1,14 +1,14 @@
 // frontend/src/components/BookingModal.tsx
-import React, { useState } from "react";
-import axios from "axios";
-import { X, Calendar, Clock, MapPin, DollarSign, CheckCircle } from "lucide-react";
-import { API_URL } from "../config/api";
-const API = API_URL.replace(/\/api$/, "");
+import React, { useState } from 'react';
+import axios from 'axios';
+import { X, Calendar, Clock, MapPin, DollarSign, CheckCircle } from 'lucide-react';
+import { API_URL } from '../config/api';
+const API = API_URL.replace(/\/api$/, '');
 
 type BookingModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  bookingType: "service" | "event" | "coach-session";
+  bookingType: 'service' | 'event' | 'coach-session';
   itemId?: string;
   itemName?: string;
   providerId?: string;
@@ -29,27 +29,29 @@ export default function BookingModal({
   providerId,
   providerName,
   price = 0,
-  currency = "USD",
-  paymentInstructions = "",
+  currency = 'USD',
+  paymentInstructions = '',
   token,
   onSuccess,
 }: BookingModalProps) {
   const [step, setStep] = useState(1); // 1: details, 2: payment, 3: confirmation
   const [formData, setFormData] = useState({
-    date: "",
-    time: "",
-    location: "in-person",
-    notes: "",
-    transactionCode: "",
-    transactionDetails: "",
+    date: '',
+    time: '',
+    location: 'in-person',
+    notes: '',
+    transactionCode: '',
+    transactionDetails: '',
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -60,7 +62,7 @@ export default function BookingModal({
     e.preventDefault();
 
     if (!formData.date || !formData.time) {
-      setError("Please select date and time");
+      setError('Please select date and time');
       return;
     }
 
@@ -73,7 +75,7 @@ export default function BookingModal({
     // Step 1 to 3 (confirmation for free events) or Step 2 to 3 (paid events)
     if ((step === 1 && price === 0) || (step === 2 && price > 0)) {
       if (price > 0 && (!formData.transactionCode || !formData.transactionDetails)) {
-        setError("Please provide transaction code and details");
+        setError('Please provide transaction code and details');
         return;
       }
       setStep(price === 0 ? 2 : 3);
@@ -83,7 +85,7 @@ export default function BookingModal({
     // Final step: Create booking
     try {
       setLoading(true);
-      setError("");
+      setError('');
 
       const bookingData: any = {
         bookingType,
@@ -95,11 +97,11 @@ export default function BookingModal({
         transactionDetails: formData.transactionDetails,
       };
 
-      if (bookingType === "service") {
+      if (bookingType === 'service') {
         bookingData.serviceId = itemId;
-      } else if (bookingType === "event") {
+      } else if (bookingType === 'event') {
         bookingData.eventId = itemId;
-      } else if (bookingType === "coach-session") {
+      } else if (bookingType === 'coach-session') {
         bookingData.providerId = providerId;
         bookingData.pricing = {
           amount: price,
@@ -107,7 +109,7 @@ export default function BookingModal({
         };
         bookingData.duration = {
           value: 60,
-          unit: "minutes",
+          unit: 'minutes',
         };
       }
 
@@ -122,8 +124,8 @@ export default function BookingModal({
         handleClose();
       }, 2000);
     } catch (err: any) {
-      console.error("Booking error:", err);
-      setError(err.response?.data?.error || "Failed to create booking");
+      console.error('Booking error:', err);
+      setError(err.response?.data?.error || 'Failed to create booking');
     } finally {
       setLoading(false);
     }
@@ -131,15 +133,15 @@ export default function BookingModal({
 
   const handleClose = () => {
     setStep(1);
-    setFormData({ 
-      date: "", 
-      time: "", 
-      location: "in-person", 
-      notes: "",
-      transactionCode: "",
-      transactionDetails: "",
+    setFormData({
+      date: '',
+      time: '',
+      location: 'in-person',
+      notes: '',
+      transactionCode: '',
+      transactionDetails: '',
     });
-    setError("");
+    setError('');
     setBookingConfirmed(false);
     onClose();
   };
@@ -150,14 +152,13 @@ export default function BookingModal({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            {bookingConfirmed 
-              ? "Booking Submitted!" 
-              : step === 1 
-              ? "Book Session" 
-              : step === 2 
-              ? "Payment Information"
-              : "Confirm Booking"
-            }
+            {bookingConfirmed
+              ? 'Booking Submitted!'
+              : step === 1
+                ? 'Book Session'
+                : step === 2
+                  ? 'Payment Information'
+                  : 'Confirm Booking'}
           </h2>
           <button
             onClick={handleClose}
@@ -173,13 +174,12 @@ export default function BookingModal({
               <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              {price > 0 ? "Booking request submitted!" : "Your booking has been confirmed!"}
+              {price > 0 ? 'Booking request submitted!' : 'Your booking has been confirmed!'}
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              {price > 0 
-                ? "The organizer will verify your payment and confirm your booking."
-                : "You'll receive a confirmation email shortly."
-              }
+              {price > 0
+                ? 'The organizer will verify your payment and confirm your booking.'
+                : "You'll receive a confirmation email shortly."}
             </p>
           </div>
         ) : (
@@ -188,10 +188,10 @@ export default function BookingModal({
               {/* Item Info */}
               <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                  {itemName || "Session"}
+                  {itemName || 'Session'}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  with {providerName || "Coach"}
+                  with {providerName || 'Coach'}
                 </p>
                 {price > 0 && (
                   <div className="flex items-center gap-2 mt-2 text-teal-600 dark:text-teal-400">
@@ -214,7 +214,7 @@ export default function BookingModal({
                       name="date"
                       value={formData.date}
                       onChange={handleChange}
-                      min={new Date().toISOString().split("T")[0]}
+                      min={new Date().toISOString().split('T')[0]}
                       required
                       className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500"
                     />
@@ -276,8 +276,12 @@ export default function BookingModal({
                   {/* Payment Instructions */}
                   {paymentInstructions && (
                     <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                      <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">Payment Instructions:</h4>
-                      <p className="text-sm text-blue-800 dark:text-blue-200 whitespace-pre-line">{paymentInstructions}</p>
+                      <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">
+                        Payment Instructions:
+                      </h4>
+                      <p className="text-sm text-blue-800 dark:text-blue-200 whitespace-pre-line">
+                        {paymentInstructions}
+                      </p>
                     </div>
                   )}
 
@@ -315,7 +319,8 @@ export default function BookingModal({
 
                   <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
                     <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                      <strong>Note:</strong> Your booking will be pending until the organizer verifies your payment details.
+                      <strong>Note:</strong> Your booking will be pending until the organizer
+                      verifies your payment details.
                     </p>
                   </div>
                 </>
@@ -326,22 +331,24 @@ export default function BookingModal({
                   <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
                     <span className="text-gray-600 dark:text-gray-400">Date:</span>
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {new Date(formData.date).toLocaleDateString("en-US", {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
+                      {new Date(formData.date).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
                       })}
                     </span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
                     <span className="text-gray-600 dark:text-gray-400">Time:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">{formData.time}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {formData.time}
+                    </span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
                     <span className="text-gray-600 dark:text-gray-400">Location:</span>
                     <span className="font-medium text-gray-900 dark:text-white capitalize">
-                      {formData.location.replace("-", " ")}
+                      {formData.location.replace('-', ' ')}
                     </span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
@@ -382,12 +389,11 @@ export default function BookingModal({
                 disabled={loading}
                 className="flex-1 px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 text-white font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading 
-                  ? "Processing..." 
-                  : (step === 3 || (step === 2 && price === 0)) 
-                  ? "Confirm Booking" 
-                  : "Continue"
-                }
+                {loading
+                  ? 'Processing...'
+                  : step === 3 || (step === 2 && price === 0)
+                    ? 'Confirm Booking'
+                    : 'Continue'}
               </button>
             </div>
           </form>

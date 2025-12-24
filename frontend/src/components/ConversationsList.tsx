@@ -1,17 +1,17 @@
 // frontend/src/components/ConversationsList.tsx
-import React, { useEffect, useState, useRef } from "react";
-import axios from "axios";
-import { API_URL } from "../config/api";
-import Avatar from "./Avatar";
-import { Trash2, MessageSquareOff } from "lucide-react";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { socket } from "../socket";
+import React, { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
+import { API_URL } from '../config/api';
+import Avatar from './Avatar';
+import { Trash2, MessageSquareOff } from 'lucide-react';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { socket } from '../socket';
 
 dayjs.extend(relativeTime);
 
-const API = API_URL.replace(/\/api$/, "");
-const PLACEHOLDER = "https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff";
+const API = API_URL.replace(/\/api$/, '');
+const PLACEHOLDER = 'https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff';
 
 export default function ConversationsList({
   token,
@@ -23,9 +23,9 @@ export default function ConversationsList({
   const [conversations, setConversations] = useState<any[]>([]);
   const [totalUnread, setTotalUnread] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState<string>("");
+  const [query, setQuery] = useState<string>('');
   const [showAll, setShowAll] = useState<boolean>(false);
-  const [debouncedQuery, setDebouncedQuery] = useState<string>("");
+  const [debouncedQuery, setDebouncedQuery] = useState<string>('');
   const refreshTimer = React.useRef<number | null>(null);
   const pollingTimer = React.useRef<number | null>(null);
   const [longPressFor, setLongPressFor] = useState<string | null>(null);
@@ -33,7 +33,9 @@ export default function ConversationsList({
   const [showLongPressHint, setShowLongPressHint] = useState<boolean>(() => {
     try {
       return !localStorage.getItem('auralink-hint-conversations-longpress');
-    } catch { return true; }
+    } catch {
+      return true;
+    }
   });
 
   function updateConversations(list: any[]) {
@@ -49,7 +51,9 @@ export default function ConversationsList({
       const inWebView = typeof window !== 'undefined' && (window as any).ReactNativeWebView;
       const debugEnabled = localStorage.getItem('DEBUG_WEBVIEW') === 'true';
       return inWebView && debugEnabled && !dismissed;
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   });
   const debugInfo = React.useMemo(() => {
     try {
@@ -58,11 +62,13 @@ export default function ConversationsList({
       const u = JSON.parse(userRaw);
       const uid = u?._id || u?.id || '';
       return { api: API || '', token: tokenSet ? 'present' : 'missing', userId: uid || 'unset' };
-    } catch { return { api: API || '', token: 'unknown', userId: 'unknown' }; }
+    } catch {
+      return { api: API || '', token: 'unknown', userId: 'unknown' };
+    }
   }, []);
 
   // Cache TTL in ms (2 minutes)
-  const CACHE_KEY = "auralink-conversations-cache";
+  const CACHE_KEY = 'auralink-conversations-cache';
   const CACHE_TTL = 2 * 60 * 1000;
 
   useEffect(() => {
@@ -72,14 +78,18 @@ export default function ConversationsList({
       const raw = localStorage.getItem(CACHE_KEY);
       if (raw) {
         const cached = JSON.parse(raw);
-        const list = Array.isArray(cached?.data) ? cached.data : Array.isArray(cached) ? cached : [];
+        const list = Array.isArray(cached?.data)
+          ? cached.data
+          : Array.isArray(cached)
+            ? cached
+            : [];
         const sorted = sortConversations(list);
         setConversations(sorted);
         setTotalUnread(sorted.reduce((sum: number, c: any) => sum + (c.unreadCount || 0), 0));
         const age = cached?.ts ? Date.now() - cached.ts : CACHE_TTL + 1;
         if (age <= CACHE_TTL) {
           // Fresh cache; skip immediate network fetch
-          setLoading(false); 
+          setLoading(false);
         } else {
           setLoading(true);
           loadConversations();
@@ -92,7 +102,9 @@ export default function ConversationsList({
     }
     // Background silent refresh every 30s to keep unread counts fresh
     if (pollingTimer.current) {
-      try { window.clearInterval(pollingTimer.current); } catch {}
+      try {
+        window.clearInterval(pollingTimer.current);
+      } catch {}
       pollingTimer.current = null;
     }
     pollingTimer.current = window.setInterval(() => {
@@ -100,7 +112,9 @@ export default function ConversationsList({
     }, 30000) as any;
     return () => {
       if (pollingTimer.current) {
-        try { window.clearInterval(pollingTimer.current); } catch {}
+        try {
+          window.clearInterval(pollingTimer.current);
+        } catch {}
         pollingTimer.current = null;
       }
     };
@@ -125,7 +139,14 @@ export default function ConversationsList({
           const isMine = String(msg?.sender?._id || msg?.senderId) === String(currentUserId);
           const updated: any = {
             ...c,
-            lastMessage: msg?.message || msg?.text ? { text: msg.message || msg.text, createdAt: msg.createdAt || Date.now(), sender: msg.sender } : c.lastMessage,
+            lastMessage:
+              msg?.message || msg?.text
+                ? {
+                    text: msg.message || msg.text,
+                    createdAt: msg.createdAt || Date.now(),
+                    sender: msg.sender,
+                  }
+                : c.lastMessage,
             updatedAt: msg?.createdAt || Date.now(),
             unreadCount: isMine ? c.unreadCount || 0 : (c.unreadCount || 0) + 1,
           };
@@ -147,7 +168,9 @@ export default function ConversationsList({
           const isLast = String(c.lastMessage?._id) === String(payload?._id);
           const updated = {
             ...c,
-            lastMessage: isLast ? { ...c.lastMessage, text: payload?.text || payload?.message } : c.lastMessage,
+            lastMessage: isLast
+              ? { ...c.lastMessage, text: payload?.text || payload?.message }
+              : c.lastMessage,
           };
           const next = [...prev];
           next[idx] = updated;
@@ -156,13 +179,13 @@ export default function ConversationsList({
       } catch {}
     }
     try {
-      socket?.on("receive_message", onReceiveMessage);
-      socket?.on("message_edited", onMessageEdited);
+      socket?.on('receive_message', onReceiveMessage);
+      socket?.on('message_edited', onMessageEdited);
     } catch {}
     return () => {
       try {
-        socket?.off("receive_message", onReceiveMessage);
-        socket?.off("message_edited", onMessageEdited);
+        socket?.off('receive_message', onReceiveMessage);
+        socket?.off('message_edited', onMessageEdited);
       } catch {}
     };
   }, [currentUserId]);
@@ -170,11 +193,11 @@ export default function ConversationsList({
   function loadConversations(silent: boolean = false) {
     if (!silent) setLoading(true);
     axios
-      .get(API + "/api/conversations", {
-        headers: { Authorization: "Bearer " + token },
+      .get(API + '/api/conversations', {
+        headers: { Authorization: 'Bearer ' + token },
       })
       .then((r) => {
-        const convs = Array.isArray(r.data) ? r.data : (r.data || []);
+        const convs = Array.isArray(r.data) ? r.data : r.data || [];
         const sorted = sortConversations(convs);
         updateConversations(sorted);
         try {
@@ -185,10 +208,10 @@ export default function ConversationsList({
         try {
           const status = err?.response?.status;
           const data = err?.response?.data;
-          const url = (err?.config?.baseURL || "") + (err?.config?.url || "");
-          console.error("ConversationsList error", { url, status, data });
+          const url = (err?.config?.baseURL || '') + (err?.config?.url || '');
+          console.error('ConversationsList error', { url, status, data });
         } catch {
-          console.error("ConversationsList error", err);
+          console.error('ConversationsList error', err);
         }
         // keep any cached list rather than clearing to empty
       })
@@ -210,42 +233,42 @@ export default function ConversationsList({
 
   function avatarUrl(u: any) {
     if (!u?.avatar) return PLACEHOLDER;
-    if (u.avatar.startsWith("http")) return u.avatar;
-    if (u.avatar.startsWith("/")) return API + u.avatar;
-    return API + "/uploads/" + u.avatar;
+    if (u.avatar.startsWith('http')) return u.avatar;
+    if (u.avatar.startsWith('/')) return API + u.avatar;
+    return API + '/uploads/' + u.avatar;
   }
 
   async function handleDeleteConversation(convId: string, e: React.MouseEvent) {
     e.stopPropagation();
-    if (!confirm("Delete this conversation? (Only for you)")) return;
+    if (!confirm('Delete this conversation? (Only for you)')) return;
 
     try {
       await axios.delete(`${API}/api/conversations/${convId}`, {
-        headers: { Authorization: "Bearer " + token },
+        headers: { Authorization: 'Bearer ' + token },
       });
-      
+
       // Reload conversations from server (will filter out if empty)
       loadConversations();
     } catch (err) {
-      console.error("Delete conversation error:", err);
-      alert("Failed to delete conversation");
+      console.error('Delete conversation error:', err);
+      alert('Failed to delete conversation');
     }
   }
 
   async function handleClearMessages(convId: string, e: React.MouseEvent) {
     e.stopPropagation();
-    if (!confirm("Clear all messages in this chat? (Only for you)")) return;
+    if (!confirm('Clear all messages in this chat? (Only for you)')) return;
 
     try {
       await axios.delete(`${API}/api/conversations/${convId}/messages`, {
-        headers: { Authorization: "Bearer " + token },
+        headers: { Authorization: 'Bearer ' + token },
       });
-      
+
       // Reload conversations from server (will filter out if empty)
       loadConversations();
     } catch (err) {
-      console.error("Clear messages error:", err);
-      alert("Failed to clear messages");
+      console.error('Clear messages error:', err);
+      alert('Failed to clear messages');
     }
   }
 
@@ -253,11 +276,17 @@ export default function ConversationsList({
     const q = debouncedQuery;
     if (!q) return conversations;
     return conversations.filter((c: any) => {
-      const partner = (c.participants || []).find((p: any) => String(p._id) !== String(currentUserId));
+      const partner = (c.participants || []).find(
+        (p: any) => String(p._id) !== String(currentUserId),
+      );
       const u = partner || {};
       return (
-        String(u.username || "").toLowerCase().includes(q) ||
-        String(u.status || "").toLowerCase().includes(q)
+        String(u.username || '')
+          .toLowerCase()
+          .includes(q) ||
+        String(u.status || '')
+          .toLowerCase()
+          .includes(q)
       );
     });
   }, [conversations, debouncedQuery, currentUserId]);
@@ -295,15 +324,27 @@ export default function ConversationsList({
   return (
     <div className="flex flex-col gap-2 sm:gap-3">
       {showDebugBanner && (
-        <div className="rounded-lg px-3 py-2 text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200 border" style={{ borderColor: 'var(--border)' }}>
+        <div
+          className="rounded-lg px-3 py-2 text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200 border"
+          style={{ borderColor: 'var(--border)' }}
+        >
           <div className="flex items-center justify-between gap-2">
             <div className="flex-1">
-              <div><span className="font-semibold">Debug:</span> API_URL = {debugInfo.api || 'unset'}</div>
-              <div>Token = {debugInfo.token}; UserId = {debugInfo.userId}</div>
+              <div>
+                <span className="font-semibold">Debug:</span> API_URL = {debugInfo.api || 'unset'}
+              </div>
+              <div>
+                Token = {debugInfo.token}; UserId = {debugInfo.userId}
+              </div>
             </div>
             <button
               className="text-[11px] px-2 py-1 rounded-md bg-white/60 dark:bg-slate-700/60 hover:opacity-80"
-              onClick={() => { try { localStorage.setItem('dm-debug-banner-dismissed','true'); } catch {}; setShowDebugBanner(false); }}
+              onClick={() => {
+                try {
+                  localStorage.setItem('dm-debug-banner-dismissed', 'true');
+                } catch {}
+                setShowDebugBanner(false);
+              }}
             >
               Hide
             </button>
@@ -311,13 +352,20 @@ export default function ConversationsList({
         </div>
       )}
       {showLongPressHint && (
-        <div className="rounded-lg px-3 py-2 text-xs bg-gradient-to-r from-indigo-500/10 to-emerald-500/10 border" style={{ borderColor: 'var(--border)' }}>
+        <div
+          className="rounded-lg px-3 py-2 text-xs bg-gradient-to-r from-indigo-500/10 to-emerald-500/10 border"
+          style={{ borderColor: 'var(--border)' }}
+        >
           <div className="flex items-center justify-between gap-2">
-            <span className="text-theme-secondary">Tip: Press and hold a conversation for actions.</span>
+            <span className="text-theme-secondary">
+              Tip: Press and hold a conversation for actions.
+            </span>
             <button
               className="text-[11px] px-2 py-1 rounded-md bg-white/60 dark:bg-slate-700/60 hover:opacity-80"
               onClick={() => {
-                try { localStorage.setItem('auralink-hint-conversations-longpress', 'true'); } catch {}
+                try {
+                  localStorage.setItem('auralink-hint-conversations-longpress', 'true');
+                } catch {}
                 setShowLongPressHint(false);
               }}
             >
@@ -351,7 +399,11 @@ export default function ConversationsList({
             Refresh
           </button>
           {filtered.length > 50 && (
-            <button className="text-xs px-3 py-1.5 rounded-md border" style={{ borderColor: 'var(--border)' }} onClick={() => setShowAll((v) => !v)}>
+            <button
+              className="text-xs px-3 py-1.5 rounded-md border"
+              style={{ borderColor: 'var(--border)' }}
+              onClick={() => setShowAll((v) => !v)}
+            >
               {showAll ? 'Show first 50' : `Show all (${filtered.length})`}
             </button>
           )}
@@ -361,7 +413,11 @@ export default function ConversationsList({
       {loading ? (
         <div className="space-y-2">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="p-3 rounded-lg border animate-pulse" style={{ borderColor: 'var(--border)' }}>
+            <div
+              key={i}
+              className="p-3 rounded-lg border animate-pulse"
+              style={{ borderColor: 'var(--border)' }}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-md" style={{ background: 'var(--muted)' }} />
                 <div className="flex-1 space-y-2">
@@ -382,7 +438,7 @@ export default function ConversationsList({
       ) : (
         visible.map((c: any) => {
           const partner = (c.participants || []).find(
-            (p: any) => String(p._id) !== String(currentUserId)
+            (p: any) => String(p._id) !== String(currentUserId),
           );
 
           if (!partner) return null;
@@ -397,9 +453,10 @@ export default function ConversationsList({
                 p-3 sm:p-4 rounded-lg 
                 bg-white dark:bg-slate-800
                 border-2 transition-all
-                ${unreadCount > 0 
-                  ? 'border-emerald-400 dark:border-emerald-500 shadow-md shadow-emerald-100 dark:shadow-emerald-900/30' 
-                  : 'border-gray-200 dark:border-gray-700 hover:shadow-md'
+                ${
+                  unreadCount > 0
+                    ? 'border-emerald-400 dark:border-emerald-500 shadow-md shadow-emerald-100 dark:shadow-emerald-900/30'
+                    : 'border-gray-200 dark:border-gray-700 hover:shadow-md'
                 }
                 gap-3 relative
               `}
@@ -441,8 +498,15 @@ export default function ConversationsList({
                         if (idx === -1) return prev;
                         const next = [...prev];
                         next[idx] = { ...next[idx], unreadCount: 0 };
-                        setTotalUnread(next.reduce((sum: number, x: any) => sum + (x.unreadCount || 0), 0));
-                        try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: next })); } catch {}
+                        setTotalUnread(
+                          next.reduce((sum: number, x: any) => sum + (x.unreadCount || 0), 0),
+                        );
+                        try {
+                          localStorage.setItem(
+                            CACHE_KEY,
+                            JSON.stringify({ ts: Date.now(), data: next }),
+                          );
+                        } catch {}
                         return next;
                       });
                       onOpenConversation(c);
@@ -453,9 +517,11 @@ export default function ConversationsList({
                   </div>
                   {/* Last message preview + relative time */}
                   <div className="text-xs mt-0.5 text-slate-500 dark:text-slate-400 truncate">
-                    {c.lastMessage?.text ? c.lastMessage.text : (c.lastMessage ? "(attachment)" : "")}
+                    {c.lastMessage?.text ? c.lastMessage.text : c.lastMessage ? '(attachment)' : ''}
                     {c.lastMessage?.createdAt && (
-                      <span className="ml-2 text-[10px] text-slate-400">• {dayjs(c.lastMessage.createdAt).fromNow()}</span>
+                      <span className="ml-2 text-[10px] text-slate-400">
+                        • {dayjs(c.lastMessage.createdAt).fromNow()}
+                      </span>
                     )}
                   </div>
                 </div>

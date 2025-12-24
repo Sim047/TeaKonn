@@ -1,10 +1,10 @@
-import React from "react";
-import axios from "axios";
-import { API_URL } from "../config/api";
-import { X, MessageCircle, UserPlus, UserMinus } from "lucide-react";
+import React from 'react';
+import axios from 'axios';
+import { API_URL } from '../config/api';
+import { X, MessageCircle, UserPlus, UserMinus } from 'lucide-react';
 
-const API = API_URL.replace(/\/api$/, "");
-const PLACEHOLDER = "https://placehold.co/80x80?text=U";
+const API = API_URL.replace(/\/api$/, '');
+const PLACEHOLDER = 'https://placehold.co/80x80?text=U';
 
 export default function UserProfileModal({
   user,
@@ -36,10 +36,14 @@ export default function UserProfileModal({
       const obj = JSON.parse(raw);
       if (!obj || !obj.ts || Date.now() - obj.ts > CACHE_TTL) return null;
       return obj.data;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
   function writeCache(key: string, data: any) {
-    try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch {}
+    try {
+      localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data }));
+    } catch {}
   }
 
   React.useEffect(() => {
@@ -53,8 +57,8 @@ export default function UserProfileModal({
       setLoading(false);
     }
     axios
-      .get(API + "/api/users/" + user._id, {
-        headers: { Authorization: "Bearer " + token },
+      .get(API + '/api/users/' + user._id, {
+        headers: { Authorization: 'Bearer ' + token },
         timeout: 8000,
       })
       .then((r) => {
@@ -68,83 +72,97 @@ export default function UserProfileModal({
   React.useEffect(() => {
     if (!user || !visible) return;
     setLoadingContent(true);
-    const headers = token ? { Authorization: "Bearer " + token } : undefined;
+    const headers = token ? { Authorization: 'Bearer ' + token } : undefined;
     const evCacheKey = `auralink-cache-user-events:${user._id}`;
     const poCacheKey = `auralink-cache-user-posts:${user._id}`;
     const cachedEv = readCache(evCacheKey);
     const cachedPo = readCache(poCacheKey);
     if (cachedEv) {
       setEvents(cachedEv.events || cachedEv);
-      setEventCount(cachedEv.total || (cachedEv.events ? cachedEv.events.length : cachedEv.length) || 0);
+      setEventCount(
+        cachedEv.total || (cachedEv.events ? cachedEv.events.length : cachedEv.length) || 0,
+      );
     }
     if (cachedPo) {
       setPosts(cachedPo.posts || cachedPo);
-      setPostCount(cachedPo.totalPosts || (cachedPo.posts ? cachedPo.posts.length : cachedPo.length) || 0);
+      setPostCount(
+        cachedPo.totalPosts || (cachedPo.posts ? cachedPo.posts.length : cachedPo.length) || 0,
+      );
     }
-    const eventsReq = axios.get(`${API}/api/events/user/${user._id}?page=1&limit=10`, { ...(headers ? { headers } : {}), timeout: 8000 });
-    const postsReq = axios.get(`${API}/api/posts/user/${user._id}?page=1&limit=10`, { ...(headers ? { headers } : {}), timeout: 8000 });
+    const eventsReq = axios.get(`${API}/api/events/user/${user._id}?page=1&limit=10`, {
+      ...(headers ? { headers } : {}),
+      timeout: 8000,
+    });
+    const postsReq = axios.get(`${API}/api/posts/user/${user._id}?page=1&limit=10`, {
+      ...(headers ? { headers } : {}),
+      timeout: 8000,
+    });
     Promise.allSettled([eventsReq, postsReq])
       .then((results) => {
-        const evResp = results[0].status === "fulfilled" ? (results[0] as any).value.data : {};
+        const evResp = results[0].status === 'fulfilled' ? (results[0] as any).value.data : {};
         const ev = evResp.events || (Array.isArray(evResp) ? evResp : []);
-        const poResp = results[1].status === "fulfilled" ? (results[1] as any).value.data : {};
+        const poResp = results[1].status === 'fulfilled' ? (results[1] as any).value.data : {};
         const po = poResp.posts || (Array.isArray(poResp) ? poResp : []);
         setEvents(ev);
         setPosts(po);
         setEventCount(evResp.total || ev.length || 0);
         setPostCount(poResp.totalPosts || po.length || 0);
-        if (ev.length) writeCache(evCacheKey, evResp.total ? { events: ev, total: evResp.total } : ev);
-        if (po.length) writeCache(poCacheKey, poResp.totalPosts ? { posts: po, totalPosts: poResp.totalPosts } : po);
+        if (ev.length)
+          writeCache(evCacheKey, evResp.total ? { events: ev, total: evResp.total } : ev);
+        if (po.length)
+          writeCache(
+            poCacheKey,
+            poResp.totalPosts ? { posts: po, totalPosts: poResp.totalPosts } : po,
+          );
       })
       .finally(() => setLoadingContent(false));
   }, [user, visible, token]);
 
   async function toggleFollow() {
     try {
-      const action = followState ? "unfollow" : "follow";
+      const action = followState ? 'unfollow' : 'follow';
 
       await axios.post(
         `${API}/api/users/${user._id}/${action}`,
         {},
-        { headers: { Authorization: "Bearer " + token } }
+        { headers: { Authorization: 'Bearer ' + token } },
       );
 
       setFollowState(!followState);
-      
+
       // Update local details count
       if (details) {
         setDetails({
           ...details,
-          followersCount: followState ? details.followersCount - 1 : details.followersCount + 1
+          followersCount: followState ? details.followersCount - 1 : details.followersCount + 1,
         });
       }
     } catch (err) {
-      console.error("follow error:", err);
+      console.error('follow error:', err);
     }
   }
 
   function avatar() {
     if (!user?.avatar) return PLACEHOLDER;
-    if (user.avatar.startsWith("http")) return user.avatar;
-    if (user.avatar.startsWith("/")) return API + user.avatar;
-    return API + "/uploads/" + user.avatar;
+    if (user.avatar.startsWith('http')) return user.avatar;
+    if (user.avatar.startsWith('/')) return API + user.avatar;
+    return API + '/uploads/' + user.avatar;
   }
 
   function formatLocation(loc: any): string {
     try {
-      if (!loc) return "";
-      if (typeof loc === "string") return loc;
+      if (!loc) return '';
+      if (typeof loc === 'string') return loc;
       const parts = [loc.name, loc.city, loc.state, loc.country].filter(Boolean);
-      return parts.join(", ");
+      return parts.join(', ');
     } catch {
-      return "";
+      return '';
     }
   }
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
       <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto border border-cyan-500/30 shadow-2xl">
-        
         {/* Header with gradient */}
         <div className="bg-gradient-to-r from-cyan-600 to-purple-600 p-6 text-center relative">
           <button
@@ -153,7 +171,7 @@ export default function UserProfileModal({
           >
             <X className="w-5 h-5" />
           </button>
-          
+
           <img
             src={avatar()}
             className="w-24 h-24 rounded-full mx-auto object-cover border-4 border-white/20 shadow-xl"
@@ -200,8 +218,8 @@ export default function UserProfileModal({
                 onClick={toggleFollow}
                 className={`w-full py-3 rounded-xl font-bold text-lg transition-all shadow-lg flex items-center justify-center gap-2 ${
                   followState
-                    ? "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white"
-                    : "bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white"
+                    ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white'
+                    : 'bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white'
                 }`}
               >
                 {followState ? (
@@ -232,10 +250,10 @@ export default function UserProfileModal({
           <div className="mt-2">
             <div className="flex items-center gap-2 mb-3">
               <button
-                className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${tab === "events" ? "bg-cyan-600 text-white" : "bg-white/10 text-gray-300 hover:bg-white/20"}`}
-                onClick={() => setTab("events")}
+                className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${tab === 'events' ? 'bg-cyan-600 text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
+                onClick={() => setTab('events')}
               >
-                Events {eventCount ? `(${eventCount})` : ""}
+                Events {eventCount ? `(${eventCount})` : ''}
               </button>
               <button
                 className="px-3 py-2 rounded-xl text-sm font-semibold bg-white/10 text-gray-300 hover:bg-white/20"
@@ -261,7 +279,10 @@ export default function UserProfileModal({
                   <div className="text-center text-gray-400 text-sm py-6">No events yet</div>
                 ) : (
                   (() => {
-                    const ev = [...events].sort((a: any, b: any) => new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime())[0];
+                    const ev = [...events].sort(
+                      (a: any, b: any) =>
+                        new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime(),
+                    )[0];
                     return (
                       <button
                         key={ev._id}
@@ -270,16 +291,30 @@ export default function UserProfileModal({
                             localStorage.setItem('auralink-highlight-event', ev._id);
                             localStorage.setItem('auralink-discover-category', 'sports');
                           } catch {}
-                          if (onNavigate) onNavigate('discover'); else window.location.href = '/';
+                          if (onNavigate) onNavigate('discover');
+                          else window.location.href = '/';
                         }}
                         className="w-full text-left bg-white/5 rounded-xl p-3 border border-white/10 hover:border-cyan-500/40 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <img src={ev.image || PLACEHOLDER} alt={ev.title} className="w-12 h-12 rounded-lg object-cover" />
+                          <img
+                            src={ev.image || PLACEHOLDER}
+                            alt={ev.title}
+                            className="w-12 h-12 rounded-lg object-cover"
+                          />
                           <div className="flex-1 min-w-0">
-                            <div className="text-white font-semibold text-sm line-clamp-1 break-words" title={ev.title || 'Untitled Event'}>{ev.title || "Untitled Event"}</div>
-                            <div className="text-xs text-gray-400">{formatLocation(ev.location)}</div>
-                            <div className="text-xs text-cyan-300">{ev.startDate ? new Date(ev.startDate).toLocaleDateString() : ""}</div>
+                            <div
+                              className="text-white font-semibold text-sm line-clamp-1 break-words"
+                              title={ev.title || 'Untitled Event'}
+                            >
+                              {ev.title || 'Untitled Event'}
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              {formatLocation(ev.location)}
+                            </div>
+                            <div className="text-xs text-cyan-300">
+                              {ev.startDate ? new Date(ev.startDate).toLocaleDateString() : ''}
+                            </div>
                           </div>
                         </div>
                       </button>

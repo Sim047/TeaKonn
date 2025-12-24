@@ -1,39 +1,51 @@
 // All Events - Organized view of all user events
-import { useState, useEffect } from "react";
-import axios from "axios";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { 
-  Calendar, Clock, MapPin, Users, ArrowLeft,
-  CheckCircle, XCircle, AlertCircle,
-  Loader, Star, Trophy, DollarSign, Search
-} from "lucide-react";
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  ArrowLeft,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Loader,
+  Star,
+  Trophy,
+  DollarSign,
+  Search,
+} from 'lucide-react';
 
 dayjs.extend(relativeTime);
 
-import { API_URL } from "../config/api";
-const API = API_URL.replace(/\/api$/, "");
+import { API_URL } from '../config/api';
+const API = API_URL.replace(/\/api$/, '');
 
-function toOtherItem(p: any, role: "organizing" | "participating") {
+function toOtherItem(p: any, role: 'organizing' | 'participating') {
   return {
     _id: p._id,
-    title: p.title || p.caption || "Post",
+    title: p.title || p.caption || 'Post',
     startDate: p.createdAt,
     time: null,
-    location: p.location || "",
+    location: p.location || '',
     participants: p.participants || [],
-    organizer: p.author ? { _id: p.author._id || p.author, username: p.author.username, avatar: p.author.avatar } : undefined,
+    organizer: p.author
+      ? { _id: p.author._id || p.author, username: p.author.username, avatar: p.author.avatar }
+      : undefined,
     role,
     isOther: true,
-    source: "post",
+    source: 'post',
   };
 }
 
 export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: any) {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [search, setSearch] = useState("");
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
   const [showPastOnly, setShowPastOnly] = useState<boolean>(() => {
     try {
       return localStorage.getItem('auralink-all-events-filter') === 'past';
@@ -49,8 +61,8 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
   async function loadEvents() {
     try {
       setLoading(true);
-      setError("");
-      
+      setError('');
+
       // Load all events (created + participating) and other events (posts tagged as events)
       const [createdRes, participatingRes, postsRes] = await Promise.all([
         axios.get(`${API}/api/events/my/created`, {
@@ -65,28 +77,39 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
         }),
       ]);
 
-      const created = (createdRes.data.events || []).map((e: any) => ({ ...e, role: "organizing", isOther: false, source: "event" }));
+      const created = (createdRes.data.events || []).map((e: any) => ({
+        ...e,
+        role: 'organizing',
+        isOther: false,
+        source: 'event',
+      }));
       const all = participatingRes.data.events || [];
       const postsAll = (postsRes.data?.posts || postsRes.data || []).filter((p: any) => {
-        const tags = Array.isArray(p.tags) ? p.tags : (p.tags ? [p.tags] : []);
-        return tags.some((t: any) => String(t || "").toLowerCase().includes("event"));
+        const tags = Array.isArray(p.tags) ? p.tags : p.tags ? [p.tags] : [];
+        return tags.some((t: any) =>
+          String(t || '')
+            .toLowerCase()
+            .includes('event'),
+        );
       });
-      
+
       // Get user ID from token
       const payload = JSON.parse(atob(token.split('.')[1]));
       const userId = payload.id || payload._id;
-      
+
       const participating = all
         .filter((e: any) => e.participants?.some((p: any) => p._id === userId || p === userId))
-        .map((e: any) => ({ ...e, role: "participating", isOther: false, source: "event" }));
+        .map((e: any) => ({ ...e, role: 'participating', isOther: false, source: 'event' }));
 
       // Other Events (posts): authored and participating
       const authoredOther = postsAll
         .filter((p: any) => String(p.author?._id || p.author) === String(userId))
-        .map((p: any) => toOtherItem(p, "organizing"));
+        .map((p: any) => toOtherItem(p, 'organizing'));
       const participatingOther = postsAll
-        .filter((p: any) => (p.participants || []).some((u: any) => String(u?._id || u) === String(userId)))
-        .map((p: any) => toOtherItem(p, "participating"));
+        .filter((p: any) =>
+          (p.participants || []).some((u: any) => String(u?._id || u) === String(userId)),
+        )
+        .map((p: any) => toOtherItem(p, 'participating'));
 
       // Combine and deduplicate across sources
       const combined = [...created, ...participating, ...authoredOther, ...participatingOther];
@@ -100,29 +123,35 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
 
       setEvents(deduped);
     } catch (err: any) {
-      console.error("Load events error:", err);
-      setError(err.response?.data?.error || "Failed to load events");
+      console.error('Load events error:', err);
+      setError(err.response?.data?.error || 'Failed to load events');
     } finally {
       setLoading(false);
     }
   }
 
-  const displayEvents = events.filter((e) => {
-    const q = search.trim().toLowerCase();
-    if (!q) return true;
-    const loc = e.location?.city || e.location?.name || e.location?.state || "";
-    return (
-      String(e.title || "").toLowerCase().includes(q) ||
-      String(e.sport || "").toLowerCase().includes(q) ||
-      String(loc).toLowerCase().includes(q)
-    );
-  }).filter((e) => {
-    if (!showPastOnly) return true;
-    // Past applies only to real events (not Other Events/posts)
-    const isArchived = !!(e as any).archivedAt;
-    const isPastDate = !isArchived && !e.isOther && new Date(e.startDate) < new Date();
-    return !e.isOther && (isArchived || isPastDate);
-  });
+  const displayEvents = events
+    .filter((e) => {
+      const q = search.trim().toLowerCase();
+      if (!q) return true;
+      const loc = e.location?.city || e.location?.name || e.location?.state || '';
+      return (
+        String(e.title || '')
+          .toLowerCase()
+          .includes(q) ||
+        String(e.sport || '')
+          .toLowerCase()
+          .includes(q) ||
+        String(loc).toLowerCase().includes(q)
+      );
+    })
+    .filter((e) => {
+      if (!showPastOnly) return true;
+      // Past applies only to real events (not Other Events/posts)
+      const isArchived = !!(e as any).archivedAt;
+      const isPastDate = !isArchived && !e.isOther && new Date(e.startDate) < new Date();
+      return !e.isOther && (isArchived || isPastDate);
+    });
 
   return (
     <div className="min-h-screen themed-page">
@@ -136,15 +165,11 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </button>
-          
+
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-heading mb-2">
-                All Events
-              </h1>
-              <p className="text-theme-secondary">
-                Manage all your events in one place
-              </p>
+              <h1 className="text-3xl font-bold text-heading mb-2">All Events</h1>
+              <p className="text-theme-secondary">Manage all your events in one place</p>
             </div>
             {showPastOnly && (
               <div className="flex items-center gap-2">
@@ -153,7 +178,9 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
                 </span>
                 <button
                   onClick={() => {
-                    try { localStorage.setItem('auralink-all-events-filter', 'all'); } catch {}
+                    try {
+                      localStorage.setItem('auralink-all-events-filter', 'all');
+                    } catch {}
                     setShowPastOnly(false);
                   }}
                   className="text-sm px-3 py-1 rounded-lg border"
@@ -196,22 +223,26 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
               {showPastOnly ? 'No past events' : 'No events'}
             </h3>
             <p className="text-theme-secondary">
-              {showPastOnly ? 'You have no past events yet' : 'Try adjusting your search or check back later'}
+              {showPastOnly
+                ? 'You have no past events yet'
+                : 'Try adjusting your search or check back later'}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {displayEvents.map((event) => {
               const isPast = !event.isOther && new Date(event.startDate) < new Date();
-              
+
               return (
                 <div
                   key={event._id}
                   onClick={() => {
                     if (event.isOther) {
-                      try { localStorage.setItem("auralink-highlight-post", event._id); } catch {}
-                      localStorage.setItem("auralink-discover-category", "other");
-                      onNavigate && onNavigate("discover");
+                      try {
+                        localStorage.setItem('auralink-highlight-post', event._id);
+                      } catch {}
+                      localStorage.setItem('auralink-discover-category', 'other');
+                      onNavigate && onNavigate('discover');
                     } else {
                       onViewEvent && onViewEvent(event._id);
                     }
@@ -220,7 +251,7 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
                 >
                   {/* Role Badge */}
                   <div className="absolute top-4 right-4 z-10">
-                    {event.role === "organizing" ? (
+                    {event.role === 'organizing' ? (
                       <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 flex items-center gap-1">
                         <Star className="w-3 h-3" />
                         Organizing
@@ -259,7 +290,7 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
                     </h3>
 
                     {/* Details */}
-                      <div className="space-y-2 text-sm text-theme-secondary">
+                    <div className="space-y-2 text-sm text-theme-secondary">
                       {event.isOther ? (
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-blue-500" />
@@ -268,7 +299,7 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
                       ) : (
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-blue-500" />
-                          <span>{dayjs(event.startDate).format("MMM D, YYYY")}</span>
+                          <span>{dayjs(event.startDate).format('MMM D, YYYY')}</span>
                           {event.time && <span>at {event.time}</span>}
                         </div>
                       )}
@@ -278,9 +309,8 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
                           <MapPin className="w-4 h-4 text-red-500" />
                           <span>
                             {event.isOther
-                              ? String(event.location || "")
-                              : `${event.location.city || event.location.name}${event.location.state ? `, ${event.location.state}` : ""}`
-                            }
+                              ? String(event.location || '')
+                              : `${event.location.city || event.location.name}${event.location.state ? `, ${event.location.state}` : ''}`}
                           </span>
                         </div>
                       )}

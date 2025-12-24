@@ -15,3 +15,7 @@ services:
         sync: false
       - key: UPLOAD_DIR
         value: uploads
+      - key: AI_ENABLED
+        value: true
+      - key: OPENAI_API_KEY
+        sync: false

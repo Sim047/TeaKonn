@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { API_URL } from "../config/api";
-import UserCard from "../components/UserCard";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { API_URL } from '../config/api';
+import UserCard from '../components/UserCard';
 
-const API = API_URL.replace(/\/api$/, "");
+const API = API_URL.replace(/\/api$/, '');
 
 export default function FollowersList({
   token,
@@ -13,14 +13,14 @@ export default function FollowersList({
 }: any) {
   const [followers, setFollowers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [listMode, setListMode] = useState<"grid" | "list">("grid");
+  const [listMode, setListMode] = useState<'grid' | 'list'>('grid');
   const [statuses, setStatuses] = useState<Record<string, any>>({});
 
   useEffect(() => {
     if (!token || !currentUserId) return;
     axios
       .get(`${API}/api/users/${currentUserId}`, {
-        headers: { Authorization: "Bearer " + token },
+        headers: { Authorization: 'Bearer ' + token },
       })
       .then((res) => setFollowers(res.data.followers || []))
       .finally(() => setLoading(false));
@@ -42,25 +42,23 @@ export default function FollowersList({
   }, [token]);
 
   function avatarUrl(u: any) {
-    if (!u?.avatar) return "https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff";
-    if (u.avatar.startsWith("http")) return u.avatar;
-    if (u.avatar.startsWith("/")) return API + u.avatar;
-    return API + "/uploads/" + u.avatar;
+    if (!u?.avatar) return 'https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff';
+    if (u.avatar.startsWith('http')) return u.avatar;
+    if (u.avatar.startsWith('/')) return API + u.avatar;
+    return API + '/uploads/' + u.avatar;
   }
 
   async function toggleFollow(u: any) {
-    const route = u.isFollowed ? "unfollow" : "follow";
+    const route = u.isFollowed ? 'unfollow' : 'follow';
 
     await axios.post(
       `${API}/api/users/${u._id}/${route}`,
       {},
-      { headers: { Authorization: "Bearer " + token } }
+      { headers: { Authorization: 'Bearer ' + token } },
     );
 
     setFollowers((prev) =>
-      prev.map((x) =>
-        x._id === u._id ? { ...x, isFollowed: !u.isFollowed } : x
-      )
+      prev.map((x) => (x._id === u._id ? { ...x, isFollowed: !u.isFollowed } : x)),
     );
   }
 
@@ -72,7 +70,7 @@ export default function FollowersList({
           <span>Followers</span>
           <span className="badge">{followers.length}</span>
         </h2>
-        
+
         <select
           value={listMode}
           onChange={(e) => setListMode(e.target.value as any)}
@@ -90,7 +88,7 @@ export default function FollowersList({
           <div className="text-4xl mb-3">👥</div>
           <div>No followers yet.</div>
         </div>
-      ) : listMode === "grid" ? (
+      ) : listMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {followers.map((u) => (
             <UserCard

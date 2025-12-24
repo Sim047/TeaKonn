@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "TeaKonn Native",
+    "slug": "teakonn-native",
+    "scheme": "teakonn",
+    "version": "0.1.0",
+    "sdkVersion": "51.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "useNextNotificationsApi": true
+    },
+    "plugins": [],
+    "extra": {
+      "EXPO_PUBLIC_API_BASE": "https://teakonn-production.up.railway.app",
+      "EXPO_PUBLIC_API_URL": "https://teakonn-production.up.railway.app/api"
+    }
+  }
+}

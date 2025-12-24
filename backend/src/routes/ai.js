@@ -203,3 +203,93 @@ router.post('/assistant', auth, async (req, res) => {
 });
 
 export default router;
+
+// Streaming assistant via SSE (requires auth). Proxies OpenAI stream when key exists.
+router.post('/assistant/stream', auth, async (req, res) => {
+  try {
+    const { message } = req.body || {};
+    if (!message || typeof message !== 'string') {
+      res.status(400).set({ 'Content-Type': 'application/json' }).end(JSON.stringify({ error: 'invalid_message' }));
+      return;
+    }
+
+    // SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    // flush headers
+    res.flushHeaders?.();
+
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      const payload = { ok: true, reply: 'Hi! Set OPENAI_API_KEY to enable streaming. For now, try Quick Search chips.' };
+      res.write(`data: ${JSON.stringify(payload)}\n\n`);
+      res.write('data: [DONE]\n\n');
+      res.end();
+      return;
+    }
+
+    const userId = req.user?.id || req.user?._id;
+    const me = userId ? await User.findById(userId).select('username favoriteSports') : null;
+    const system = [
+      'You are TeaKonn Assistant, a concise in-app guide.',
+      'Help with: finding sports events, services, marketplace, and community connections.',
+      'Prefer short, actionable answers. Offer 2-3 follow-up suggestions.',
+      'When asked to find, propose filters (sport, city, free/paid) and next clicks.',
+    ].join(' ');
+    const context = { username: me?.username, favoriteSports: me?.favoriteSports || [] };
+
+    const body = {
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: `User context: ${JSON.stringify(context)}. Query: ${message}` },
+      ],
+      temperature: 0.3,
+      stream: true,
+    };
+
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!resp.ok || !resp.body) {
+      const errText = await resp.text();
+      res.write(`data: ${JSON.stringify({ error: 'assistant_failed', details: errText })}\n\n`);
+      res.write('data: [DONE]\n\n');
+      res.end();
+      return;
+    }
+
+    // Heartbeat to keep connections alive behind proxies
+    const heartbeat = setInterval(() => {
+      try { res.write(': ping\n\n'); } catch {}
+    }, 15000);
+
+    // Proxy OpenAI SSE stream
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let done = false;
+    while (!done) {
+      const { value, done: d } = await reader.read();
+      if (d) break;
+      const chunk = decoder.decode(value);
+      // OpenAI already sends SSE lines like "data: {...}\n\n"; forward as-is
+      res.write(chunk);
+    }
+    clearInterval(heartbeat);
+    try { res.write('data: [DONE]\n\n'); } catch {}
+    res.end();
+  } catch (e) {
+    try {
+      res.write(`data: ${JSON.stringify({ error: 'assistant_error', details: e?.message || 'unknown' })}\n\n`);
+      res.write('data: [DONE]\n\n');
+    } catch {}
+    res.end();
+  }
+});

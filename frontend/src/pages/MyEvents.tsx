@@ -1,8 +1,8 @@
 // frontend/src/pages/MyEvents.tsx
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { API_URL } from "../config/api";
-import dayjs from "dayjs";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { API_URL } from '../config/api';
+import dayjs from 'dayjs';
 import {
   Calendar,
   Clock,
@@ -22,20 +22,26 @@ import {
   Truck,
   Image as ImageIcon,
   Search,
-} from "lucide-react";
-import CreateEventModal from "../components/CreateEventModal";
-import CreateServiceModal from "../components/CreateServiceModal";
-import CreateProductModal from "../components/CreateProductModal";
-import EventParticipantsModal from "../components/EventParticipantsModal";
-import NotificationToast from "../components/NotificationToast";
+} from 'lucide-react';
+import CreateEventModal from '../components/CreateEventModal';
+import CreateServiceModal from '../components/CreateServiceModal';
+import CreateProductModal from '../components/CreateProductModal';
+import EventParticipantsModal from '../components/EventParticipantsModal';
+import NotificationToast from '../components/NotificationToast';
 
-const API = API_URL.replace(/\/api$/, "");
+const API = API_URL.replace(/\/api$/, '');
 
-type TabType = "events" | "services" | "products";
+type TabType = 'events' | 'services' | 'products';
 
 type NavigateFn = (view: string) => void;
 
-export default function MyEvents({ token, onNavigate }: { token: string; onNavigate?: NavigateFn }) {
+export default function MyEvents({
+  token,
+  onNavigate,
+}: {
+  token: string;
+  onNavigate?: NavigateFn;
+}) {
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     const saved = localStorage.getItem('auralink-my-activities-tab') as TabType | null;
     return (saved as TabType) || 'events';
@@ -63,12 +69,21 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
   const [otherEvents, setOtherEvents] = useState<any[]>([]);
   const [loadingOther, setLoadingOther] = useState<boolean>(false);
   const [createOtherOpen, setCreateOtherOpen] = useState<boolean>(false);
-  const [newOther, setNewOther] = useState<{ title: string; caption: string; location: string; tags: string; imageUrl: string }>({ title: "", caption: "", location: "", tags: "event", imageUrl: "" });
+  const [newOther, setNewOther] = useState<{
+    title: string;
+    caption: string;
+    location: string;
+    tags: string;
+    imageUrl: string;
+  }>({ title: '', caption: '', location: '', tags: 'event', imageUrl: '' });
   const [uploadingOtherImage, setUploadingOtherImage] = useState<boolean>(false);
-  const [otherSearchTerm, setOtherSearchTerm] = useState<string>("");
+  const [otherSearchTerm, setOtherSearchTerm] = useState<string>('');
   const [otherListOpen, setOtherListOpen] = useState<boolean>(true);
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" | "warning" } | null>(null);
-  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const [toast, setToast] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  } | null>(null);
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
     if (!token) return;
@@ -86,20 +101,24 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
   }, [token]);
 
   useEffect(() => {
-    try { localStorage.setItem('auralink-show-past-events', String(showPastEvents)); } catch {}
+    try {
+      localStorage.setItem('auralink-show-past-events', String(showPastEvents));
+    } catch {}
   }, [showPastEvents]);
 
   async function loadMyEventsAll() {
     try {
       setLoading(true);
       const [createdRes, joinedRes] = await Promise.all([
-        axios.get(`${API}/api/events/my/created`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API}/api/events/my/created`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
         axios.get(`${API}/api/events/my/joined`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
       setEventsCreated(createdRes.data.events || []);
       setEventsJoined(joinedRes.data.events || []);
     } catch (err) {
-      console.error("Load my events error:", err);
+      console.error('Load my events error:', err);
     } finally {
       setLoading(false);
     }
@@ -112,7 +131,7 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
       });
       setArchivedEvents(res.data.events || []);
     } catch (err) {
-      console.error("Load my archived events error:", err);
+      console.error('Load my archived events error:', err);
       setArchivedEvents([]);
     }
   }
@@ -124,10 +143,12 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
       const posts = res.data.posts || res.data || [];
-      const filtered = (posts || []).filter((p: any) => Array.isArray(p.tags) && p.tags.some((t: string) => /event/i.test(t)));
+      const filtered = (posts || []).filter(
+        (p: any) => Array.isArray(p.tags) && p.tags.some((t: string) => /event/i.test(t)),
+      );
       setOtherEvents(filtered);
     } catch (err) {
-      console.error("Load other events error:", err);
+      console.error('Load other events error:', err);
       setOtherEvents([]);
     } finally {
       setLoadingOther(false);
@@ -138,23 +159,23 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
-      alert("Image must be under 10MB");
+      alert('Image must be under 10MB');
       return;
     }
     try {
       setUploadingOtherImage(true);
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append('file', file);
       const res = await axios.post(`${API}/files/upload`, formData, {
         headers: {
           Authorization: token ? `Bearer ${token}` : undefined,
-          "Content-Type": "multipart/form-data",
+          'Content-Type': 'multipart/form-data',
         },
       });
       setNewOther((p) => ({ ...p, imageUrl: res.data.url }));
     } catch (err) {
-      console.error("Upload failed:", err);
-      alert("Failed to upload image");
+      console.error('Upload failed:', err);
+      alert('Failed to upload image');
     } finally {
       setUploadingOtherImage(false);
     }
@@ -162,30 +183,36 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
 
   async function handleCreateOther() {
     if (!token) {
-      alert("Please log in to create an event post");
+      alert('Please log in to create an event post');
       return;
     }
     if (!newOther.title.trim() && !newOther.caption.trim() && !newOther.imageUrl) {
-      alert("Please add a caption or image");
+      alert('Please add a caption or image');
       return;
     }
     try {
-      const tags = (newOther.tags || "")
-        .split(",")
+      const tags = (newOther.tags || '')
+        .split(',')
         .map((t) => t.trim())
         .filter(Boolean);
       const res = await axios.post(
         `${API}/posts`,
-        { title: newOther.title || "", caption: newOther.caption, imageUrl: newOther.imageUrl, tags, location: newOther.location },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          title: newOther.title || '',
+          caption: newOther.caption,
+          imageUrl: newOther.imageUrl,
+          tags,
+          location: newOther.location,
+        },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setOtherEvents((prev) => [res.data, ...prev]);
-      setNewOther({ title: "", caption: "", imageUrl: "", location: "", tags: "event" });
+      setNewOther({ title: '', caption: '', imageUrl: '', location: '', tags: 'event' });
       setCreateOtherOpen(false);
-      setToast({ message: "Other event published", type: "success" });
+      setToast({ message: 'Other event published', type: 'success' });
     } catch (err) {
-      console.error("Failed to create event post:", err);
-      setToast({ message: "Failed to publish event", type: "error" });
+      console.error('Failed to create event post:', err);
+      setToast({ message: 'Failed to publish event', type: 'error' });
     }
   }
 
@@ -196,24 +223,24 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
       });
       setServices(res.data.services || []);
     } catch (err) {
-      console.error("Load my services error:", err);
+      console.error('Load my services error:', err);
     }
   }
 
   async function loadMyProducts() {
     try {
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
       const res = await axios.get(`${API}/api/marketplace/user/${user._id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProducts(res.data || []);
     } catch (err) {
-      console.error("Load my products error:", err);
+      console.error('Load my products error:', err);
     }
   }
 
   async function handleDelete(eventId: string) {
-    if (!confirm("Are you sure you want to delete this event?")) return;
+    if (!confirm('Are you sure you want to delete this event?')) return;
 
     try {
       setDeletingId(eventId);
@@ -224,14 +251,14 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
       setEventsJoined((prev) => prev.filter((e) => e._id !== eventId));
       // removed pending list; only created/joined are kept
     } catch (err: any) {
-      alert(err.response?.data?.error || "Failed to delete event");
+      alert(err.response?.data?.error || 'Failed to delete event');
     } finally {
       setDeletingId(null);
     }
   }
 
   async function handleDeleteService(serviceId: string) {
-    if (!confirm("Are you sure you want to delete this service?")) return;
+    if (!confirm('Are you sure you want to delete this service?')) return;
 
     try {
       setDeletingId(serviceId);
@@ -240,14 +267,14 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
       });
       setServices(services.filter((s) => s._id !== serviceId));
     } catch (err: any) {
-      alert(err.response?.data?.error || "Failed to delete service");
+      alert(err.response?.data?.error || 'Failed to delete service');
     } finally {
       setDeletingId(null);
     }
   }
 
   async function handleDeleteProduct(productId: string) {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+    if (!confirm('Are you sure you want to delete this product?')) return;
 
     try {
       setDeletingId(productId);
@@ -256,7 +283,7 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
       });
       setProducts(products.filter((p) => p._id !== productId));
     } catch (err: any) {
-      alert(err.response?.data?.error || "Failed to delete product");
+      alert(err.response?.data?.error || 'Failed to delete product');
     } finally {
       setDeletingId(null);
     }
@@ -297,16 +324,16 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
       const res = await axios.post(
         `${API}/api/events/${eventId}/approve-request/${requestId}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-      alert(res.data.message || "Request approved!");
+      alert(res.data.message || 'Request approved!');
       loadMyEventsAll();
       if (participantsModalEvent && participantsModalEvent._id === eventId) {
         const updatedEvent = await axios.get(`${API}/api/events/${eventId}`);
         setParticipantsModalEvent(updatedEvent.data);
       }
     } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to approve request");
+      alert(err.response?.data?.message || 'Failed to approve request');
     }
   }
 
@@ -315,29 +342,29 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
       const res = await axios.post(
         `${API}/api/events/${eventId}/reject-request/${requestId}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
-      alert(res.data.message || "Request rejected!");
+      alert(res.data.message || 'Request rejected!');
       loadMyEventsAll();
       if (participantsModalEvent && participantsModalEvent._id === eventId) {
         const updatedEvent = await axios.get(`${API}/api/events/${eventId}`);
         setParticipantsModalEvent(updatedEvent.data);
       }
     } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to reject request");
+      alert(err.response?.data?.message || 'Failed to reject request');
     }
   }
 
   function handleMessageUser(userId: string) {
     // TODO: Implement messaging - integrate with your chat system
-    console.log("Message user:", userId);
-    alert("Messaging feature coming soon!");
+    console.log('Message user:', userId);
+    alert('Messaging feature coming soon!');
   }
 
   function handleViewProfile(userId: string) {
     // TODO: Implement profile viewing
-    console.log("View profile:", userId);
-    alert("Profile viewing coming soon!");
+    console.log('View profile:', userId);
+    alert('Profile viewing coming soon!');
   }
 
   if (loading) {
@@ -368,19 +395,17 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-heading mb-2">
-              My Activities
-            </h1>
+            <h1 className="text-3xl font-bold text-heading mb-2">My Activities</h1>
             <p className="text-theme-secondary">
               Manage your events, services, and product listings
             </p>
           </div>
           <button
             onClick={() => {
-              if (activeTab === "events") {
+              if (activeTab === 'events') {
                 setEditingEvent(null);
                 setCreateModalOpen(true);
-              } else if (activeTab === "services") {
+              } else if (activeTab === 'services') {
                 setEditingService(null);
                 setCreateServiceModalOpen(true);
               } else {
@@ -391,67 +416,76 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
             className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-teal-500/30 flex items-center gap-2"
           >
             <Plus className="w-5 h-5" />
-            {activeTab === "events" ? "Create Event" : activeTab === "services" ? "Create Service" : "Sell Product"}
+            {activeTab === 'events'
+              ? 'Create Event'
+              : activeTab === 'services'
+                ? 'Create Service'
+                : 'Sell Product'}
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8 border-b" style={{ borderColor: 'var(--border)' }}>
+        <div
+          className="flex flex-wrap gap-2 mb-8 border-b"
+          style={{ borderColor: 'var(--border)' }}
+        >
           <button
-            onClick={() => setActiveTab("events")}
+            onClick={() => setActiveTab('events')}
             data-tab="events"
             className={`px-6 py-3 font-semibold transition-all relative whitespace-nowrap ${
-              activeTab === "events"
-                ? "text-cyan-600 dark:text-cyan-400"
-                : "text-theme-secondary hover:text-heading"
+              activeTab === 'events'
+                ? 'text-cyan-600 dark:text-cyan-400'
+                : 'text-theme-secondary hover:text-heading'
             }`}
           >
             <Trophy className="inline w-5 h-5 mr-2" />
-            My Events ({(eventsCreated.length)})
-            {activeTab === "events" && (
+            My Events ({eventsCreated.length})
+            {activeTab === 'events' && (
               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan-500 to-purple-600"></div>
             )}
           </button>
           <button
-            onClick={() => setActiveTab("services")}
+            onClick={() => setActiveTab('services')}
             data-tab="services"
             className={`px-6 py-3 font-semibold transition-all relative whitespace-nowrap ${
-              activeTab === "services"
-                ? "text-purple-600 dark:text-purple-400"
-                : "text-theme-secondary hover:text-heading"
+              activeTab === 'services'
+                ? 'text-purple-600 dark:text-purple-400'
+                : 'text-theme-secondary hover:text-heading'
             }`}
           >
             <Stethoscope className="inline w-5 h-5 mr-2" />
             My Services ({services.length})
-            {activeTab === "services" && (
+            {activeTab === 'services' && (
               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-600"></div>
             )}
           </button>
           <button
-            onClick={() => setActiveTab("products")}
+            onClick={() => setActiveTab('products')}
             data-tab="products"
             className={`px-6 py-3 font-semibold transition-all relative whitespace-nowrap ${
-              activeTab === "products"
-                ? "text-green-600 dark:text-green-400"
-                : "text-theme-secondary hover:text-heading"
+              activeTab === 'products'
+                ? 'text-green-600 dark:text-green-400'
+                : 'text-theme-secondary hover:text-heading'
             }`}
           >
             <ShoppingBag className="inline w-5 h-5 mr-2" />
             My Products ({products.length})
-            {activeTab === "products" && (
+            {activeTab === 'products' && (
               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-600"></div>
             )}
           </button>
         </div>
 
         {/* Stats */}
-        {activeTab === "events" ? (
+        {activeTab === 'events' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <div className="rounded-2xl p-6 themed-card">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-theme-secondary mb-1">Total Events</p>
-                  <p className="text-3xl font-bold text-heading">{(eventsCreated.length + eventsJoined.length)}</p>
+                  <p className="text-3xl font-bold text-heading">
+                    {eventsCreated.length + eventsJoined.length}
+                  </p>
                 </div>
                 <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-xl flex items-center justify-center">
                   <Trophy className="w-6 h-6 text-white" />
@@ -464,7 +498,10 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                 <div>
                   <p className="text-sm text-theme-secondary mb-1">Active Events</p>
                   <p className="text-3xl font-bold text-heading">
-                    {[...eventsCreated, ...eventsJoined].filter((e) => e.status === "published").length}
+                    {
+                      [...eventsCreated, ...eventsJoined].filter((e) => e.status === 'published')
+                        .length
+                    }
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
@@ -507,8 +544,11 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                   <p className="text-sm text-theme-secondary mb-1">Avg. Rating</p>
                   <p className="text-3xl font-bold text-heading">
                     {services.length > 0
-                      ? (services.reduce((sum, s) => sum + (s.rating?.average || 0), 0) / services.length).toFixed(1)
-                      : "0.0"}
+                      ? (
+                          services.reduce((sum, s) => sum + (s.rating?.average || 0), 0) /
+                          services.length
+                        ).toFixed(1)
+                      : '0.0'}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
@@ -521,7 +561,7 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
 
         {/* Content */}
         {(() => {
-          if (activeTab === "events") {
+          if (activeTab === 'events') {
             return (
               <div>
                 {/* Inline discover: Other Events (top) */}
@@ -530,7 +570,9 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div>
                         <h3 className="text-xl font-bold text-heading mb-1">Other Events</h3>
-                        <p className="text-theme-secondary">Discover community activities beyond sports.</p>
+                        <p className="text-theme-secondary">
+                          Discover community activities beyond sports.
+                        </p>
                       </div>
                       <div className="flex w-full sm:w-auto items-center gap-2 sm:gap-3 justify-start sm:justify-end flex-col sm:flex-row sm:shrink-0">
                         <button
@@ -560,18 +602,37 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                       ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {otherEvents.slice(0, 4).map((post) => (
-                            <div key={post._id} className="rounded-xl overflow-hidden themed-card cursor-pointer" onClick={() => { localStorage.setItem('auralink-discover-category', 'other'); onNavigate && onNavigate('discover'); }}>
+                            <div
+                              key={post._id}
+                              className="rounded-xl overflow-hidden themed-card cursor-pointer"
+                              onClick={() => {
+                                localStorage.setItem('auralink-discover-category', 'other');
+                                onNavigate && onNavigate('discover');
+                              }}
+                            >
                               {post.imageUrl && (
                                 <div className="w-full h-40 sm:h-48 bg-black/10">
-                                  <img src={post.imageUrl} alt={post.title || post.caption || 'Event'} className="w-full h-full object-cover" />
+                                  <img
+                                    src={post.imageUrl}
+                                    alt={post.title || post.caption || 'Event'}
+                                    className="w-full h-full object-cover"
+                                  />
                                 </div>
                               )}
                               <div className="p-3">
-                                <h4 className="text-sm font-semibold text-heading line-clamp-2">{post.title || post.caption || 'Untitled'}</h4>
+                                <h4 className="text-sm font-semibold text-heading line-clamp-2">
+                                  {post.title || post.caption || 'Untitled'}
+                                </h4>
                                 {Array.isArray(post.tags) && post.tags.length > 0 && (
                                   <div className="flex flex-wrap items-center gap-1 mt-2">
                                     {post.tags.slice(0, 3).map((t: string, idx: number) => (
-                                      <span key={idx} className="px-2 py-0.5 rounded-full text-[11px] text-cyan-600 dark:text-cyan-400" style={{ border: '1px solid var(--border)' }}>{t}</span>
+                                      <span
+                                        key={idx}
+                                        className="px-2 py-0.5 rounded-full text-[11px] text-cyan-600 dark:text-cyan-400"
+                                        style={{ border: '1px solid var(--border)' }}
+                                      >
+                                        {t}
+                                      </span>
                                     ))}
                                   </div>
                                 )}
@@ -590,92 +651,124 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                             <label className="text-sm text-theme-secondary">Event Name</label>
                             <input
                               value={newOther.title}
-                              onChange={(e) => setNewOther((p) => ({ ...p, title: e.target.value }))}
+                              onChange={(e) =>
+                                setNewOther((p) => ({ ...p, title: e.target.value }))
+                              }
                               className="w-full mt-1 rounded-lg input"
                               placeholder="e.g. Community Fundraiser"
                             />
                           </div>
-                            {/* Search + List controls */}
-                            <div className="mt-4 flex flex-col sm:flex-row gap-3">
-                              <div className="relative flex-1">
-                                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-theme-secondary" />
-                                <input
-                                  value={otherSearchTerm}
-                                  onChange={(e) => setOtherSearchTerm(e.target.value)}
-                                  className="w-full pl-9 pr-3 py-2 rounded-lg input"
-                                  placeholder="Search other events by title, tag, or caption"
-                                  aria-label="Search other events"
-                                />
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => setOtherListOpen((v) => !v)}
-                                  className="px-4 py-2 btn"
-                                >
-                                  {otherListOpen ? "Hide List" : "Show List"}
-                                </button>
+                          {/* Search + List controls */}
+                          <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                            <div className="relative flex-1">
+                              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-theme-secondary" />
+                              <input
+                                value={otherSearchTerm}
+                                onChange={(e) => setOtherSearchTerm(e.target.value)}
+                                className="w-full pl-9 pr-3 py-2 rounded-lg input"
+                                placeholder="Search other events by title, tag, or caption"
+                                aria-label="Search other events"
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => setOtherListOpen((v) => !v)}
+                                className="px-4 py-2 btn"
+                              >
+                                {otherListOpen ? 'Hide List' : 'Show List'}
+                              </button>
+                            </div>
+                          </div>
+
+                          {otherListOpen && (
+                            <div
+                              className="mt-3 rounded-xl themed-card border"
+                              style={{ borderColor: 'var(--border)' }}
+                            >
+                              <div className="max-h-64 overflow-y-auto">
+                                {(() => {
+                                  const term = otherSearchTerm.trim().toLowerCase();
+                                  const filtered = otherEvents.filter((p: any) => {
+                                    if (!term) return true;
+                                    const title = String(p.title || '').toLowerCase();
+                                    const caption = String(p.caption || '').toLowerCase();
+                                    const tags: string[] = Array.isArray(p.tags)
+                                      ? p.tags.map((t: string) => String(t).toLowerCase())
+                                      : [];
+                                    const loc = p.location
+                                      ? String(
+                                          p.location?.name || p.location?.city || '',
+                                        ).toLowerCase()
+                                      : '';
+                                    return (
+                                      title.includes(term) ||
+                                      caption.includes(term) ||
+                                      tags.some((t) => t.includes(term)) ||
+                                      (loc && loc.includes(term))
+                                    );
+                                  });
+                                  if (filtered.length === 0) {
+                                    return (
+                                      <div className="px-3 py-2 text-sm text-theme-secondary">
+                                        No matches found
+                                      </div>
+                                    );
+                                  }
+                                  return filtered.slice(0, 50).map((post: any) => (
+                                    <button
+                                      key={post._id}
+                                      className="w-full text-left px-3 py-2 hover:bg-[var(--muted)] transition-colors"
+                                      onClick={() => {
+                                        localStorage.setItem('auralink-discover-category', 'other');
+                                        onNavigate && onNavigate('discover');
+                                      }}
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        {post.imageUrl && (
+                                          <img
+                                            src={post.imageUrl}
+                                            alt=""
+                                            className="w-10 h-10 rounded object-cover"
+                                          />
+                                        )}
+                                        <div className="flex-1">
+                                          <div className="text-sm font-semibold text-heading line-clamp-1">
+                                            {post.title || post.caption || 'Untitled'}
+                                          </div>
+                                          {Array.isArray(post.tags) && post.tags.length > 0 && (
+                                            <div className="text-xs text-theme-secondary line-clamp-1">
+                                              {post.tags.join(', ')}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </button>
+                                  ));
+                                })()}
                               </div>
                             </div>
-
-                            {otherListOpen && (
-                              <div className="mt-3 rounded-xl themed-card border" style={{ borderColor: 'var(--border)' }}>
-                                <div className="max-h-64 overflow-y-auto">
-                                  {(() => {
-                                    const term = otherSearchTerm.trim().toLowerCase();
-                                    const filtered = otherEvents.filter((p: any) => {
-                                      if (!term) return true;
-                                      const title = String(p.title || '').toLowerCase();
-                                      const caption = String(p.caption || '').toLowerCase();
-                                      const tags: string[] = Array.isArray(p.tags) ? p.tags.map((t: string) => String(t).toLowerCase()) : [];
-                                      const loc = p.location ? (String(p.location?.name || p.location?.city || '').toLowerCase()) : '';
-                                      return (
-                                        title.includes(term) ||
-                                        caption.includes(term) ||
-                                        tags.some((t) => t.includes(term)) ||
-                                        (loc && loc.includes(term))
-                                      );
-                                    });
-                                    if (filtered.length === 0) {
-                                      return <div className="px-3 py-2 text-sm text-theme-secondary">No matches found</div>;
-                                    }
-                                    return filtered.slice(0, 50).map((post: any) => (
-                                      <button
-                                        key={post._id}
-                                        className="w-full text-left px-3 py-2 hover:bg-[var(--muted)] transition-colors"
-                                        onClick={() => { localStorage.setItem('auralink-discover-category', 'other'); onNavigate && onNavigate('discover'); }}
-                                      >
-                                        <div className="flex items-center gap-3">
-                                          {post.imageUrl && (
-                                            <img src={post.imageUrl} alt="" className="w-10 h-10 rounded object-cover" />
-                                          )}
-                                          <div className="flex-1">
-                                            <div className="text-sm font-semibold text-heading line-clamp-1">{post.title || post.caption || 'Untitled'}</div>
-                                            {Array.isArray(post.tags) && post.tags.length > 0 && (
-                                              <div className="text-xs text-theme-secondary line-clamp-1">{post.tags.join(', ')}</div>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </button>
-                                    ));
-                                  })()}
-                                </div>
-                              </div>
-                            )}
+                          )}
 
                           <div>
                             <label className="text-sm text-theme-secondary">Caption</label>
                             <textarea
                               value={newOther.caption}
-                              onChange={(e) => setNewOther((p) => ({ ...p, caption: e.target.value }))}
+                              onChange={(e) =>
+                                setNewOther((p) => ({ ...p, caption: e.target.value }))
+                              }
                               className="w-full mt-1 rounded-lg input min-h-24"
                               placeholder="Describe your event or announcement"
                             />
                           </div>
                           <div>
-                            <label className="text-sm text-theme-secondary">Location (optional)</label>
+                            <label className="text-sm text-theme-secondary">
+                              Location (optional)
+                            </label>
                             <input
                               value={newOther.location}
-                              onChange={(e) => setNewOther((p) => ({ ...p, location: e.target.value }))}
+                              onChange={(e) =>
+                                setNewOther((p) => ({ ...p, location: e.target.value }))
+                              }
                               className="w-full mt-1 rounded-lg input"
                               placeholder="City or venue"
                             />
@@ -690,9 +783,16 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                             />
                             {String(newOther.tags || '').trim() && (
                               <div className="flex flex-wrap gap-2 mt-2">
-                                {String(newOther.tags).split(',').map((t) => t.trim()).filter(Boolean).slice(0, 8).map((t, idx) => (
-                                  <span key={idx} className="badge text-xs">{t}</span>
-                                ))}
+                                {String(newOther.tags)
+                                  .split(',')
+                                  .map((t) => t.trim())
+                                  .filter(Boolean)
+                                  .slice(0, 8)
+                                  .map((t, idx) => (
+                                    <span key={idx} className="badge text-xs">
+                                      {t}
+                                    </span>
+                                  ))}
                               </div>
                             )}
                           </div>
@@ -701,11 +801,22 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                           <div>
                             <label className="text-sm text-theme-secondary">Image</label>
                             <div className="flex items-center gap-3 mt-1">
-                              <input id="my-other-image-upload" type="file" accept="image/*" onChange={handleOtherImageUpload} className="hidden" />
-                              <label htmlFor="my-other-image-upload" className="px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium cursor-pointer inline-flex items-center gap-2">
+                              <input
+                                id="my-other-image-upload"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleOtherImageUpload}
+                                className="hidden"
+                              />
+                              <label
+                                htmlFor="my-other-image-upload"
+                                className="px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium cursor-pointer inline-flex items-center gap-2"
+                              >
                                 <ImageIcon className="w-4 h-4" /> Upload Image
                               </label>
-                              {uploadingOtherImage && <span className="text-xs text-theme-secondary">Uploading...</span>}
+                              {uploadingOtherImage && (
+                                <span className="text-xs text-theme-secondary">Uploading...</span>
+                              )}
                               {newOther.imageUrl && (
                                 <button
                                   type="button"
@@ -717,8 +828,15 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                               )}
                             </div>
                             {newOther.imageUrl && (
-                              <div className="mt-3 rounded-lg overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
-                                <img src={newOther.imageUrl} alt="Preview" className="w-full h-32 object-cover" />
+                              <div
+                                className="mt-3 rounded-lg overflow-hidden border"
+                                style={{ borderColor: 'var(--border)' }}
+                              >
+                                <img
+                                  src={newOther.imageUrl}
+                                  alt="Preview"
+                                  className="w-full h-32 object-cover"
+                                />
                               </div>
                             )}
                           </div>
@@ -727,11 +845,20 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                               <button
                                 className="btn"
                                 onClick={handleCreateOther}
-                                disabled={uploadingOtherImage || !(newOther.title.trim() || newOther.caption.trim() || newOther.imageUrl)}
+                                disabled={
+                                  uploadingOtherImage ||
+                                  !(
+                                    newOther.title.trim() ||
+                                    newOther.caption.trim() ||
+                                    newOther.imageUrl
+                                  )
+                                }
                               >
                                 {uploadingOtherImage ? 'Uploading...' : 'Publish'}
                               </button>
-                              <button className="btn" onClick={() => setCreateOtherOpen(false)}>Cancel</button>
+                              <button className="btn" onClick={() => setCreateOtherOpen(false)}>
+                                Cancel
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -741,8 +868,18 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                 </div>
                 <div className="mb-6">
                   <div className="inline-flex rounded-xl overflow-hidden themed-card">
-                    <button onClick={() => setEventsTab('organizing')} className={`px-4 py-2 text-sm font-semibold ${eventsTab==='organizing' ? 'bg-cyan-500 text-white' : 'text-theme-secondary'}`}>Organizing ({eventsCreated.length})</button>
-                    <button onClick={() => setEventsTab('joined')} className={`px-4 py-2 text-sm font-semibold ${eventsTab==='joined' ? 'bg-cyan-500 text-white' : 'text-theme-secondary'}`}>Joined ({eventsJoined.length})</button>
+                    <button
+                      onClick={() => setEventsTab('organizing')}
+                      className={`px-4 py-2 text-sm font-semibold ${eventsTab === 'organizing' ? 'bg-cyan-500 text-white' : 'text-theme-secondary'}`}
+                    >
+                      Organizing ({eventsCreated.length})
+                    </button>
+                    <button
+                      onClick={() => setEventsTab('joined')}
+                      className={`px-4 py-2 text-sm font-semibold ${eventsTab === 'joined' ? 'bg-cyan-500 text-white' : 'text-theme-secondary'}`}
+                    >
+                      Joined ({eventsJoined.length})
+                    </button>
                   </div>
                   <div className="mt-3 flex items-center gap-3">
                     <label className="inline-flex items-center gap-2 text-sm text-theme-secondary">
@@ -765,15 +902,15 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                     </label>
                   </div>
                 </div>
-                {(eventsTab==='organizing' ? eventsCreated : eventsJoined).filter((e:any)=> hideInactiveEvents ? e.status === 'published' : true).length === 0 ? (
+                {(eventsTab === 'organizing' ? eventsCreated : eventsJoined).filter((e: any) =>
+                  hideInactiveEvents ? e.status === 'published' : true,
+                ).length === 0 ? (
                   <div className="rounded-3xl p-12 text-center themed-card">
                     <div className="max-w-md mx-auto">
                       <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <Calendar className="w-10 h-10 text-slate-500" />
                       </div>
-                      <h3 className="text-xl font-bold text-heading mb-2">
-                        No Events Yet
-                      </h3>
+                      <h3 className="text-xl font-bold text-heading mb-2">No Events Yet</h3>
                       <p className="text-theme-secondary mb-6">
                         You haven't created any events. Start by creating your first event!
                       </p>
@@ -788,198 +925,219 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {(eventsTab==='organizing' ? eventsCreated : eventsJoined)
-                      .filter((e:any)=> hideInactiveEvents ? e.status === 'published' : true)
+                    {(eventsTab === 'organizing' ? eventsCreated : eventsJoined)
+                      .filter((e: any) => (hideInactiveEvents ? e.status === 'published' : true))
                       .map((event) => (
-                      <div
-                        key={event._id}
-                        className="rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 themed-card"
-                      >
-                        {/* Event Header */}
-                        <div className="bg-gradient-to-r from-slate-600 to-slate-700 dark:from-slate-700 dark:to-slate-800 p-6">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1">
-                              <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">
-                                {event.title}
-                              </h3>
-                              <div className="flex items-center gap-2">
-                                {event.sport && (
-                                  <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-lg text-xs font-medium">
-                                    {event.sport}
-                                  </span>
-                                )}
-                                {event.pricing && (
-                                  <span className="inline-block px-3 py-1 bg-white/10 text-white rounded-lg text-xs font-medium">
-                                    {event.pricing.type === 'paid' ? `${event.pricing.currency} ${event.pricing.amount}` : 'Free'}
-                                  </span>
-                                )}
+                        <div
+                          key={event._id}
+                          className="rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 themed-card"
+                        >
+                          {/* Event Header */}
+                          <div className="bg-gradient-to-r from-slate-600 to-slate-700 dark:from-slate-700 dark:to-slate-800 p-6">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">
+                                  {event.title}
+                                </h3>
+                                <div className="flex items-center gap-2">
+                                  {event.sport && (
+                                    <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-lg text-xs font-medium">
+                                      {event.sport}
+                                    </span>
+                                  )}
+                                  {event.pricing && (
+                                    <span className="inline-block px-3 py-1 bg-white/10 text-white rounded-lg text-xs font-medium">
+                                      {event.pricing.type === 'paid'
+                                        ? `${event.pricing.currency} ${event.pricing.amount}`
+                                        : 'Free'}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex gap-2 ml-4">
+                                <button
+                                  onClick={() => handleEdit(event)}
+                                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition text-white"
+                                  title="Edit Event"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(event._id)}
+                                  disabled={deletingId === event._id}
+                                  className="p-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg transition text-white disabled:opacity-50"
+                                  title="Delete Event"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
                               </div>
                             </div>
-                            <div className="flex gap-2 ml-4">
-                              <button
-                                onClick={() => handleEdit(event)}
-                                className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition text-white"
-                                title="Edit Event"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDelete(event._id)}
-                                disabled={deletingId === event._id}
-                                className="p-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg transition text-white disabled:opacity-50"
-                                title="Delete Event"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
                           </div>
-                        </div>
 
-                        {/* Event Details */}
-                        <div className="p-6 space-y-4">
-                          <p className="text-theme-secondary line-clamp-2">
-                            {event.description}
-                          </p>
+                          {/* Event Details */}
+                          <div className="p-6 space-y-4">
+                            <p className="text-theme-secondary line-clamp-2">{event.description}</p>
 
                             <div className="space-y-2 text-sm">
                               <div className="flex items-center gap-2 text-theme-secondary">
-                              <Calendar className="w-4 h-4 text-slate-500" />
-                              <span>
-                                {dayjs(event.startDate).format("MMM D, YYYY")}
-                                {event.time && ` at ${event.time}`}
-                              </span>
-                            </div>
+                                <Calendar className="w-4 h-4 text-slate-500" />
+                                <span>
+                                  {dayjs(event.startDate).format('MMM D, YYYY')}
+                                  {event.time && ` at ${event.time}`}
+                                </span>
+                              </div>
 
                               {event.location?.city && (
-                              <div className="flex items-center gap-2 text-theme-secondary">
-                                <MapPin className="w-4 h-4 text-slate-500" />
-                                <span>
-                                  {event.location.name && `${event.location.name}, `}
-                                  {event.location.city}
-                                  {event.location.state && `, ${event.location.state}`}
-                                </span>
-                              </div>
-                            )}
-
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-theme-secondary">
-                                <Users className="w-4 h-4 text-slate-500" />
-                                <span>
-                                  {event.capacity?.current || 0} / {event.capacity?.max || 0} participants
-                                </span>
-                                {event.waitlist?.length > 0 && (
-                                  <span className="text-orange-500 text-xs">
-                                    ({event.waitlist.length} on waitlist)
+                                <div className="flex items-center gap-2 text-theme-secondary">
+                                  <MapPin className="w-4 h-4 text-slate-500" />
+                                  <span>
+                                    {event.location.name && `${event.location.name}, `}
+                                    {event.location.city}
+                                    {event.location.state && `, ${event.location.state}`}
                                   </span>
-                                )}
+                                </div>
+                              )}
+
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-theme-secondary">
+                                  <Users className="w-4 h-4 text-slate-500" />
+                                  <span>
+                                    {event.capacity?.current || 0} / {event.capacity?.max || 0}{' '}
+                                    participants
+                                  </span>
+                                  {event.waitlist?.length > 0 && (
+                                    <span className="text-orange-500 text-xs">
+                                      ({event.waitlist.length} on waitlist)
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* PROMINENT MANAGE PARTICIPANTS BUTTON */}
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      const resp = await axios.get(
+                                        `${API}/api/events/${event._id}`,
+                                      );
+                                      setParticipantsModalEvent(resp.data);
+                                    } catch (e) {
+                                      console.error(
+                                        '[MyEvents] Failed to fetch event for participants modal, using existing data:',
+                                        e,
+                                      );
+                                      setParticipantsModalEvent(event);
+                                    }
+                                  }}
+                                  className="w-full py-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-semibold rounded-lg transition-all shadow-md flex items-center justify-center gap-2 text-sm"
+                                >
+                                  <Users className="w-4 h-4" />
+                                  Manage Participants
+                                  {/* Pending join requests badge removed for a cleaner UI */}
+                                </button>
                               </div>
-                              
-                              {/* PROMINENT MANAGE PARTICIPANTS BUTTON */}
-                              <button
-                                onClick={async () => {
-                                  try {
-                                    const resp = await axios.get(`${API}/api/events/${event._id}`);
-                                    setParticipantsModalEvent(resp.data);
-                                  } catch (e) {
-                                    console.error("[MyEvents] Failed to fetch event for participants modal, using existing data:", e);
-                                    setParticipantsModalEvent(event);
-                                  }
-                                }}
-                                className="w-full py-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-semibold rounded-lg transition-all shadow-md flex items-center justify-center gap-2 text-sm"
-                              >
-                                <Users className="w-4 h-4" />
-                                Manage Participants
-                                {/* Pending join requests badge removed for a cleaner UI */}
-                              </button>
+
+                              {event.pricing && (
+                                <div className="flex items-center gap-2 text-theme-secondary">
+                                  {event.pricing.type === 'paid' ? (
+                                    <DollarSign className="w-4 h-4 text-slate-500" />
+                                  ) : (
+                                    <AlertCircle className="w-4 h-4 text-green-500" />
+                                  )}
+                                  <span>
+                                    {event.pricing.type === 'paid'
+                                      ? `${event.pricing.currency} ${event.pricing.amount}`
+                                      : 'Free'}
+                                  </span>
+                                </div>
+                              )}
                             </div>
 
-                            {event.pricing && (
-                              <div className="flex items-center gap-2 text-theme-secondary">
-                                {event.pricing.type === 'paid' ? (
-                                  <DollarSign className="w-4 h-4 text-slate-500" />
-                                ) : (
-                                  <AlertCircle className="w-4 h-4 text-green-500" />
-                                )}
-                                <span>
-                                  {event.pricing.type === 'paid' ? `${event.pricing.currency} ${event.pricing.amount}` : 'Free'}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Status & Meta */}
-                          <div className="flex items-center justify-between pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
-                            <span
-                              className={`px-3 py-1 rounded-lg text-xs font-medium ${
-                                event.status === "published"
-                                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                                  : event.status === "draft"
-                                  ? "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
-                                  : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                              }`}
+                            {/* Status & Meta */}
+                            <div
+                              className="flex items-center justify-between pt-4 border-t"
+                              style={{ borderColor: 'var(--border)' }}
                             >
-                              {event.status}
-                            </span>
-                            <span className="text-xs text-theme-secondary">
-                              Created {dayjs(event.createdAt).fromNow()}
-                            </span>
+                              <span
+                                className={`px-3 py-1 rounded-lg text-xs font-medium ${
+                                  event.status === 'published'
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                    : event.status === 'draft'
+                                      ? 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                                      : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                                }`}
+                              >
+                                {event.status}
+                              </span>
+                              <span className="text-xs text-theme-secondary">
+                                Created {dayjs(event.createdAt).fromNow()}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 )}
                 {/* Past Events */}
                 {showPastEvents && (
-                <div className="mt-10">
-                  <div className="rounded-2xl p-6 themed-card">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-bold text-heading">Past Events</h3>
-                      <span className="text-sm text-theme-secondary">{archivedEvents.length}</span>
-                    </div>
-                    {archivedEvents.length === 0 ? (
-                      <p className="mt-3 text-sm text-theme-secondary">No past events yet.</p>
-                    ) : (
-                      <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {archivedEvents.map((ev) => (
-                          <div key={ev._id} className="rounded-xl p-4 themed-card">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1 min-w-0">
-                                <h4 className="text-sm font-semibold text-heading line-clamp-2">{ev.title || 'Untitled Event'}</h4>
-                                <div className="mt-2 space-y-1 text-xs text-theme-secondary">
-                                  <div className="flex items-center gap-2">
-                                    <Calendar className="w-4 h-4 text-slate-500" />
-                                    <span>{ev.startDate ? dayjs(ev.startDate).format('MMM D, YYYY') : 'Date unknown'}</span>
-                                  </div>
-                                  {ev.location?.city && (
+                  <div className="mt-10">
+                    <div className="rounded-2xl p-6 themed-card">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xl font-bold text-heading">Past Events</h3>
+                        <span className="text-sm text-theme-secondary">
+                          {archivedEvents.length}
+                        </span>
+                      </div>
+                      {archivedEvents.length === 0 ? (
+                        <p className="mt-3 text-sm text-theme-secondary">No past events yet.</p>
+                      ) : (
+                        <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                          {archivedEvents.map((ev) => (
+                            <div key={ev._id} className="rounded-xl p-4 themed-card">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="text-sm font-semibold text-heading line-clamp-2">
+                                    {ev.title || 'Untitled Event'}
+                                  </h4>
+                                  <div className="mt-2 space-y-1 text-xs text-theme-secondary">
                                     <div className="flex items-center gap-2">
-                                      <MapPin className="w-4 h-4 text-slate-500" />
-                                      <span className="truncate">
-                                        {ev.location?.name ? `${ev.location.name}, ` : ''}
-                                        {ev.location.city}
-                                        {ev.location.state ? `, ${ev.location.state}` : ''}
+                                      <Calendar className="w-4 h-4 text-slate-500" />
+                                      <span>
+                                        {ev.startDate
+                                          ? dayjs(ev.startDate).format('MMM D, YYYY')
+                                          : 'Date unknown'}
                                       </span>
                                     </div>
-                                  )}
-                                  <div className="flex items-center gap-2">
-                                    <Users className="w-4 h-4 text-slate-500" />
-                                    <span>{(ev.participants?.length || 0)} joined</span>
+                                    {ev.location?.city && (
+                                      <div className="flex items-center gap-2">
+                                        <MapPin className="w-4 h-4 text-slate-500" />
+                                        <span className="truncate">
+                                          {ev.location?.name ? `${ev.location.name}, ` : ''}
+                                          {ev.location.city}
+                                          {ev.location.state ? `, ${ev.location.state}` : ''}
+                                        </span>
+                                      </div>
+                                    )}
+                                    <div className="flex items-center gap-2">
+                                      <Users className="w-4 h-4 text-slate-500" />
+                                      <span>{ev.participants?.length || 0} joined</span>
+                                    </div>
                                   </div>
                                 </div>
+                                <span className="ml-3 px-2 py-1 rounded-lg text-[11px] font-semibold bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300">
+                                  Past Event
+                                </span>
                               </div>
-                              <span className="ml-3 px-2 py-1 rounded-lg text-[11px] font-semibold bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300">Past Event</span>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
                 )}
-              {/* Removed duplicate bottom Other Events section (now placed at top) */}
-            </div>
+                {/* Removed duplicate bottom Other Events section (now placed at top) */}
+              </div>
             );
-          } else if (activeTab === "services") {
+          } else if (activeTab === 'services') {
             return (
               <>
                 {/* Services Tab Content */}
@@ -989,9 +1147,7 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                       <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-200 dark:from-purple-900 dark:to-pink-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <Stethoscope className="w-10 h-10 text-purple-500" />
                       </div>
-                      <h3 className="text-xl font-bold text-heading mb-2">
-                        No Services Yet
-                      </h3>
+                      <h3 className="text-xl font-bold text-heading mb-2">No Services Yet</h3>
                       <p className="text-theme-secondary mb-6">
                         You haven't created any services. Start by offering your first service!
                       </p>
@@ -1019,7 +1175,7 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                                 {service.name}
                               </h3>
                               <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-lg text-sm font-medium capitalize">
-                                {service.category.replace(/-/g, " ")}
+                                {service.category.replace(/-/g, ' ')}
                               </span>
                             </div>
                             <div className="flex gap-2 ml-4">
@@ -1044,9 +1200,7 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
 
                         {/* Service Details */}
                         <div className="p-6 space-y-4">
-                          <p className="text-theme-secondary line-clamp-2">
-                            {service.description}
-                          </p>
+                          <p className="text-theme-secondary line-clamp-2">{service.description}</p>
 
                           <div className="space-y-2 text-sm">
                             <div className="flex items-center gap-2 text-theme-secondary">
@@ -1057,15 +1211,16 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                             <div className="flex items-center gap-2 text-theme-secondary">
                               <DollarSign className="w-4 h-4 text-green-500" />
                               <span>
-                                ${service.pricing.amount} / {service.pricing.type.replace(/-/g, " ")}
+                                ${service.pricing.amount} /{' '}
+                                {service.pricing.type.replace(/-/g, ' ')}
                               </span>
                             </div>
 
                             <div className="flex items-center gap-2 text-theme-secondary">
                               <MapPin className="w-4 h-4 text-pink-500" />
                               <span className="capitalize">
-                                {service.location.type === "online"
-                                  ? "Online"
+                                {service.location.type === 'online'
+                                  ? 'Online'
                                   : service.location.city || service.location.type}
                               </span>
                             </div>
@@ -1082,14 +1237,16 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
 
                           {service.qualifications && service.qualifications.length > 0 && (
                             <div className="flex flex-wrap gap-2 pt-2">
-                              {service.qualifications.slice(0, 3).map((qual: string, idx: number) => (
-                                <span
-                                  key={idx}
-                                  className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 px-2 py-1 rounded text-xs"
-                                >
-                                  {qual}
-                                </span>
-                              ))}
+                              {service.qualifications
+                                .slice(0, 3)
+                                .map((qual: string, idx: number) => (
+                                  <span
+                                    key={idx}
+                                    className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 px-2 py-1 rounded text-xs"
+                                  >
+                                    {qual}
+                                  </span>
+                                ))}
                               {service.qualifications.length > 3 && (
                                 <span className="text-xs text-theme-secondary self-center">
                                   +{service.qualifications.length - 3} more
@@ -1099,16 +1256,19 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                           )}
 
                           {/* Status & Meta */}
-                          <div className="flex items-center justify-between pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+                          <div
+                            className="flex items-center justify-between pt-4 border-t"
+                            style={{ borderColor: 'var(--border)' }}
+                          >
                             <div className="flex items-center gap-2">
                               <span
                                 className={`px-3 py-1 rounded-lg text-xs font-medium ${
                                   service.active
-                                    ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                                    : "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
                                 }`}
                               >
-                                {service.active ? "Active" : "Inactive"}
+                                {service.active ? 'Active' : 'Inactive'}
                               </span>
                               {service.rating?.average > 0 && (
                                 <div className="flex items-center gap-1 text-yellow-500">
@@ -1140,11 +1300,10 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                       <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-200 dark:from-green-900 dark:to-emerald-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <ShoppingBag className="w-10 h-10 text-green-500" />
                       </div>
-                      <h3 className="text-xl font-bold text-heading mb-2">
-                        No Products Yet
-                      </h3>
+                      <h3 className="text-xl font-bold text-heading mb-2">No Products Yet</h3>
                       <p className="text-theme-secondary mb-6">
-                        You haven't listed any products. Start selling your sports gear and merchandise!
+                        You haven't listed any products. Start selling your sports gear and
+                        merchandise!
                       </p>
                       <button
                         onClick={() => setCreateProductModalOpen(true)}
@@ -1195,15 +1354,13 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
 
                         {/* Product Details */}
                         <div className="p-6 space-y-4">
-                          <p className="text-theme-secondary line-clamp-2">
-                            {product.description}
-                          </p>
+                          <p className="text-theme-secondary line-clamp-2">{product.description}</p>
 
                           <div className="space-y-2 text-sm">
                             <div className="flex items-center gap-2 text-theme-secondary">
                               <DollarSign className="w-4 h-4 text-green-500" />
                               <span className="font-semibold text-lg">
-                                {product.price} {product.currency || "USD"}
+                                {product.price} {product.currency || 'USD'}
                               </span>
                             </div>
 
@@ -1224,7 +1381,8 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                                 <Truck className="w-4 h-4 text-blue-500" />
                                 <span className="text-blue-600 dark:text-blue-400 font-medium">
                                   Shipping Available
-                                  {product.shippingCost > 0 && ` (${product.currency} ${product.shippingCost})`}
+                                  {product.shippingCost > 0 &&
+                                    ` (${product.currency} ${product.shippingCost})`}
                                 </span>
                               </div>
                             )}
@@ -1256,13 +1414,16 @@ export default function MyEvents({ token, onNavigate }: { token: string; onNavig
                           )}
 
                           {/* Status & Meta */}
-                          <div className="flex items-center justify-between pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+                          <div
+                            className="flex items-center justify-between pt-4 border-t"
+                            style={{ borderColor: 'var(--border)' }}
+                          >
                             <div className="flex items-center gap-2">
                               <span
                                 className={`px-3 py-1 rounded-lg text-xs font-medium ${
-                                  product.status === "active"
-                                    ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                                    : "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
+                                  product.status === 'active'
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
                                 }`}
                               >
                                 {product.status}

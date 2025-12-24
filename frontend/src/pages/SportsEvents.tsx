@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { ArrowRight } from "lucide-react";
-import dayjs from "dayjs";
-import { API_URL } from "../config/api";
-import EventDetailModal from "../components/EventDetailModal";
-import PaymentTransactionModal from "../components/PaymentTransactionModal";
-import NotificationToast from "../components/NotificationToast";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { ArrowRight } from 'lucide-react';
+import dayjs from 'dayjs';
+import { API_URL } from '../config/api';
+import EventDetailModal from '../components/EventDetailModal';
+import PaymentTransactionModal from '../components/PaymentTransactionModal';
+import NotificationToast from '../components/NotificationToast';
 
 interface Event {
   _id: string;
@@ -33,10 +33,18 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [notification, setNotification] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
-  const [paymentModalData, setPaymentModalData] = useState<{ show: boolean; event: Event | null }>({ show: false, event: null });
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info';
+  } | null>(null);
+  const [paymentModalData, setPaymentModalData] = useState<{ show: boolean; event: Event | null }>({
+    show: false,
+    event: null,
+  });
 
-  useEffect(() => { fetchEvents(); }, []);
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -44,45 +52,58 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
       const res = await axios.get(`${API_URL}/events`);
       setEvents(res.data.events || res.data);
     } catch (err) {
-      console.error("SportsEvents: fetchEvents", err);
-    } finally { setLoading(false); }
+      console.error('SportsEvents: fetchEvents', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleJoinEvent = async (eventId: string) => {
     if (!token) {
-      setNotification({ message: "Please log in to join events", type: "info" });
+      setNotification({ message: 'Please log in to join events', type: 'info' });
       return;
     }
 
     const ev = events.find((e) => e._id === eventId) || selectedEvent;
-    const title = ev?.title ? ev.title : "this event";
+    const title = ev?.title ? ev.title : 'this event';
     const confirmJoin = window.confirm(`Do you want to join ${title}?`);
     if (!confirmJoin) return;
 
-    if (ev && ev.pricing?.type === "paid") {
+    if (ev && ev.pricing?.type === 'paid') {
       setPaymentModalData({ show: true, event: ev });
       return;
     }
 
     try {
-      const res = await axios.post(`${API_URL}/events/${eventId}/join`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      setNotification({ message: res.data.message || "Joined event", type: "success" });
+      const res = await axios.post(
+        `${API_URL}/events/${eventId}/join`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      setNotification({ message: res.data.message || 'Joined event', type: 'success' });
       await fetchEvents();
     } catch (err: any) {
-      setNotification({ message: err?.response?.data?.message || "Failed to join", type: "error" });
+      setNotification({ message: err?.response?.data?.message || 'Failed to join', type: 'error' });
     }
   };
 
   const handlePaymentSubmit = async (transactionCode: string, transactionDetails: string) => {
     if (!paymentModalData.event || !token) return;
     try {
-      const res = await axios.post(`${API_URL}/events/${paymentModalData.event._id}/join`, { transactionCode, transactionDetails }, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.post(
+        `${API_URL}/events/${paymentModalData.event._id}/join`,
+        { transactionCode, transactionDetails },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       setPaymentModalData({ show: false, event: null });
-      setNotification({ message: res.data.message || "Request submitted", type: "success" });
+      setNotification({ message: res.data.message || 'Request submitted', type: 'success' });
       await fetchEvents();
     } catch (err: any) {
       setPaymentModalData({ show: false, event: null });
-      setNotification({ message: err?.response?.data?.message || "Failed to submit payment", type: "error" });
+      setNotification({
+        message: err?.response?.data?.message || 'Failed to submit payment',
+        type: 'error',
+      });
     }
   };
 
@@ -99,23 +120,53 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
             <div key={ev._id} className="p-4 border rounded-lg flex justify-between items-center">
               <div>
                 <div className="font-semibold">{ev.title}</div>
-                <div className="text-xs text-slate-400">{dayjs(ev.date).format("MMM D, YYYY")} • {ev.location?.city || ev.location?.address || "Online"}</div>
+                <div className="text-xs text-slate-400">
+                  {dayjs(ev.date).format('MMM D, YYYY')} •{' '}
+                  {ev.location?.city || ev.location?.address || 'Online'}
+                </div>
               </div>
               <div className="flex items-center gap-3">
-                <button onClick={() => { setSelectedEvent(ev); }} className="text-sm text-cyan-600">Details</button>
-                <button onClick={() => handleJoinEvent(ev._id)} className="px-3 py-1 bg-cyan-600 text-white rounded">Join</button>
+                <button
+                  onClick={() => {
+                    setSelectedEvent(ev);
+                  }}
+                  className="text-sm text-cyan-600"
+                >
+                  Details
+                </button>
+                <button
+                  onClick={() => handleJoinEvent(ev._id)}
+                  className="px-3 py-1 bg-cyan-600 text-white rounded"
+                >
+                  Join
+                </button>
               </div>
             </div>
           ))}
         </div>
 
         {selectedEvent && (
-          <EventDetailModal event={selectedEvent} onClose={() => setSelectedEvent(null)} onJoin={() => handleJoinEvent(selectedEvent._id)} />
+          <EventDetailModal
+            event={selectedEvent}
+            onClose={() => setSelectedEvent(null)}
+            onJoin={() => handleJoinEvent(selectedEvent._id)}
+          />
         )}
 
-        <PaymentTransactionModal show={paymentModalData.show} event={paymentModalData.event} onCancel={handlePaymentCancel} onSubmit={handlePaymentSubmit} />
+        <PaymentTransactionModal
+          show={paymentModalData.show}
+          event={paymentModalData.event}
+          onCancel={handlePaymentCancel}
+          onSubmit={handlePaymentSubmit}
+        />
 
-        {notification && <NotificationToast message={notification.message} type={notification.type} onClose={() => setNotification(null)} />}
+        {notification && (
+          <NotificationToast
+            message={notification.message}
+            type={notification.type}
+            onClose={() => setNotification(null)}
+          />
+        )}
       </div>
     </div>
   );

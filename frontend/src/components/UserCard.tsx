@@ -1,10 +1,10 @@
-import React from "react";
-import Avatar from "./Avatar";
-import { getUserSubtitle } from "../utils/userDisplay";
+import React from 'react';
+import Avatar from './Avatar';
+import { getUserSubtitle } from '../utils/userDisplay';
 
 export interface UserCardProps {
   user: any;
-  mode: "grid" | "list";
+  mode: 'grid' | 'list';
   isFollowingPage?: boolean;
   userStatus?: any;
   onShowProfile: (u: any) => void;
@@ -27,26 +27,26 @@ export default function UserCard({
     <button
       onClick={() => onToggleFollow(user)}
       className={
-        mode === "grid"
+        mode === 'grid'
           ? `${
               /* grid button */
-            "w-full px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              'w-full px-4 py-2 rounded-md text-sm font-medium transition-colors'
             } ${
               isFollowingPage || user.isFollowed
-                ? "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-300 dark:hover:bg-slate-600"
-                : "bg-green-500 text-white hover:bg-green-600"
+                ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-300 dark:hover:bg-slate-600'
+                : 'bg-green-500 text-white hover:bg-green-600'
             }`
           : `${
               /* list button */
-            "flex-1 sm:flex-none px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              'flex-1 sm:flex-none px-4 py-2 rounded-md text-sm font-medium transition-colors'
             } ${
               isFollowingPage || user.isFollowed
-                ? "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-300 dark:hover:bg-slate-600"
-                : "bg-green-500 text-white hover:bg-green-600"
+                ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-300 dark:hover:bg-slate-600'
+                : 'bg-green-500 text-white hover:bg-green-600'
             }`
       }
     >
-      {isFollowingPage || user.isFollowed ? "Unfollow" : "Follow Back"}
+      {isFollowingPage || user.isFollowed ? 'Unfollow' : 'Follow Back'}
     </button>
   );
 
@@ -54,20 +54,18 @@ export default function UserCard({
     <button
       onClick={() => onOpenConversation({ partnerId: user._id })}
       className={
-        mode === "grid"
-          ? "w-full px-4 py-2 rounded-md bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-sm font-medium hover:shadow-md transition-shadow"
-          : "flex-1 sm:flex-none px-4 py-2 rounded-md bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-sm font-medium hover:shadow-md transition-shadow"
+        mode === 'grid'
+          ? 'w-full px-4 py-2 rounded-md bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-sm font-medium hover:shadow-md transition-shadow'
+          : 'flex-1 sm:flex-none px-4 py-2 rounded-md bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-sm font-medium hover:shadow-md transition-shadow'
       }
     >
       Message
     </button>
   );
 
-  if (mode === "grid") {
+  if (mode === 'grid') {
     return (
-      <div
-        className="rounded-xl p-5 flex flex-col items-center text-center shadow-sm hover:shadow-lg transition-all min-h-[280px] themed-card"
-      >
+      <div className="rounded-xl p-5 flex flex-col items-center text-center shadow-sm hover:shadow-lg transition-all min-h-[280px] themed-card">
         <Avatar
           src={avatarUrl(user)}
           className="w-20 h-20 rounded-lg object-cover cursor-pointer mb-3 flex-shrink-0"

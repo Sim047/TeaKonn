@@ -1,10 +1,10 @@
 // frontend/src/components/NotificationToast.tsx
-import React, { useEffect } from "react";
-import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from "lucide-react";
+import React, { useEffect } from 'react';
+import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 
 interface NotificationToastProps {
   message: string;
-  type: "success" | "error" | "info" | "warning";
+  type: 'success' | 'error' | 'info' | 'warning';
   onClose: () => void;
   duration?: number;
 }
@@ -30,10 +30,10 @@ export default function NotificationToast({
   };
 
   const colors = {
-    success: "from-green-600 to-emerald-600 border-green-500",
-    error: "from-red-600 to-rose-600 border-red-500",
-    warning: "from-yellow-600 to-orange-600 border-yellow-500",
-    info: "from-cyan-600 to-blue-600 border-cyan-500",
+    success: 'from-green-600 to-emerald-600 border-green-500',
+    error: 'from-red-600 to-rose-600 border-red-500',
+    warning: 'from-yellow-600 to-orange-600 border-yellow-500',
+    info: 'from-cyan-600 to-blue-600 border-cyan-500',
   };
 
   return (

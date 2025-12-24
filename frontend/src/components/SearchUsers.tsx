@@ -1,23 +1,23 @@
 // frontend/src/components/SearchUsers.tsx
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { API_URL } from "../config/api";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { API_URL } from '../config/api';
 
-const API = API_URL.replace(/\/api$/, "");
-const PLACEHOLDER = "https://placehold.co/48x48?text=U";
+const API = API_URL.replace(/\/api$/, '');
+const PLACEHOLDER = 'https://placehold.co/48x48?text=U';
 
 export default function SearchUsers({
   token,
   onOpenConversation,
   onOpenProfile,
-  currentUserId
+  currentUserId,
 }: any) {
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!token || q.trim() === "") {
+    if (!token || q.trim() === '') {
       setResults([]);
       return;
     }
@@ -25,9 +25,9 @@ export default function SearchUsers({
     const t = setTimeout(() => {
       setLoading(true);
       axios
-        .get(API + "/api/users/all", {
+        .get(API + '/api/users/all', {
           params: { search: q },
-          headers: { Authorization: "Bearer " + token }
+          headers: { Authorization: 'Bearer ' + token },
         })
         .then((r) => {
           const data = r.data || [];
@@ -42,7 +42,7 @@ export default function SearchUsers({
           setResults(filtered);
         })
         .catch((e) => {
-          console.error("search users err", e);
+          console.error('search users err', e);
           setResults([]);
         })
         .finally(() => setLoading(false));
@@ -55,24 +55,24 @@ export default function SearchUsers({
     if (!token) return;
     try {
       const res = await axios.post(
-        API + "/api/conversations",
+        API + '/api/conversations',
         { partnerId: user._id },
-        { headers: { Authorization: "Bearer " + token } }
+        { headers: { Authorization: 'Bearer ' + token } },
       );
       onOpenConversation(res.data);
-      setQ("");
+      setQ('');
       setResults([]);
     } catch (err) {
-      console.error("could not start conversation", err);
-      alert("Could not start conversation");
+      console.error('could not start conversation', err);
+      alert('Could not start conversation');
     }
   }
 
   function avatarUrl(u: any) {
     if (!u?.avatar) return PLACEHOLDER;
-    if (u.avatar.startsWith("http")) return u.avatar;
-    if (u.avatar.startsWith("/")) return API + u.avatar;
-    return API + "/uploads/" + u.avatar;
+    if (u.avatar.startsWith('http')) return u.avatar;
+    if (u.avatar.startsWith('/')) return API + u.avatar;
+    return API + '/uploads/' + u.avatar;
   }
 
   return (
@@ -102,18 +102,14 @@ export default function SearchUsers({
               onClick={() => onOpenProfile(u)}
             />
 
-            <div
-              className="flex-1"
-              onClick={() => onOpenProfile(u)}
-            >
+            <div className="flex-1" onClick={() => onOpenProfile(u)}>
               <div className="font-semibold">{u.username}</div>
-              <div className="text-xs text-muted">{u.status || (u.username ? `@${u.username}` : '')}</div>
+              <div className="text-xs text-muted">
+                {u.status || (u.username ? `@${u.username}` : '')}
+              </div>
             </div>
 
-            <button
-              className="px-3 py-1 border rounded-md"
-              onClick={() => startConversation(u)}
-            >
+            <button className="px-3 py-1 border rounded-md" onClick={() => startConversation(u)}>
               Message
             </button>
           </div>

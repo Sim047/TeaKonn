@@ -1,12 +1,21 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { Calendar, Clock, MapPin, RefreshCw, CheckCircle, XCircle, AlertCircle, Loader } from "lucide-react";
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  RefreshCw,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Loader,
+} from 'lucide-react';
 
 dayjs.extend(relativeTime);
 
-const API = (import.meta as any).env?.VITE_API_URL || "http://localhost:5000";
+const API = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
 
 // Simple component showing MY pending requests (bookings I created)
 
@@ -39,9 +48,9 @@ interface Booking {
 export default function MyPendingRequests() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
     loadBookings();
@@ -50,19 +59,22 @@ export default function MyPendingRequests() {
   async function loadBookings() {
     try {
       setLoading(true);
-      setError("");
-      console.log("[MyPendingRequests] Loading bookings as client...");
-      
+      setError('');
+      console.log('[MyPendingRequests] Loading bookings as client...');
+
       // Use my-bookings endpoint which only returns bookings where I'm the client
-      const { data } = await axios.get<{ bookings: Booking[] }>(`${API}/api/bookings/my-bookings?limit=50`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
+      const { data } = await axios.get<{ bookings: Booking[] }>(
+        `${API}/api/bookings/my-bookings?limit=50`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
       console.log(`[MyPendingRequests] Loaded ${data.bookings.length} bookings`);
       setBookings(data.bookings || []);
     } catch (err: any) {
-      console.error("[MyPendingRequests] Load error:", err);
-      setError(err.response?.data?.error || "Failed to load your requests");
+      console.error('[MyPendingRequests] Load error:', err);
+      setError(err.response?.data?.error || 'Failed to load your requests');
       setBookings([]);
     } finally {
       setLoading(false);
@@ -70,7 +82,7 @@ export default function MyPendingRequests() {
   }
 
   function getStatusBadge(booking: Booking) {
-    if (booking.approvalStatus === "rejected") {
+    if (booking.approvalStatus === 'rejected') {
       return (
         <div className="flex items-center gap-1 text-red-600 dark:text-red-400">
           <XCircle className="w-4 h-4" />
@@ -78,8 +90,8 @@ export default function MyPendingRequests() {
         </div>
       );
     }
-    
-    if (booking.approvalStatus === "pending") {
+
+    if (booking.approvalStatus === 'pending') {
       return (
         <div className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400">
           <AlertCircle className="w-4 h-4" />
@@ -87,8 +99,8 @@ export default function MyPendingRequests() {
         </div>
       );
     }
-    
-    if (booking.approvalStatus === "approved") {
+
+    if (booking.approvalStatus === 'approved') {
       if (booking.pricing.amount === 0) {
         return (
           <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
@@ -97,7 +109,7 @@ export default function MyPendingRequests() {
           </div>
         );
       }
-      
+
       if (booking.paymentVerified) {
         return (
           <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
@@ -106,7 +118,7 @@ export default function MyPendingRequests() {
           </div>
         );
       }
-      
+
       return (
         <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
           <AlertCircle className="w-4 h-4" />
@@ -114,7 +126,7 @@ export default function MyPendingRequests() {
         </div>
       );
     }
-    
+
     return null;
   }
 
@@ -137,7 +149,7 @@ export default function MyPendingRequests() {
             My Pending Requests
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            {bookings.length} request{bookings.length !== 1 ? "s" : ""} sent to others
+            {bookings.length} request{bookings.length !== 1 ? 's' : ''} sent to others
           </p>
         </div>
         <button
@@ -151,7 +163,9 @@ export default function MyPendingRequests() {
       {error && (
         <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
           <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>
-          <button onClick={loadBookings} className="text-xs text-red-500 underline mt-1">Try again</button>
+          <button onClick={loadBookings} className="text-xs text-red-500 underline mt-1">
+            Try again
+          </button>
         </div>
       )}
 
@@ -173,7 +187,7 @@ export default function MyPendingRequests() {
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                    {booking.event?.title || booking.service?.name || "Booking"}
+                    {booking.event?.title || booking.service?.name || 'Booking'}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Provider: {booking.provider.username}
@@ -185,7 +199,7 @@ export default function MyPendingRequests() {
               <div className="flex flex-wrap gap-3 text-sm text-gray-600 dark:text-gray-400 mb-3">
                 <span className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
-                  {dayjs(booking.scheduledDate).format("MMM D, YYYY")}
+                  {dayjs(booking.scheduledDate).format('MMM D, YYYY')}
                 </span>
                 {booking.scheduledTime && (
                   <span className="flex items-center gap-1">
@@ -206,8 +220,12 @@ export default function MyPendingRequests() {
 
               {booking.rejectionReason && (
                 <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                  <p className="text-xs font-medium text-red-700 dark:text-red-400 mb-1">Rejection Reason:</p>
-                  <p className="text-sm text-red-600 dark:text-red-400">{booking.rejectionReason}</p>
+                  <p className="text-xs font-medium text-red-700 dark:text-red-400 mb-1">
+                    Rejection Reason:
+                  </p>
+                  <p className="text-sm text-red-600 dark:text-red-400">
+                    {booking.rejectionReason}
+                  </p>
                 </div>
               )}
 

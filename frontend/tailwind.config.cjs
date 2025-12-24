@@ -1,10 +1,7 @@
 // tailwind.config.cjs
 module.exports = {
-  darkMode: "class",
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}"
-  ],
+  darkMode: 'class',
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -14,12 +11,12 @@ module.exports = {
           100: '#eef7ff',
           200: '#d6efff',
           500: '#22d3ee', // cyan used in buttons
-        }
-      }
-    }
+        },
+      },
+    },
   },
   plugins: [
     // Ensure classic CommonJS config also loads line-clamp utilities
-    require('@tailwindcss/line-clamp')
+    require('@tailwindcss/line-clamp'),
   ],
 };

@@ -1,11 +1,11 @@
 // frontend/src/pages/AllUsers.tsx
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { API_URL } from "../config/api";
-import Avatar from "../components/Avatar";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { API_URL } from '../config/api';
+import Avatar from '../components/Avatar';
 
-const API = API_URL.replace(/\/api$/, "");
-const PLACEHOLDER = "https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff";
+const API = API_URL.replace(/\/api$/, '');
+const PLACEHOLDER = 'https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff';
 
 type User = {
   _id: string;
@@ -16,18 +16,17 @@ type User = {
 };
 
 export default function AllUsers({ token, onOpenConversation, currentUserId, onShowProfile }: any) {
-
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [processingId, setProcessingId] = useState<string | null>(null);
 
-  const [listMode, setListMode] = useState<"grid" | "list">("list");
+  const [listMode, setListMode] = useState<'grid' | 'list'>('list');
 
   // Image Preview Modal
   const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
-  const [previewImageUrl, setPreviewImageUrl] = useState("");
-  const [previewUsername, setPreviewUsername] = useState("");
+  const [previewImageUrl, setPreviewImageUrl] = useState('');
+  const [previewUsername, setPreviewUsername] = useState('');
 
   /* ----------------------------------------------------------
      LOAD USERS
@@ -37,15 +36,14 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
     loadUsers();
   }, [token]);
 
-  async function loadUsers(q = "") {
+  async function loadUsers(q = '') {
     try {
       setLoading(true);
 
-      const url =
-        API + "/api/users/all" + (q ? "?search=" + encodeURIComponent(q) : "");
+      const url = API + '/api/users/all' + (q ? '?search=' + encodeURIComponent(q) : '');
 
       const res = await axios.get(url, {
-        headers: { Authorization: "Bearer " + token },
+        headers: { Authorization: 'Bearer ' + token },
       });
 
       const normalized = (res.data || []).map((u: any) => ({
@@ -55,7 +53,7 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
 
       setUsers(normalized);
     } catch (err) {
-      console.error("AllUsers load err", err);
+      console.error('AllUsers load err', err);
     } finally {
       setLoading(false);
     }
@@ -78,9 +76,9 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
   ----------------------------------------------------------- */
   function avatarUrl(u: any) {
     if (!u?.avatar) return PLACEHOLDER;
-    if (u.avatar.startsWith("http")) return u.avatar;
-    if (u.avatar.startsWith("/")) return API + u.avatar;
-    return API + "/uploads/" + u.avatar;
+    if (u.avatar.startsWith('http')) return u.avatar;
+    if (u.avatar.startsWith('/')) return API + u.avatar;
+    return API + '/uploads/' + u.avatar;
   }
 
   /* ----------------------------------------------------------
@@ -93,15 +91,15 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
 
     try {
       const res = await axios.post(
-        API + "/api/users/conversations/start",
+        API + '/api/users/conversations/start',
         { partnerId: user._id },
-        { headers: { Authorization: "Bearer " + token } }
+        { headers: { Authorization: 'Bearer ' + token } },
       );
 
       onOpenConversation(res.data);
     } catch (err) {
-      console.error("startConversation error", err);
-      alert("Could not start chat");
+      console.error('startConversation error', err);
+      alert('Could not start chat');
     } finally {
       setProcessingId(null);
     }
@@ -116,21 +114,13 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
     setProcessingId(user._id);
 
     try {
-      const url = `${API}/api/users/${user._id}/${follow ? "follow" : "unfollow"}`;
+      const url = `${API}/api/users/${user._id}/${follow ? 'follow' : 'unfollow'}`;
 
-      await axios.post(
-        url,
-        {},
-        { headers: { Authorization: "Bearer " + token } }
-      );
+      await axios.post(url, {}, { headers: { Authorization: 'Bearer ' + token } });
 
-      setUsers((prev) =>
-        prev.map((u) =>
-          u._id === user._id ? { ...u, isFollowed: follow } : u
-        )
-      );
+      setUsers((prev) => prev.map((u) => (u._id === user._id ? { ...u, isFollowed: follow } : u)));
     } catch (err) {
-      console.error("followToggle error", err);
+      console.error('followToggle error', err);
     } finally {
       setProcessingId(null);
     }
@@ -150,7 +140,7 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
   ----------------------------------------------------------- */
   function previewImage(user: User) {
     setPreviewImageUrl(avatarUrl(user));
-    setPreviewUsername(user.username || "User");
+    setPreviewUsername(user.username || 'User');
     setImagePreviewOpen(true);
   }
 
@@ -206,9 +196,9 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
       ) : users.length === 0 ? (
         <div className="text-theme-muted text-center py-12">
           <div className="text-4xl mb-3">🔍</div>
-          <div>{search ? `No users found matching "${search}"` : "No users found."}</div>
+          <div>{search ? `No users found matching "${search}"` : 'No users found.'}</div>
         </div>
-      ) : listMode === "grid" ? (
+      ) : listMode === 'grid' ? (
         /* -------------------- GRID MODE -------------------- */
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
           {users.map((u) => (
@@ -228,7 +218,7 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
                   onClick={() => previewImage(u)}
                   alt={u.username}
                 />
-                <div 
+                <div
                   className="absolute inset-0 bg-black/40 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
                   onClick={() => previewImage(u)}
                 >
@@ -264,7 +254,7 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
                   onClick={() => startConversation(u)}
                   disabled={processingId === u._id}
                 >
-                  {processingId === u._id ? "..." : "Message"}
+                  {processingId === u._id ? '...' : 'Message'}
                 </button>
 
                 {u._id !== currentUserId && (
@@ -273,7 +263,7 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
                     onClick={() => followToggle(u, !u.isFollowed)}
                     disabled={processingId === u._id}
                   >
-                    {u.isFollowed ? "Unfollow" : "Follow"}
+                    {u.isFollowed ? 'Unfollow' : 'Follow'}
                   </button>
                 )}
               </div>
@@ -300,7 +290,7 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
                     onClick={() => previewImage(u)}
                     alt={u.username}
                   />
-                  <div 
+                  <div
                     className="absolute inset-0 bg-black/40 rounded-md opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
                     onClick={() => previewImage(u)}
                   >
@@ -322,10 +312,7 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div
-                    className="font-bold cursor-pointer truncate"
-                    onClick={() => openProfile(u)}
-                  >
+                  <div className="font-bold cursor-pointer truncate" onClick={() => openProfile(u)}>
                     {u.username}
                   </div>
                 </div>
@@ -337,7 +324,7 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
                   onClick={() => startConversation(u)}
                   disabled={processingId === u._id}
                 >
-                  {processingId === u._id ? "..." : "Message"}
+                  {processingId === u._id ? '...' : 'Message'}
                 </button>
 
                 {u._id !== currentUserId && (
@@ -346,7 +333,7 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
                     onClick={() => followToggle(u, !u.isFollowed)}
                     disabled={processingId === u._id}
                   >
-                    {u.isFollowed ? "Unfollow" : "Follow"}
+                    {u.isFollowed ? 'Unfollow' : 'Follow'}
                   </button>
                 )}
               </div>
@@ -359,11 +346,11 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
          IMAGE PREVIEW MODAL
       ------------------------------------------------------------------- */}
       {imagePreviewOpen && (
-        <div 
+        <div
           className="fixed inset-0 flex items-center justify-center z-50 p-4 bg-black/80"
           onClick={() => setImagePreviewOpen(false)}
         >
-          <div 
+          <div
             className="relative max-w-4xl max-h-[90vh] w-full"
             onClick={(e) => e.stopPropagation()}
           >
@@ -386,13 +373,13 @@ export default function AllUsers({ token, onOpenConversation, currentUserId, onS
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
-            
+
             <img
               src={previewImageUrl}
               alt={previewUsername}
               className="w-full h-auto rounded-lg shadow-2xl"
             />
-            
+
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 rounded-b-lg">
               <p className="text-white text-lg font-semibold">{previewUsername}</p>
             </div>

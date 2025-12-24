@@ -47,12 +47,12 @@
   --btn-text: #0b1220;
   /* Subtle accent tokens for UI touches */
   --accent-cyan: #22d3ee;
-  --accent-cyan-muted: rgba(34, 211, 238, 0.10);
+  --accent-cyan-muted: rgba(34, 211, 238, 0.1);
   --accent-violet: #7c3aed;
-  --accent-violet-muted: rgba(124, 58, 237, 0.10);
+  --accent-violet-muted: rgba(124, 58, 237, 0.1);
   --accent-amber: #f59e0b;
   --accent-amber-muted: rgba(245, 158, 11, 0.12);
-  
+
   --input-bg: #ffffff;
   --input-border: #d1d9e6;
 }
@@ -71,10 +71,10 @@
   --card-solid: #253549;
   --border: rgba(148, 163, 184, 0.28);
 
-  --bubble-mine: rgba(34,211,238,0.15);
-  --bubble-other: rgba(255,255,255,0.05);
+  --bubble-mine: rgba(34, 211, 238, 0.15);
+  --bubble-other: rgba(255, 255, 255, 0.05);
 
-  --date-pill: rgba(148,163,184,0.12);
+  --date-pill: rgba(148, 163, 184, 0.12);
 
   --accent-start: #22d3ee;
   --accent-end: #7c3aed;
@@ -86,7 +86,7 @@
   --accent-violet-muted: rgba(124, 58, 237, 0.12);
   --accent-amber: #f59e0b;
   --accent-amber-muted: rgba(245, 158, 11, 0.14);
-  
+
   --input-bg: #1e293b;
   --input-border: rgba(148, 163, 184, 0.2);
 }
@@ -123,7 +123,9 @@
 /* =========================================================
    BASE RESET
    ========================================================= */
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
 }
 
@@ -132,8 +134,18 @@ body {
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  transition: background var(--theme-transition) ease, color var(--theme-transition) ease;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial;
+  transition:
+    background var(--theme-transition) ease,
+    color var(--theme-transition) ease;
   margin: 0;
 }
 
@@ -145,19 +157,20 @@ input,
 textarea,
 .card,
 .modal {
-  transition: background-color var(--theme-transition) ease, 
-              border-color var(--theme-transition) ease, 
-              color var(--theme-transition) ease;
+  transition:
+    background-color var(--theme-transition) ease,
+    border-color var(--theme-transition) ease,
+    color var(--theme-transition) ease;
 }
 
 /* utility: consistent box look for any card/panel/modal */
 .box {
-  background: var(--card-solid) !important;  /* force solid box color */
+  background: var(--card-solid) !important; /* force solid box color */
   color: var(--text) !important;
   border: 1px solid var(--border) !important;
   border-radius: 0.85rem !important;
   padding: 1rem !important;
-  box-shadow: 0 6px 30px rgba(2,6,23,0.35);
+  box-shadow: 0 6px 30px rgba(2, 6, 23, 0.35);
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
   opacity: 1 !important;
@@ -165,8 +178,12 @@ textarea,
 }
 
 /* make sure common layout containers use .box to get consistent appearance */
-.sidebar { padding: 1rem; }
-.main { padding: 1rem; }
+.sidebar {
+  padding: 1rem;
+}
+.main {
+  padding: 1rem;
+}
 
 /* =========================================================
    SIDEBAR + MAIN
@@ -204,7 +221,7 @@ textarea,
 .sidebar.collapsed .font-bold,
 .sidebar.collapsed .font-semibold,
 .sidebar.collapsed .text-xs,
-.sidebar.collapsed input[type="file"],
+.sidebar.collapsed input[type='file'],
 .sidebar.collapsed .btn:not(.sidebar-toggle) {
   opacity: 0;
   visibility: hidden;
@@ -224,7 +241,9 @@ textarea,
 }
 
 /* force sidebar as solid box in dark too */
-:root.dark .sidebar { background: var(--sidebar); }
+:root.dark .sidebar {
+  background: var(--sidebar);
+}
 
 /* profile avatar in sidebar */
 .sidebar img {
@@ -270,10 +289,15 @@ textarea,
   font-weight: 600;
   padding: 0.55rem 1rem;
   border-radius: 0.6rem;
-  transition: transform .15s ease, box-shadow .15s ease;
-  border: 1px solid rgba(0,0,0,0.08);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
-.btn:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(31,41,55,0.16); }
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px rgba(31, 41, 55, 0.16);
+}
 
 .input {
   background: rgba(255, 255, 255, 0.05);
@@ -283,7 +307,7 @@ textarea,
   border-radius: 0.6rem;
 }
 
-.input::placeholder { 
+.input::placeholder {
   color: var(--muted);
   opacity: 0.7;
 }
@@ -310,7 +334,9 @@ textarea,
 }
 
 /* small text utility */
-.text-muted { color: var(--muted); }
+.text-muted {
+  color: var(--muted);
+}
 
 /* =========================================================
    THEMED BOX UTILITIES (reusable, replace inline styles)
@@ -335,7 +361,9 @@ textarea,
 /* Add subtle elevation in dark for better separation */
 :root.dark .themed-card,
 :root.dark .themed-menu {
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 /* =========================================================
@@ -387,7 +415,7 @@ textarea,
 .chip-active {
   background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
   color: var(--btn-text);
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .themed-menu {
@@ -417,7 +445,7 @@ textarea,
   position: relative;
   overflow: visible;
   box-shadow: 0 2px 10px rgba(2, 6, 23, 0.08);
-  background-image: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.04));
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.04));
 }
 
 /* message wrapper to contain reactions */
@@ -436,7 +464,7 @@ textarea,
 /* my messages */
 .msg-mine {
   background: var(--bubble-mine);
-  background-image: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.06));
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.06));
   margin-left: auto;
   border-top-right-radius: 0.25rem;
   border-top-left-radius: 0.75rem;
@@ -444,7 +472,7 @@ textarea,
 
 /* speech tails */
 .message::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: -2px;
   left: -6px;
@@ -507,7 +535,7 @@ textarea,
   max-width: 100%;
 }
 
-.composer input[type="file"] {
+.composer input[type='file'] {
   max-width: 140px;
   font-size: 0.875rem;
 }
@@ -536,11 +564,13 @@ textarea,
   background: var(--card);
   border: 1px solid var(--border);
   color: var(--text);
-  transition: background-color var(--theme-transition) ease, box-shadow var(--theme-transition) ease;
+  transition:
+    background-color var(--theme-transition) ease,
+    box-shadow var(--theme-transition) ease;
 }
-.composer-icon-btn:hover { 
+.composer-icon-btn:hover {
   background: var(--accent-violet-muted);
-  box-shadow: 0 6px 24px rgba(2,6,23,0.18);
+  box-shadow: 0 6px 24px rgba(2, 6, 23, 0.18);
 }
 
 .composer-send-btn {
@@ -551,11 +581,13 @@ textarea,
   border-radius: 999px;
   background: linear-gradient(90deg, var(--accent-start), var(--accent-end));
   color: var(--btn-text);
-  border: 1px solid rgba(0,0,0,0.08);
-  transition: box-shadow .15s ease, transform .15s ease;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
 }
-.composer-send-btn:hover { 
-  box-shadow: 0 10px 30px rgba(2,6,23,0.25);
+.composer-send-btn:hover {
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.25);
   transform: translateY(-1px);
 }
 
@@ -591,7 +623,9 @@ textarea,
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
-  transition: background-color var(--theme-transition) ease, border-color var(--theme-transition) ease;
+  transition:
+    background-color var(--theme-transition) ease,
+    border-color var(--theme-transition) ease;
 }
 .reaction-btn:hover {
   background: var(--accent-cyan-muted);
@@ -611,7 +645,7 @@ textarea,
   border-radius: 0.5rem;
   border: 1px solid var(--border);
   background: var(--card);
-  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
 .reaction-option {
   padding: 0.25rem 0.55rem;
@@ -619,7 +653,9 @@ textarea,
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
-  transition: background-color var(--theme-transition) ease, border-color var(--theme-transition) ease;
+  transition:
+    background-color var(--theme-transition) ease,
+    border-color var(--theme-transition) ease;
 }
 .reaction-option:hover {
   background: var(--accent-violet-muted);
@@ -648,7 +684,7 @@ textarea,
   align-items: center;
   justify-content: center;
   z-index: 50;
-  background: rgba(0,0,0,0.55) !important;
+  background: rgba(0, 0, 0, 0.55) !important;
   -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
 }
@@ -663,7 +699,7 @@ textarea,
   background: var(--card-solid) !important;
   color: var(--text) !important;
   border: 1px solid var(--border) !important;
-  box-shadow: 0 10px 50px rgba(2,6,23,0.55);
+  box-shadow: 0 10px 50px rgba(2, 6, 23, 0.55);
   opacity: 1 !important;
   filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -671,7 +707,8 @@ textarea,
 }
 
 /* ensure all modal children are visible */
-.profile-modal * , .modal-box * {
+.profile-modal *,
+.modal-box * {
   opacity: 1 !important;
   color: inherit !important;
   filter: none !important;
@@ -695,7 +732,9 @@ textarea,
 
 /* If any element used the old semi-transparent card variable, force solid fallback */
 * {
-  transition: background-color .12s ease, color .12s ease !important;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease !important;
 }
 
 /* crate a defensive rule to avoid rgba leaks on main panels */
@@ -715,26 +754,26 @@ textarea,
    RESPONSIVE
    ========================================================= */
 @media (max-width: 820px) {
-  .layout { 
-    flex-direction: column; 
+  .layout {
+    flex-direction: column;
     gap: 1rem;
     padding: 0.5rem !important;
   }
-  
+
   /* Default sidebar behavior - NOT scrollable on normal pages */
   .sidebar,
-  .sidebar { 
+  .sidebar {
     width: 100% !important;
     min-width: 100% !important;
     margin-bottom: 1rem;
     flex-shrink: 0;
   }
-  
+
   /* Always show copyright on mobile */
   .sidebar .sidebar-copyright {
     display: block !important;
   }
-  
+
   /* Main content should scroll on normal pages */
   .main,
   .main-fullwidth {
@@ -742,19 +781,19 @@ textarea,
     max-height: calc(100vh - 60vh);
     overflow-y: auto;
   }
-  
+
   /* Only apply height restrictions when chat is active */
   .layout.chat-active {
     height: 100vh;
     overflow: hidden;
   }
-  
-  .layout.chat-active .sidebar { 
+
+  .layout.chat-active .sidebar {
     max-height: 40vh;
     overflow-y: auto;
     margin-bottom: 0;
   }
-  
+
   /* Chat view specific styles */
   .layout.chat-active .main,
   .layout.chat-active .main-fullwidth {
@@ -765,29 +804,29 @@ textarea,
     flex-direction: column;
     overflow: hidden;
   }
-  
+
   .layout.chat-active .main > div {
     height: 100%;
     display: flex;
     flex-direction: column;
   }
-  
-  .message { 
-    max-width: 85%; 
+
+  .message {
+    max-width: 85%;
     box-shadow: 0 2px 12px rgba(2, 6, 23, 0.12);
   }
-  
+
   /* Make reactions wrap and stay inside bubble on mobile */
   .message .flex.gap-2 {
     flex-wrap: wrap;
     gap: 0.25rem;
   }
-  
+
   .message button {
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
   }
-  
+
   /* Composer responsive - full width stacking */
   .composer {
     flex-direction: column;
@@ -799,32 +838,32 @@ textarea,
     bottom: 0;
     z-index: 10;
   }
-  
+
   .composer > div {
     width: 100% !important;
     max-width: 100% !important;
   }
-  
+
   .composer .input {
     width: 100% !important;
     box-sizing: border-box;
   }
-  
+
   .composer .btn {
     width: 100%;
   }
-  
+
   /* Ensure input container doesn't overflow */
   .composer .flex.items-center {
     flex-wrap: nowrap !important;
     gap: 0.5rem;
   }
-  
+
   /* Image preview thumbnails responsive */
   .composer > div:first-child {
     overflow-x: auto;
   }
-  
+
   /* Profile modal responsive */
   .profile-modal,
   .modal-box {
@@ -833,7 +872,7 @@ textarea,
     max-height: 90vh;
     overflow-y: auto;
   }
-  
+
   /* Image preview modal responsive */
   .modal-box .grid {
     grid-template-columns: 1fr !important;
@@ -855,20 +894,20 @@ textarea,
 }
 
 .profile-modal .modal-box {
-  background: #ffffff !important;          /* light mode */
-  color: #0f172a !important;              /* dark text for light mode */
+  background: #ffffff !important; /* light mode */
+  color: #0f172a !important; /* dark text for light mode */
 }
 
 .dark .profile-modal .modal-box {
-  background: #0f172a !important;          /* TRUE solid dark (no fade) */
-  color: #e6eef8 !important;              /* light text for dark mode */
-  border: 1px solid rgba(255,255,255,0.12) !important;
+  background: #0f172a !important; /* TRUE solid dark (no fade) */
+  color: #e6eef8 !important; /* light text for dark mode */
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
 
 /* Remove glass effect inherited from main card */
 .profile-modal .modal-box {
   backdrop-filter: none !important;
-  box-shadow: 0 10px 35px rgba(0,0,0,0.45) !important;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.45) !important;
 }
 
 /* Ensure all text elements are visible */
@@ -943,15 +982,21 @@ body {
 }
 
 @keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 /* Shimmer loading effect */
 .shimmer {
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(255,255,255,0.1) 50%, 
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
     transparent 100%
   );
   background-size: 200% 100%;
@@ -959,8 +1004,12 @@ body {
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 /* Smooth scroll behavior */
@@ -989,4 +1038,3 @@ html {
 .animate-fade-in {
   animation: fadeIn 0.2s ease-out;
 }
-

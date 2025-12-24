@@ -1,15 +1,26 @@
 // frontend/src/pages/Posts.tsx
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { API_URL } from "../config/api";
-import { Heart, MessageCircle, Send, Trash2, Edit, X, Image as ImageIcon, Plus, ArrowUp, Share } from "lucide-react";
-import Avatar from "../components/Avatar";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { API_URL } from '../config/api';
+import {
+  Heart,
+  MessageCircle,
+  Send,
+  Trash2,
+  Edit,
+  X,
+  Image as ImageIcon,
+  Plus,
+  ArrowUp,
+  Share,
+} from 'lucide-react';
+import Avatar from '../components/Avatar';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
-const API = API_URL.replace(/\/api$/, "");
+const API = API_URL.replace(/\/api$/, '');
 
 interface Post {
   _id: string;
@@ -53,34 +64,67 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [newPost, setNewPost] = useState({ caption: "", imageUrl: "", location: "", tags: "" });
+  const [newPost, setNewPost] = useState({ caption: '', imageUrl: '', location: '', tags: '' });
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
   const [uploadingImage, setUploadingImage] = useState(false);
   const [expandedCaptions, setExpandedCaptions] = useState<Record<string, boolean>>({});
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [previewIndex, setPreviewIndex] = useState<number>(-1);
-  const imageList = React.useMemo(() => posts.filter(p => !!p.imageUrl).map(p => p.imageUrl), [posts]);
+  const imageList = React.useMemo(
+    () => posts.filter((p) => !!p.imageUrl).map((p) => p.imageUrl),
+    [posts],
+  );
 
   function openImage(url: string) {
     setPreviewImage(url);
     const idx = imageList.indexOf(url);
-    setPreviewIndex(idx >= 0 ? idx : imageList.findIndex(u => u === url));
+    setPreviewIndex(idx >= 0 ? idx : imageList.findIndex((u) => u === url));
   }
-  function closeImage() { setPreviewImage(null); setPreviewIndex(-1); }
-  function prevImage() { if (!imageList.length) return; setPreviewIndex((i) => { const ni = (i + imageList.length - 1) % imageList.length; setPreviewImage(imageList[ni]); return ni; }); }
-  function nextImage() { if (!imageList.length) return; setPreviewIndex((i) => { const ni = (i + 1) % imageList.length; setPreviewImage(imageList[ni]); return ni; }); }
+  function closeImage() {
+    setPreviewImage(null);
+    setPreviewIndex(-1);
+  }
+  function prevImage() {
+    if (!imageList.length) return;
+    setPreviewIndex((i) => {
+      const ni = (i + imageList.length - 1) % imageList.length;
+      setPreviewImage(imageList[ni]);
+      return ni;
+    });
+  }
+  function nextImage() {
+    if (!imageList.length) return;
+    setPreviewIndex((i) => {
+      const ni = (i + 1) % imageList.length;
+      setPreviewImage(imageList[ni]);
+      return ni;
+    });
+  }
   async function shareImage(url: string) {
     try {
-      if ((navigator as any).share) { await (navigator as any).share({ title: 'TeaKonn Photo', url }); return; }
+      if ((navigator as any).share) {
+        await (navigator as any).share({ title: 'TeaKonn Photo', url });
+        return;
+      }
     } catch {}
-    try { await navigator.clipboard.writeText(url); alert('Image link copied'); } catch { window.open(url, '_blank'); }
+    try {
+      await navigator.clipboard.writeText(url);
+      alert('Image link copied');
+    } catch {
+      window.open(url, '_blank');
+    }
   }
   function downloadImage(url: string) {
     try {
       const a = document.createElement('a');
-      a.href = url; a.download = url.split('/').pop() || 'image.jpg';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    } catch { window.open(url, '_blank'); }
+      a.href = url;
+      a.download = url.split('/').pop() || 'image.jpg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch {
+      window.open(url, '_blank');
+    }
   }
 
   React.useEffect(() => {
@@ -93,31 +137,37 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [previewImage, imageList]);
-  
+
   // Edit states
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
-  const [editPostData, setEditPostData] = useState({ caption: "", location: "", tags: "" });
+  const [editPostData, setEditPostData] = useState({ caption: '', location: '', tags: '' });
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
-  const [editCommentText, setEditCommentText] = useState("");
-  
+  const [editCommentText, setEditCommentText] = useState('');
+
   // Comments collapse state
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
   const [showAllComments, setShowAllComments] = useState<Record<string, boolean>>({});
   const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
   const [commentBoxOpen, setCommentBoxOpen] = useState<Record<string, boolean>>({});
   const [expandedCommentText, setExpandedCommentText] = useState<Record<string, boolean>>({});
-  const [expandedReplyText, setExpandedReplyText] = useState<Record<string, Record<number, boolean>>>({});
-  
+  const [expandedReplyText, setExpandedReplyText] = useState<
+    Record<string, Record<number, boolean>>
+  >({});
+
   // Reply state
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
-  const [replyText, setReplyText] = useState("");
-  
+  const [replyText, setReplyText] = useState('');
+
   // Scroll to top state
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [longPressPostId, setLongPressPostId] = useState<string | null>(null);
   const pressTimerRef = React.useRef<number | null>(null);
   const [showLongPressHint, setShowLongPressHint] = useState<boolean>(() => {
-    try { return !localStorage.getItem('auralink-hint-posts-longpress'); } catch { return true; }
+    try {
+      return !localStorage.getItem('auralink-hint-posts-longpress');
+    } catch {
+      return true;
+    }
   });
 
   function startPostPress(postId: string) {
@@ -147,15 +197,19 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
   }, [token]);
 
   const currentUser = React.useMemo(() => {
-    try { return JSON.parse(localStorage.getItem("user") || "{}"); } catch { return {}; }
+    try {
+      return JSON.parse(localStorage.getItem('user') || '{}');
+    } catch {
+      return {};
+    }
   }, []);
 
   useEffect(() => {
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 400);
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // If opened via a shared link, highlight and scroll to the post
@@ -169,7 +223,9 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
       el.classList.add('ring-2', 'ring-cyan-500');
       setTimeout(() => {
         el.classList.remove('ring-2', 'ring-cyan-500');
-        try { localStorage.removeItem('auralink-highlight-post'); } catch {}
+        try {
+          localStorage.removeItem('auralink-highlight-post');
+        } catch {}
       }, 2000);
     }, 300);
   }, [posts.length]);
@@ -182,28 +238,28 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
       });
       setPosts(res.data.posts || []);
     } catch (err) {
-      console.error("Failed to load posts:", err);
+      console.error('Failed to load posts:', err);
     } finally {
       setLoading(false);
     }
   }
 
   function makeAvatarUrl(avatar?: string) {
-    if (!avatar) return "https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff";
-    if (avatar.startsWith("http")) return avatar;
-    if (avatar.startsWith("/")) return API + avatar;
-    return API + "/uploads/" + avatar;
+    if (!avatar) return 'https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff';
+    if (avatar.startsWith('http')) return avatar;
+    if (avatar.startsWith('/')) return API + avatar;
+    return API + '/uploads/' + avatar;
   }
 
   async function handleCreatePost() {
     if (!newPost.caption.trim() && !newPost.imageUrl) {
-      alert("Please add a caption or image");
+      alert('Please add a caption or image');
       return;
     }
 
     try {
       const tags = newPost.tags
-        .split(",")
+        .split(',')
         .map((t) => t.trim())
         .filter(Boolean);
 
@@ -215,15 +271,15 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
           tags,
           location: newPost.location,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       setPosts([res.data, ...posts]);
-      setNewPost({ caption: "", imageUrl: "", location: "", tags: "" });
+      setNewPost({ caption: '', imageUrl: '', location: '', tags: '' });
       setCreateModalOpen(false);
     } catch (err) {
-      console.error("Failed to create post:", err);
-      alert("Failed to create post");
+      console.error('Failed to create post:', err);
+      alert('Failed to create post');
     }
   }
 
@@ -232,26 +288,26 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
     if (!file) return;
 
     if (file.size > 10 * 1024 * 1024) {
-      alert("Image must be under 10MB");
+      alert('Image must be under 10MB');
       return;
     }
 
     try {
       setUploadingImage(true);
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append('file', file);
 
       const res = await axios.post(`${API}/api/files/upload`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
+          'Content-Type': 'multipart/form-data',
         },
       });
 
       setNewPost({ ...newPost, imageUrl: res.data.url });
     } catch (err) {
-      console.error("Upload failed:", err);
-      alert("Failed to upload image");
+      console.error('Upload failed:', err);
+      alert('Failed to upload image');
     } finally {
       setUploadingImage(false);
     }
@@ -260,21 +316,26 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
   async function handleLike(postId: string) {
     // Optimistic toggle
     const prev = posts;
-    setPosts((list) => list.map((p) => {
-      if (p._id !== postId) return p;
-      const liked = p.likes.includes(currentUserId);
-      return { ...p, likes: liked ? p.likes.filter((id) => id !== currentUserId) : [...p.likes, currentUserId] };
-    }));
+    setPosts((list) =>
+      list.map((p) => {
+        if (p._id !== postId) return p;
+        const liked = p.likes.includes(currentUserId);
+        return {
+          ...p,
+          likes: liked ? p.likes.filter((id) => id !== currentUserId) : [...p.likes, currentUserId],
+        };
+      }),
+    );
 
     try {
       const res = await axios.post(
         `${API}/api/posts/${postId}/like`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setPosts((list) => list.map((p) => (p._id === postId ? res.data : p)));
     } catch (err) {
-      console.error("Failed to like post:", err);
+      console.error('Failed to like post:', err);
       // Revert on error
       setPosts(prev);
     }
@@ -289,25 +350,31 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
     const tempId = `temp-${Date.now()}`;
     const tempComment = {
       _id: tempId,
-      user: { _id: currentUserId, username: currentUser?.username || "You", avatar: currentUser?.avatar },
+      user: {
+        _id: currentUserId,
+        username: currentUser?.username || 'You',
+        avatar: currentUser?.avatar,
+      },
       text,
       likes: [],
       replies: [],
       createdAt: new Date().toISOString(),
     } as any;
 
-    setPosts((list) => list.map((p) => p._id === postId ? { ...p, comments: [...p.comments, tempComment] } : p));
-    setCommentTexts({ ...commentTexts, [postId]: "" });
+    setPosts((list) =>
+      list.map((p) => (p._id === postId ? { ...p, comments: [...p.comments, tempComment] } : p)),
+    );
+    setCommentTexts({ ...commentTexts, [postId]: '' });
 
     try {
       const res = await axios.post(
         `${API}/api/posts/${postId}/comment`,
         { text },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setPosts((list) => list.map((p) => (p._id === postId ? res.data : p)));
     } catch (err) {
-      console.error("Failed to add comment:", err);
+      console.error('Failed to add comment:', err);
       // Revert and restore input
       setPosts(prev);
       setCommentTexts({ ...commentTexts, [postId]: text });
@@ -315,7 +382,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
   }
 
   async function handleDeletePost(postId: string) {
-    if (!confirm("Delete this post?")) return;
+    if (!confirm('Delete this post?')) return;
 
     try {
       await axios.delete(`${API}/api/posts/${postId}`, {
@@ -324,8 +391,8 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
 
       setPosts(posts.filter((p) => p._id !== postId));
     } catch (err) {
-      console.error("Failed to delete post:", err);
-      alert("Failed to delete post");
+      console.error('Failed to delete post:', err);
+      alert('Failed to delete post');
     }
   }
 
@@ -365,7 +432,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
     setEditPostData({
       caption: post.caption,
       location: post.location,
-      tags: post.tags.join(", "),
+      tags: post.tags.join(', '),
     });
   }
 
@@ -374,7 +441,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
 
     try {
       const tags = editPostData.tags
-        .split(",")
+        .split(',')
         .map((t) => t.trim())
         .filter(Boolean);
 
@@ -385,31 +452,30 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
           tags,
           location: editPostData.location,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       setPosts(posts.map((p) => (p._id === editingPostId ? res.data : p)));
       setEditingPostId(null);
-      setEditPostData({ caption: "", location: "", tags: "" });
+      setEditPostData({ caption: '', location: '', tags: '' });
     } catch (err) {
-      console.error("Failed to update post:", err);
-      alert("Failed to update post");
+      console.error('Failed to update post:', err);
+      alert('Failed to update post');
     }
   }
 
   async function handleDeleteComment(postId: string, commentId: string) {
-    if (!confirm("Delete this comment?")) return;
+    if (!confirm('Delete this comment?')) return;
 
     try {
-      const res = await axios.delete(
-        `${API}/api/posts/${postId}/comment/${commentId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await axios.delete(`${API}/api/posts/${postId}/comment/${commentId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       setPosts(posts.map((p) => (p._id === postId ? res.data : p)));
     } catch (err) {
-      console.error("Failed to delete comment:", err);
-      alert("Failed to delete comment");
+      console.error('Failed to delete comment:', err);
+      alert('Failed to delete comment');
     }
   }
 
@@ -421,28 +487,33 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
   async function handleLikeComment(postId: string, commentId: string) {
     // Optimistic toggle
     const prev = posts;
-    setPosts((list) => list.map((p) => {
-      if (p._id !== postId) return p;
-      return {
-        ...p,
-        comments: p.comments.map((c) => {
-          if (c._id !== commentId) return c;
-          const likes = c.likes || [];
-          const liked = likes.includes(currentUserId);
-          return { ...c, likes: liked ? likes.filter((id) => id !== currentUserId) : [...likes, currentUserId] };
-        })
-      };
-    }));
+    setPosts((list) =>
+      list.map((p) => {
+        if (p._id !== postId) return p;
+        return {
+          ...p,
+          comments: p.comments.map((c) => {
+            if (c._id !== commentId) return c;
+            const likes = c.likes || [];
+            const liked = likes.includes(currentUserId);
+            return {
+              ...c,
+              likes: liked ? likes.filter((id) => id !== currentUserId) : [...likes, currentUserId],
+            };
+          }),
+        };
+      }),
+    );
 
     try {
       const res = await axios.post(
         `${API}/api/posts/${postId}/comment/${commentId}/like`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setPosts((list) => list.map((p) => (p._id === postId ? res.data : p)));
     } catch (err) {
-      console.error("Failed to like comment:", err);
+      console.error('Failed to like comment:', err);
       setPosts(prev);
     }
   }
@@ -453,33 +524,41 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
     const text = replyText.trim();
     const prev = posts;
     const tempReply = {
-      user: { _id: currentUserId, username: currentUser?.username || "You", avatar: currentUser?.avatar },
+      user: {
+        _id: currentUserId,
+        username: currentUser?.username || 'You',
+        avatar: currentUser?.avatar,
+      },
       text,
       createdAt: new Date().toISOString(),
       _id: `tempreply-${Date.now()}`,
     } as any;
 
     // Optimistic add
-    setPosts((list) => list.map((p) => {
-      if (p._id !== postId) return p;
-      return {
-        ...p,
-        comments: p.comments.map((c) => c._id === commentId ? { ...c, replies: [...(c.replies || []), tempReply] } : c)
-      };
-    }));
+    setPosts((list) =>
+      list.map((p) => {
+        if (p._id !== postId) return p;
+        return {
+          ...p,
+          comments: p.comments.map((c) =>
+            c._id === commentId ? { ...c, replies: [...(c.replies || []), tempReply] } : c,
+          ),
+        };
+      }),
+    );
     setReplyingTo(null);
-    setReplyText("");
+    setReplyText('');
 
     try {
       const res = await axios.post(
         `${API}/api/posts/${postId}/comment/${commentId}/reply`,
         { text },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setPosts((list) => list.map((p) => (p._id === postId ? res.data : p)));
     } catch (err) {
-      console.error("Failed to reply to comment:", err);
-      alert("Failed to reply to comment");
+      console.error('Failed to reply to comment:', err);
+      alert('Failed to reply to comment');
       setPosts(prev);
       // Optionally restore reply draft
       setReplyingTo(commentId);
@@ -488,23 +567,23 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
   }
 
   function toggleComments(postId: string) {
-    setExpandedComments(prev => ({
+    setExpandedComments((prev) => ({
       ...prev,
-      [postId]: !prev[postId]
+      [postId]: !prev[postId],
     }));
   }
 
   function toggleShowAll(postId: string) {
-    setShowAllComments(prev => ({
+    setShowAllComments((prev) => ({
       ...prev,
-      [postId]: !prev[postId]
+      [postId]: !prev[postId],
     }));
   }
 
   function toggleReplies(commentId: string) {
-    setExpandedReplies(prev => ({
+    setExpandedReplies((prev) => ({
       ...prev,
-      [commentId]: !prev[commentId]
+      [commentId]: !prev[commentId],
     }));
   }
 
@@ -515,7 +594,8 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
 
     if (diffInHours < 24) {
       return date.fromNow(); // "2 hours ago"
-    } else if (diffInHours < 168) { // Less than 7 days
+    } else if (diffInHours < 168) {
+      // Less than 7 days
       return date.format('dddd [at] h:mm A'); // "Monday at 3:45 PM"
     } else {
       return date.format('MMM D, YYYY [at] h:mm A'); // "Dec 14, 2025 at 3:45 PM"
@@ -523,7 +603,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
   }
 
   function toggleCommentBox(postId: string) {
-    setCommentBoxOpen(prev => ({ ...prev, [postId]: !prev[postId] }));
+    setCommentBoxOpen((prev) => ({ ...prev, [postId]: !prev[postId] }));
   }
 
   return (
@@ -560,12 +640,22 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
         ) : (
           <div className="space-y-4">
             {showLongPressHint && (
-              <div className="rounded-lg px-3 py-2 text-xs bg-gradient-to-r from-indigo-500/10 to-emerald-500/10 border" style={{ borderColor: 'var(--border)' }}>
+              <div
+                className="rounded-lg px-3 py-2 text-xs bg-gradient-to-r from-indigo-500/10 to-emerald-500/10 border"
+                style={{ borderColor: 'var(--border)' }}
+              >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-theme-secondary">Tip: Press and hold a post to edit or delete.</span>
+                  <span className="text-theme-secondary">
+                    Tip: Press and hold a post to edit or delete.
+                  </span>
                   <button
                     className="text-[11px] px-2 py-1 rounded-md bg-white/60 dark:bg-slate-700/60 hover:opacity-80"
-                    onClick={() => { try { localStorage.setItem('auralink-hint-posts-longpress', 'true'); } catch {}; setShowLongPressHint(false); }}
+                    onClick={() => {
+                      try {
+                        localStorage.setItem('auralink-hint-posts-longpress', 'true');
+                      } catch {}
+                      setShowLongPressHint(false);
+                    }}
                   >
                     Got it
                   </button>
@@ -585,7 +675,10 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                 onTouchEnd={cancelPostPress}
               >
                 {/* Post Header */}
-                <div className="flex items-center justify-between p-3 relative z-10" style={{ overflow: 'visible' }}>
+                <div
+                  className="flex items-center justify-between p-3 relative z-10"
+                  style={{ overflow: 'visible' }}
+                >
                   <div className="flex items-center gap-3">
                     <Avatar
                       src={makeAvatarUrl(post.author.avatar)}
@@ -622,14 +715,20 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button
-                          onClick={() => { setLongPressPostId(null); startEditPost(post); }}
+                          onClick={() => {
+                            setLongPressPostId(null);
+                            startEditPost(post);
+                          }}
                           className="flex items-center gap-2 w-full px-4 py-2 text-sm text-theme hover:opacity-90"
                         >
                           <Edit className="w-4 h-4" />
                           Edit Post
                         </button>
                         <button
-                          onClick={() => { setLongPressPostId(null); handleDeletePost(post._id); }}
+                          onClick={() => {
+                            setLongPressPostId(null);
+                            handleDeletePost(post._id);
+                          }}
                           className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:opacity-90"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -649,12 +748,11 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
 
                 {/* Post Image (standardized height) */}
                 {post.imageUrl && (
-                  <div className="w-full h-64 sm:h-72 md:h-80 overflow-hidden rounded-t-2xl relative group cursor-zoom-in" onClick={() => openImage(post.imageUrl)}>
-                    <img
-                      src={post.imageUrl}
-                      alt="Post"
-                      className="w-full h-full object-cover"
-                    />
+                  <div
+                    className="w-full h-64 sm:h-72 md:h-80 overflow-hidden rounded-t-2xl relative group cursor-zoom-in"
+                    onClick={() => openImage(post.imageUrl)}
+                  >
+                    <img src={post.imageUrl} alt="Post" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                   </div>
                 )}
@@ -669,15 +767,15 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                       <Heart
                         className={`w-5 h-5 transition-all ${
                           post.likes.includes(currentUserId)
-                            ? "fill-red-500 text-red-500"
-                            : "text-theme-secondary group-hover:text-red-500"
+                            ? 'fill-red-500 text-red-500'
+                            : 'text-theme-secondary group-hover:text-red-500'
                         }`}
                       />
                       <span className="text-sm font-medium text-theme-secondary">
                         {post.likes.length}
                       </span>
                     </button>
-                    <button 
+                    <button
                       onClick={() => toggleCommentBox(post._id)}
                       className="flex items-center gap-1.5 text-theme-secondary hover:text-cyan-500"
                     >
@@ -691,7 +789,9 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                     <div className="space-y-3 p-4 themed-card rounded-lg">
                       <textarea
                         value={editPostData.caption}
-                        onChange={(e) => setEditPostData({ ...editPostData, caption: e.target.value })}
+                        onChange={(e) =>
+                          setEditPostData({ ...editPostData, caption: e.target.value })
+                        }
                         className="input w-full resize-none"
                         rows={3}
                         placeholder="Caption..."
@@ -699,7 +799,9 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                       <input
                         type="text"
                         value={editPostData.location}
-                        onChange={(e) => setEditPostData({ ...editPostData, location: e.target.value })}
+                        onChange={(e) =>
+                          setEditPostData({ ...editPostData, location: e.target.value })
+                        }
                         className="input w-full"
                         placeholder="Location..."
                       />
@@ -711,16 +813,13 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                         placeholder="Tags (comma-separated)..."
                       />
                       <div className="flex gap-2">
-                        <button
-                          onClick={handleUpdatePost}
-                          className="btn"
-                        >
+                        <button onClick={handleUpdatePost} className="btn">
                           Save
                         </button>
                         <button
                           onClick={() => {
                             setEditingPostId(null);
-                            setEditPostData({ caption: "", location: "", tags: "" });
+                            setEditPostData({ caption: '', location: '', tags: '' });
                           }}
                           className="themed-card"
                         >
@@ -734,14 +833,16 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                         <div>
                           <p
                             className="text-heading"
-                            style={expandedCaptions[post._id]
-                              ? {} as any
-                              : ({
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: 3,
-                                  WebkitBoxOrient: 'vertical',
-                                  overflow: 'hidden'
-                                } as any)}
+                            style={
+                              expandedCaptions[post._id]
+                                ? ({} as any)
+                                : ({
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 3,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden',
+                                  } as any)
+                            }
                           >
                             <span className="font-semibold mr-2">{post.author.username}</span>
                             {post.caption}
@@ -749,7 +850,12 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                           {post.caption.length > 240 && (
                             <button
                               className="mt-1 text-xs text-cyan-600 dark:text-cyan-400 hover:opacity-80"
-                              onClick={() => setExpandedCaptions((prev) => ({ ...prev, [post._id]: !prev[post._id] }))}
+                              onClick={() =>
+                                setExpandedCaptions((prev) => ({
+                                  ...prev,
+                                  [post._id]: !prev[post._id],
+                                }))
+                              }
                             >
                               {expandedCaptions[post._id] ? 'See less' : 'See more'}
                             </button>
@@ -770,7 +876,12 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                             </span>
                           ))}
                           {post.tags.length > 3 && (
-                            <span className="px-2 py-0.5 rounded-full text-xs text-theme-secondary" style={{ border: '1px solid var(--border)' }}>…</span>
+                            <span
+                              className="px-2 py-0.5 rounded-full text-xs text-theme-secondary"
+                              style={{ border: '1px solid var(--border)' }}
+                            >
+                              …
+                            </span>
                           )}
                         </div>
                       )}
@@ -778,9 +889,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                       {/* Timestamp */}
                       <div className="text-xs text-theme-secondary">
                         {formatTimestamp(post.createdAt)}
-                        {post.captionEditedAt && (
-                          <span className="ml-2 italic">(edited)</span>
-                        )}
+                        {post.captionEditedAt && <span className="ml-2 italic">(edited)</span>}
                       </div>
                     </>
                   )}
@@ -806,7 +915,10 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                             </button>
                           )}
                           <div className="space-y-3">
-                            {(showAllComments[post._id] ? post.comments : post.comments.slice(-3)).map((comment) => (
+                            {(showAllComments[post._id]
+                              ? post.comments
+                              : post.comments.slice(-3)
+                            ).map((comment) => (
                               <div key={comment._id} className="flex gap-2 group">
                                 <Avatar
                                   src={makeAvatarUrl(comment.user.avatar)}
@@ -830,14 +942,18 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                                               const res = await axios.put(
                                                 `${API}/api/posts/${post._id}/comment/${comment._id}`,
                                                 { text: editCommentText },
-                                                { headers: { Authorization: `Bearer ${token}` } }
+                                                { headers: { Authorization: `Bearer ${token}` } },
                                               );
-                                              setPosts(posts.map((p) => (p._id === post._id ? res.data : p)));
+                                              setPosts(
+                                                posts.map((p) =>
+                                                  p._id === post._id ? res.data : p,
+                                                ),
+                                              );
                                               setEditingCommentId(null);
-                                              setEditCommentText("");
+                                              setEditCommentText('');
                                             } catch (err) {
-                                              console.error("Failed to edit comment:", err);
-                                              alert("Failed to edit comment");
+                                              console.error('Failed to edit comment:', err);
+                                              alert('Failed to edit comment');
                                             }
                                           }}
                                           className="btn text-xs"
@@ -862,10 +978,16 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                                           <div className="text-sm text-theme-secondary">
                                             <div
                                               style={{
-                                                display: expandedCommentText[comment._id] ? 'block' : '-webkit-box',
-                                                WebkitLineClamp: expandedCommentText[comment._id] ? undefined : 4,
+                                                display: expandedCommentText[comment._id]
+                                                  ? 'block'
+                                                  : '-webkit-box',
+                                                WebkitLineClamp: expandedCommentText[comment._id]
+                                                  ? undefined
+                                                  : 4,
                                                 WebkitBoxOrient: 'vertical' as any,
-                                                overflow: expandedCommentText[comment._id] ? 'visible' : 'hidden'
+                                                overflow: expandedCommentText[comment._id]
+                                                  ? 'visible'
+                                                  : 'hidden',
                                               }}
                                             >
                                               {comment.text}
@@ -873,9 +995,16 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                                             {comment.text && comment.text.length > 200 && (
                                               <button
                                                 className="mt-1 text-xs text-cyan-600 dark:text-cyan-400 hover:opacity-80"
-                                                onClick={() => setExpandedCommentText((prev) => ({ ...prev, [comment._id]: !prev[comment._id] }))}
+                                                onClick={() =>
+                                                  setExpandedCommentText((prev) => ({
+                                                    ...prev,
+                                                    [comment._id]: !prev[comment._id],
+                                                  }))
+                                                }
                                               >
-                                                {expandedCommentText[comment._id] ? 'See less' : 'See more'}
+                                                {expandedCommentText[comment._id]
+                                                  ? 'See less'
+                                                  : 'See more'}
                                               </button>
                                             )}
                                           </div>
@@ -885,11 +1014,14 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                                             </span>
                                             {comment.likes && comment.likes.length > 0 && (
                                               <span className="text-xs text-theme-secondary">
-                                                {comment.likes.length} {comment.likes.length === 1 ? 'like' : 'likes'}
+                                                {comment.likes.length}{' '}
+                                                {comment.likes.length === 1 ? 'like' : 'likes'}
                                               </span>
                                             )}
                                             <button
-                                              onClick={() => handleLikeComment(post._id, comment._id)}
+                                              onClick={() =>
+                                                handleLikeComment(post._id, comment._id)
+                                              }
                                               className={`text-xs font-medium ${
                                                 comment.likes?.includes(currentUserId)
                                                   ? 'text-red-500'
@@ -916,21 +1048,26 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                                                   Edit
                                                 </button>
                                                 <button
-                                                  onClick={() => handleDeleteComment(post._id, comment._id)}
+                                                  onClick={() =>
+                                                    handleDeleteComment(post._id, comment._id)
+                                                  }
                                                   className="text-xs text-red-500 hover:text-red-600 font-medium"
                                                 >
                                                   Delete
                                                 </button>
                                               </>
                                             )}
-                                            {post.author._id === currentUserId && comment.user._id !== currentUserId && (
-                                              <button
-                                                onClick={() => handleDeleteComment(post._id, comment._id)}
-                                                className="text-xs text-red-500 hover:text-red-600 font-medium"
-                                              >
-                                                Delete
-                                              </button>
-                                            )}
+                                            {post.author._id === currentUserId &&
+                                              comment.user._id !== currentUserId && (
+                                                <button
+                                                  onClick={() =>
+                                                    handleDeleteComment(post._id, comment._id)
+                                                  }
+                                                  className="text-xs text-red-500 hover:text-red-600 font-medium"
+                                                >
+                                                  Delete
+                                                </button>
+                                              )}
                                           </div>
                                         </div>
                                       </div>
@@ -938,7 +1075,10 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                                   )}
 
                                   {comment.replies && comment.replies.length > 0 && (
-                                    <div className="ml-4 mt-2 border-l-2 pl-3" style={{ borderColor: 'var(--border)' }}>
+                                    <div
+                                      className="ml-4 mt-2 border-l-2 pl-3"
+                                      style={{ borderColor: 'var(--border)' }}
+                                    >
                                       {!expandedReplies[comment._id] ? (
                                         <button
                                           onClick={() => toggleReplies(comment._id)}
@@ -963,10 +1103,22 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                                                   <div className="text-xs text-theme-secondary">
                                                     <div
                                                       style={{
-                                                        display: (expandedReplyText[comment._id]?.[idx]) ? 'block' : '-webkit-box',
-                                                        WebkitLineClamp: (expandedReplyText[comment._id]?.[idx]) ? undefined : 3,
+                                                        display: expandedReplyText[comment._id]?.[
+                                                          idx
+                                                        ]
+                                                          ? 'block'
+                                                          : '-webkit-box',
+                                                        WebkitLineClamp: expandedReplyText[
+                                                          comment._id
+                                                        ]?.[idx]
+                                                          ? undefined
+                                                          : 3,
                                                         WebkitBoxOrient: 'vertical' as any,
-                                                        overflow: (expandedReplyText[comment._id]?.[idx]) ? 'visible' : 'hidden'
+                                                        overflow: expandedReplyText[comment._id]?.[
+                                                          idx
+                                                        ]
+                                                          ? 'visible'
+                                                          : 'hidden',
                                                       }}
                                                     >
                                                       {reply.text}
@@ -974,15 +1126,21 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                                                     {reply.text && reply.text.length > 160 && (
                                                       <button
                                                         className="mt-0.5 text-[10px] text-cyan-600 dark:text-cyan-400 hover:opacity-80"
-                                                        onClick={() => setExpandedReplyText((prev) => ({
-                                                          ...prev,
-                                                          [comment._id]: {
-                                                            ...(prev[comment._id] || {}),
-                                                            [idx]: !((prev[comment._id] || {})[idx])
-                                                          }
-                                                        }))}
+                                                        onClick={() =>
+                                                          setExpandedReplyText((prev) => ({
+                                                            ...prev,
+                                                            [comment._id]: {
+                                                              ...(prev[comment._id] || {}),
+                                                              [idx]: !(prev[comment._id] || {})[
+                                                                idx
+                                                              ],
+                                                            },
+                                                          }))
+                                                        }
                                                       >
-                                                        {(expandedReplyText[comment._id]?.[idx]) ? 'See less' : 'See more'}
+                                                        {expandedReplyText[comment._id]?.[idx]
+                                                          ? 'See less'
+                                                          : 'See more'}
                                                       </button>
                                                     )}
                                                   </div>
@@ -1063,17 +1221,20 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
 
                   {/* Add Comment (hidden until toggled) */}
                   {commentBoxOpen[post._id] && (
-                    <div className="flex items-center gap-2 pt-3 mt-1 border-t rounded-xl" style={{ borderColor: 'var(--border)' }}>
+                    <div
+                      className="flex items-center gap-2 pt-3 mt-1 border-t rounded-xl"
+                      style={{ borderColor: 'var(--border)' }}
+                    >
                       <input
                         type="text"
                         placeholder="Add a comment..."
                         className="input flex-1 min-w-0 text-sm"
-                        value={commentTexts[post._id] || ""}
+                        value={commentTexts[post._id] || ''}
                         onChange={(e) =>
                           setCommentTexts({ ...commentTexts, [post._id]: e.target.value })
                         }
                         onKeyPress={(e) => {
-                          if (e.key === "Enter") handleComment(post._id);
+                          if (e.key === 'Enter') handleComment(post._id);
                         }}
                         autoFocus
                       />
@@ -1106,8 +1267,24 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
             </button>
             {imageList.length > 1 && (
               <>
-                <button onClick={(e) => { e.stopPropagation(); prevImage(); }} className="absolute left-4 mid:top-1/2 -translate-y-1/2 text-white bg-black/40 hover:bg-black/60 rounded-full p-3">‹</button>
-                <button onClick={(e) => { e.stopPropagation(); nextImage(); }} className="absolute right-4 mid:top-1/2 -translate-y-1/2 text-white bg-black/40 hover:bg-black/60 rounded-full p-3">›</button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    prevImage();
+                  }}
+                  className="absolute left-4 mid:top-1/2 -translate-y-1/2 text-white bg-black/40 hover:bg-black/60 rounded-full p-3"
+                >
+                  ‹
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    nextImage();
+                  }}
+                  className="absolute right-4 mid:top-1/2 -translate-y-1/2 text-white bg-black/40 hover:bg-black/60 rounded-full p-3"
+                >
+                  ›
+                </button>
               </>
             )}
             <img
@@ -1117,8 +1294,24 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
               onClick={(e) => e.stopPropagation()}
             />
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
-              <button onClick={(e) => { e.stopPropagation(); shareImage(previewImage); }} className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm">Share</button>
-              <button onClick={(e) => { e.stopPropagation(); downloadImage(previewImage); }} className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm">Download</button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  shareImage(previewImage);
+                }}
+                className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm"
+              >
+                Share
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  downloadImage(previewImage);
+                }}
+                className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm"
+              >
+                Download
+              </button>
             </div>
           </div>
         )}
@@ -1127,7 +1320,14 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
       {/* Create Post Modal */}
       {createModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="rounded-2xl p-6 w-full max-w-lg" style={{ background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--border)' }}>
+          <div
+            className="rounded-2xl p-6 w-full max-w-lg"
+            style={{
+              background: 'var(--card)',
+              color: 'var(--text)',
+              border: '1px solid var(--border)',
+            }}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-heading">Create Post</h2>
               <button
@@ -1164,9 +1364,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
               />
 
               <div>
-                <label className="block text-sm font-medium text-theme-secondary mb-2">
-                  Image
-                </label>
+                <label className="block text-sm font-medium text-theme-secondary mb-2">Image</label>
                 <input
                   type="file"
                   accept="image/*"
@@ -1182,11 +1380,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                   {uploadingImage ? (
                     <span className="text-theme-secondary">Uploading...</span>
                   ) : newPost.imageUrl ? (
-                    <img
-                      src={newPost.imageUrl}
-                      alt="Preview"
-                      className="max-h-40 rounded-lg"
-                    />
+                    <img src={newPost.imageUrl} alt="Preview" className="max-h-40 rounded-lg" />
                   ) : (
                     <>
                       <ImageIcon className="w-6 h-6 text-theme-secondary" />
@@ -1201,13 +1395,13 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                 disabled={uploadingImage}
                 className="btn w-full py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {uploadingImage ? "Uploading..." : "Post"}
+                {uploadingImage ? 'Uploading...' : 'Post'}
               </button>
             </div>
           </div>
         </div>
       )}
-      
+
       {/* Scroll to Top Button */}
       {showScrollTop && (
         <button

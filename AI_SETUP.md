@@ -26,6 +26,7 @@ Frontend (Vercel):
 1. Set envs on backend:
    - `AI_ENABLED=true`
    - `OPENAI_API_KEY=sk-...` (optional)
+   - `FRONTEND_URL=https://your-frontend.vercel.app` (comma-separated allowed; required for CORS/socket)
 2. Set envs on frontend:
    - `VITE_ASSISTANT_ENABLED=true`
    - `VITE_API_URL=https://your-backend.example.com`
@@ -40,3 +41,4 @@ Frontend (Vercel):
 - Widget not visible: Ensure `VITE_ASSISTANT_ENABLED` is not `false` and cached build is updated.
 - 404 on `/api/ai/*`: Check `AI_ENABLED` on backend.
 - OpenAI errors: Verify `OPENAI_API_KEY` and outbound network from backend.
+ - 401 on assistant endpoints: Log in first; the assistant requires a valid JWT (`Authorization: Bearer <token>`).

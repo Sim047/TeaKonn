@@ -1,9 +1,9 @@
 // frontend/src/components/Sidebar.tsx
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { 
-  Users, 
-  UserPlus, 
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import {
+  Users,
+  UserPlus,
   ChevronLeft,
   ChevronRight,
   Menu,
@@ -18,15 +18,15 @@ import {
   TrendingUp,
   Bot,
   Eye,
-  EyeOff
-} from "lucide-react";
-import Avatar from "./Avatar";
-import StatusPicker from "./StatusPicker";
-import SearchUsers from "./SearchUsers";
-import { API_URL } from "../config/api";
-import logo from "../assets/teakonn-logo.png";
+  EyeOff,
+} from 'lucide-react';
+import Avatar from './Avatar';
+import StatusPicker from './StatusPicker';
+import SearchUsers from './SearchUsers';
+import { API_URL } from '../config/api';
+import { TeaKonnLogo } from './AuralinkLogo';
 
-const API = API_URL.replace(/\/api$/, "");
+const API = API_URL.replace(/\/api$/, '');
 
 interface SidebarProps {
   token: string;
@@ -65,7 +65,7 @@ export default function Sidebar({
   onAvatarCancel,
   selectedAvatar,
   conversations,
-  makeAvatarUrl
+  makeAvatarUrl,
 }: SidebarProps) {
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
@@ -74,7 +74,11 @@ export default function Sidebar({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [assistantHidden, setAssistantHidden] = useState<boolean>(() => {
-    try { return localStorage.getItem('teakonn.assistantHidden') === 'true'; } catch { return false; }
+    try {
+      return localStorage.getItem('teakonn.assistantHidden') === 'true';
+    } catch {
+      return false;
+    }
   });
 
   useEffect(() => {
@@ -83,36 +87,36 @@ export default function Sidebar({
 
   async function loadUserStats() {
     if (!token) return;
-    
+
     try {
       setLoading(true);
       setError(false);
-      console.log("Loading user stats from:", `${API}/api/users/me`);
-      
+      console.log('Loading user stats from:', `${API}/api/users/me`);
+
       const res = await axios.get(`${API}/api/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
         validateStatus: (status) => status < 500,
       });
-      
-      console.log("User stats response:", res.status, res.data);
-      
+
+      console.log('User stats response:', res.status, res.data);
+
       if (res.status === 404) {
-        console.warn("User endpoint not found (404)");
+        console.warn('User endpoint not found (404)');
         setFollowers(0);
         setFollowing(0);
         setError(true);
         return;
       }
-      
+
       const userData = res.data;
       const followersCount = Array.isArray(userData.followers) ? userData.followers.length : 0;
       const followingCount = Array.isArray(userData.following) ? userData.following.length : 0;
-      
-      console.log("Setting followers:", followersCount, "following:", followingCount);
+
+      console.log('Setting followers:', followersCount, 'following:', followingCount);
       setFollowers(followersCount);
       setFollowing(followingCount);
     } catch (err: any) {
-      console.error("Sidebar stats error:", err);
+      console.error('Sidebar stats error:', err);
       setError(true);
       setFollowers(0);
       setFollowing(0);
@@ -124,26 +128,32 @@ export default function Sidebar({
   const stats = [
     {
       icon: Users,
-      label: "Followers",
+      label: 'Followers',
       value: followers,
-      color: "from-emerald-500/12 to-green-500/10",
-      onClick: () => onNavigate?.('followers')
+      color: 'from-emerald-500/12 to-green-500/10',
+      onClick: () => onNavigate?.('followers'),
     },
     {
       icon: UserPlus,
-      label: "Following",
+      label: 'Following',
       value: following,
-      color: "from-emerald-500/12 to-green-500/10",
-      onClick: () => onNavigate?.('following')
-    }
+      color: 'from-emerald-500/12 to-green-500/10',
+      onClick: () => onNavigate?.('following'),
+    },
   ];
 
   // Calculate total unread messages from conversations (only if conversations array exists and has items)
-  const totalUnreadMessages = Array.isArray(conversations) && conversations.length > 0
-    ? conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0) 
-    : 0;
-  
-  console.log('[Sidebar] Conversations:', conversations?.length, 'Total unread:', totalUnreadMessages);
+  const totalUnreadMessages =
+    Array.isArray(conversations) && conversations.length > 0
+      ? conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0)
+      : 0;
+
+  console.log(
+    '[Sidebar] Conversations:',
+    conversations?.length,
+    'Total unread:',
+    totalUnreadMessages,
+  );
 
   // Helper component for navigation buttons
   const NavButton = ({ icon: Icon, label, badge, isCollapsed, onClick }: any) => (
@@ -154,9 +164,7 @@ export default function Sidebar({
     >
       <Icon className="w-5 h-5 flex-shrink-0 text-theme-secondary" />
       {!isCollapsed && (
-        <span className="flex-1 text-left text-sm font-medium text-heading">
-          {label}
-        </span>
+        <span className="flex-1 text-left text-sm font-medium text-heading">{label}</span>
       )}
       {!isCollapsed && badge !== undefined && badge > 0 && (
         <span className="px-2 py-0.5 bg-cyan-600 text-white text-xs rounded-full font-semibold">
@@ -174,7 +182,7 @@ export default function Sidebar({
         className="lg:hidden fixed top-4 left-4 z-30 p-2 rounded-xl border shadow-lg transition-all"
         style={{
           backgroundColor: theme === 'dark' ? '#1e293b' : '#ffffff',
-          borderColor: theme === 'dark' ? '#475569' : '#cbd5e1'
+          borderColor: theme === 'dark' ? '#475569' : '#cbd5e1',
         }}
       >
         {isMobileOpen ? (
@@ -192,11 +200,7 @@ export default function Sidebar({
       onClick={() => setIsCollapsed(!isCollapsed)}
       className="hidden lg:flex absolute -right-3 top-8 p-1.5 rounded-full border shadow-lg transition-all z-10 themed-card"
     >
-      {isCollapsed ? (
-        <ChevronRight className="w-4 h-4" />
-      ) : (
-        <ChevronLeft className="w-4 h-4" />
-      )}
+      {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
     </button>
   );
 
@@ -207,15 +211,15 @@ export default function Sidebar({
         {!isCollapsed ? (
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center justify-center flex-1">
-              <img src={logo} alt="TeaKonn" className="w-16 h-16 object-contain" />
+              <TeaKonnLogo size={64} theme="auto" variant="mark" ariaLabel="TeaKonn" />
             </div>
             {/* Theme Toggle */}
             <button
               onClick={onThemeToggle}
               className="p-2 rounded-lg themed-card hover:opacity-90 transition-all duration-300 group"
-              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
-              {theme === "dark" ? (
+              {theme === 'dark' ? (
                 <Sun className="w-5 h-5 text-yellow-400 group-hover:text-yellow-300 transition-colors" />
               ) : (
                 <Moon className="w-5 h-5 text-slate-700 group-hover:text-slate-600 transition-colors" />
@@ -224,7 +228,7 @@ export default function Sidebar({
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2">
-            <img src={logo} alt="TeaKonn" className="w-10 h-10 object-contain" />
+            <TeaKonnLogo size={40} theme="auto" variant="mark" ariaLabel="TeaKonn" />
           </div>
         )}
       </div>
@@ -236,38 +240,44 @@ export default function Sidebar({
             <Avatar
               src={makeAvatarUrl(user?.avatar)}
               className="w-12 h-12 rounded-lg object-cover"
-              alt={user?.username || "User"}
+              alt={user?.username || 'User'}
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <div className="font-bold truncate" style={{ color: 'var(--text)' }}>{user?.username}</div>
+                <div className="font-bold truncate" style={{ color: 'var(--text)' }}>
+                  {user?.username}
+                </div>
                 {isOnline && (
-                  <div className="flex-shrink-0 w-2.5 h-2.5 bg-green-500 rounded-full" title="Online"></div>
+                  <div
+                    className="flex-shrink-0 w-2.5 h-2.5 bg-green-500 rounded-full"
+                    title="Online"
+                  ></div>
                 )}
               </div>
-              <div className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{user?.role?.toUpperCase() || "USER"}</div>
+              <div className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>
+                {user?.role?.toUpperCase() || 'USER'}
+              </div>
             </div>
           </div>
 
           {myStatus && (
-            <div className="text-xs flex gap-1 items-center mb-3" style={{ color: 'var(--text-secondary)' }}>
+            <div
+              className="text-xs flex gap-1 items-center mb-3"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               <span>{myStatus.emoji}</span>
               <span className="opacity-80 truncate">{myStatus.mood}</span>
             </div>
           )}
 
-          <StatusPicker
-            token={token}
-            currentStatus={myStatus}
-            onUpdated={onStatusUpdated}
-          />
+          <StatusPicker token={token} currentStatus={myStatus} onUpdated={onStatusUpdated} />
 
           {/* Improved Avatar Upload Section */}
           <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
             <label className="block text-xs font-semibold mb-3 text-slate-300">
               Profile Picture
             </label>
-            
+
             {selectedAvatar && (
               <div className="mb-3 relative">
                 <div className="w-full aspect-square rounded-xl overflow-hidden bg-slate-800 border-2 border-cyan-500">
@@ -282,7 +292,7 @@ export default function Sidebar({
                 </div>
               </div>
             )}
-            
+
             <div className="relative">
               <input
                 id="avatar-upload"
@@ -298,7 +308,7 @@ export default function Sidebar({
                 {selectedAvatar ? 'Choose Different Image' : 'Upload New Photo'}
               </label>
             </div>
-            
+
             {selectedAvatar && (
               <div className="flex gap-2 mt-3">
                 <button
@@ -315,10 +325,8 @@ export default function Sidebar({
                 </button>
               </div>
             )}
-            
-            <p className="mt-2 text-xs text-slate-400 text-center">
-              JPG, PNG or WEBP • Max 5MB
-            </p>
+
+            <p className="mt-2 text-xs text-slate-400 text-center">JPG, PNG or WEBP • Max 5MB</p>
           </div>
         </div>
       )}
@@ -397,9 +405,11 @@ export default function Sidebar({
       {/* Quick Stats */}
       <div className="flex-1 p-4 border-t" style={{ borderColor: 'var(--border)' }}>
         {!isCollapsed && (
-          <h3 className="text-sm font-bold mb-3" style={{ color: 'var(--text)' }}>Quick Stats</h3>
+          <h3 className="text-sm font-bold mb-3" style={{ color: 'var(--text)' }}>
+            Quick Stats
+          </h3>
         )}
-        
+
         <div className="space-y-2">
           {loading && !error ? (
             <>
@@ -424,7 +434,9 @@ export default function Sidebar({
                   style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
                 >
                   <div className="relative z-10">
-                    <div className={`flex ${isCollapsed ? 'flex-col items-center justify-center h-full' : 'items-center justify-between'}`}>
+                    <div
+                      className={`flex ${isCollapsed ? 'flex-col items-center justify-center h-full' : 'items-center justify-between'}`}
+                    >
                       <div className={isCollapsed ? 'mb-1' : ''}>
                         <Icon className="w-5 h-5 text-emerald-400" />
                       </div>
@@ -441,7 +453,9 @@ export default function Sidebar({
                     </div>
                     {isCollapsed && (
                       <div className="text-center">
-                        <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>{stat.value}</p>
+                        <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>
+                          {stat.value}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -453,9 +467,7 @@ export default function Sidebar({
 
         {error && !loading && !isCollapsed && (
           <div className="mt-2 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-            <p className="text-xs text-yellow-400 text-center">
-              Unable to load stats
-            </p>
+            <p className="text-xs text-yellow-400 text-center">Unable to load stats</p>
           </div>
         )}
       </div>
@@ -466,8 +478,12 @@ export default function Sidebar({
           onClick={() => {
             const next = !assistantHidden;
             setAssistantHidden(next);
-            try { localStorage.setItem('teakonn.assistantHidden', next ? 'true' : 'false'); } catch {}
-            window.dispatchEvent(new CustomEvent('teakonn.assistant.toggle', { detail: { hidden: next } }));
+            try {
+              localStorage.setItem('teakonn.assistantHidden', next ? 'true' : 'false');
+            } catch {}
+            window.dispatchEvent(
+              new CustomEvent('teakonn.assistant.toggle', { detail: { hidden: next } }),
+            );
           }}
           className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-center gap-2'} px-4 py-2 themed-card border transition-all`}
           title={assistantHidden ? 'Show Assistant' : 'Hide Assistant'}
@@ -489,7 +505,7 @@ export default function Sidebar({
             {loading ? 'Refreshing...' : 'Refresh Stats'}
           </button>
         )}
-        
+
         <button
           onClick={onLogout}
           className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-center gap-2'} px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all font-medium`}
@@ -530,9 +546,9 @@ export default function Sidebar({
           ${isCollapsed ? 'w-20' : 'w-80'}
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
-        style={{ 
+        style={{
           background: 'var(--sidebar)',
-          borderColor: 'var(--border)'
+          borderColor: 'var(--border)',
         }}
       >
         <div className="relative h-full">

@@ -36,7 +36,12 @@ function normalizeBase(url?: string): string {
   return `${isProd ? 'https://' : 'http://'}${u}`;
 }
 
-const API = normalizeBase(import.meta.env.VITE_API_URL) || '/';
+// Prefer runtime override to keep parity with axios helper
+const runtimeBase =
+  (typeof window !== 'undefined' && (window as any).__API_URL) ||
+  (typeof window !== 'undefined' && localStorage.getItem('API_URL')) ||
+  import.meta.env.VITE_API_URL;
+const API = normalizeBase(runtimeBase) || '/';
 
 // lightweight helper — prefer using localStorage token for handshake
 function getTokenFromStorage() {
@@ -50,7 +55,7 @@ function getTokenFromStorage() {
 export const socket = io(API, {
   autoConnect: false,
   // If you want to use auth token with socket handshake:
-  auth: { token: getTokenFromStorage() }
+  auth: { token: getTokenFromStorage() },
 });
 
 // React context

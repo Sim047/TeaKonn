@@ -1,6 +1,17 @@
 // frontend/src/components/ProductDetailModal.tsx
-import React, { useState } from "react";
-import { X, MapPin, Heart, Package, Tag, User, MessageCircle, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import React, { useState } from 'react';
+import {
+  X,
+  MapPin,
+  Heart,
+  Package,
+  Tag,
+  User,
+  MessageCircle,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+} from 'lucide-react';
 
 interface MarketplaceItem {
   _id: string;
@@ -37,12 +48,12 @@ interface ProductDetailModalProps {
   currentUserId?: string;
 }
 
-export default function ProductDetailModal({ 
-  product, 
-  onClose, 
-  onLike, 
+export default function ProductDetailModal({
+  product,
+  onClose,
+  onLike,
   onMessage,
-  currentUserId 
+  currentUserId,
 }: ProductDetailModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -71,7 +82,9 @@ export default function ProductDetailModal({
             <h2 className="text-3xl font-bold text-white mb-2">{product.title}</h2>
             <div className="flex items-center gap-3 text-green-100">
               <span className="bg-white/20 px-3 py-1 rounded-full text-sm">{product.category}</span>
-              <span className="bg-white/20 px-3 py-1 rounded-full text-sm">{product.condition}</span>
+              <span className="bg-white/20 px-3 py-1 rounded-full text-sm">
+                {product.condition}
+              </span>
             </div>
           </div>
           <button
@@ -132,11 +145,15 @@ export default function ProductDetailModal({
                       onClick={() => setCurrentImageIndex(idx)}
                       className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                         idx === currentImageIndex
-                          ? "border-green-400 scale-105"
-                          : "border-gray-600 hover:border-gray-400"
+                          ? 'border-green-400 scale-105'
+                          : 'border-gray-600 hover:border-gray-400'
                       }`}
                     >
-                      <img src={img} alt={`${product.title} ${idx + 1}`} className="w-full h-full object-cover" />
+                      <img
+                        src={img}
+                        alt={`${product.title} ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
                     </button>
                   ))}
                 </div>
@@ -158,7 +175,10 @@ export default function ProductDetailModal({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <img
-                      src={product.seller.avatar || `https://ui-avatars.com/api/?name=${product.seller.username}`}
+                      src={
+                        product.seller.avatar ||
+                        `https://ui-avatars.com/api/?name=${product.seller.username}`
+                      }
                       alt={product.seller.username}
                       className="w-12 h-12 rounded-full border-2 border-green-400"
                     />
@@ -170,8 +190,11 @@ export default function ProductDetailModal({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      console.log("[ProductDetailModal] Contact button clicked, seller ID:", product.seller._id);
-                      console.log("[ProductDetailModal] onMessage function:", onMessage);
+                      console.log(
+                        '[ProductDetailModal] Contact button clicked, seller ID:',
+                        product.seller._id,
+                      );
+                      console.log('[ProductDetailModal] onMessage function:', onMessage);
                       onMessage(product.seller._id);
                     }}
                     className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all shadow-lg"
@@ -186,7 +209,7 @@ export default function ProductDetailModal({
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-white/5 backdrop-blur rounded-xl p-3 border border-white/10">
                   <div className="flex items-center gap-2 text-red-400 mb-1">
-                    <Heart className={`w-4 h-4 ${isLiked ? "fill-red-400" : ""}`} />
+                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-red-400' : ''}`} />
                     <span className="text-sm font-semibold">Likes</span>
                   </div>
                   <p className="text-xl font-bold text-white">{product.likes.length}</p>
@@ -249,7 +272,7 @@ export default function ProductDetailModal({
                   <p className="text-blue-400 font-semibold mb-1">✓ Shipping Available</p>
                   {product.shippingCost !== undefined && (
                     <p className="text-gray-300 text-sm">
-                      Shipping: ${product.shippingCost === 0 ? "Free" : product.shippingCost}
+                      Shipping: ${product.shippingCost === 0 ? 'Free' : product.shippingCost}
                     </p>
                   )}
                 </div>
@@ -260,12 +283,12 @@ export default function ProductDetailModal({
                 onClick={() => onLike(product._id)}
                 className={`w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                   isLiked
-                    ? "bg-red-500 hover:bg-red-600 text-white"
-                    : "bg-white/10 hover:bg-white/20 text-gray-300 border border-white/20"
+                    ? 'bg-red-500 hover:bg-red-600 text-white'
+                    : 'bg-white/10 hover:bg-white/20 text-gray-300 border border-white/20'
                 }`}
               >
-                <Heart className={`w-5 h-5 ${isLiked ? "fill-white" : ""}`} />
-                {isLiked ? "Unlike" : "Like this item"}
+                <Heart className={`w-5 h-5 ${isLiked ? 'fill-white' : ''}`} />
+                {isLiked ? 'Unlike' : 'Like this item'}
               </button>
             </div>
           </div>
@@ -273,7 +296,9 @@ export default function ProductDetailModal({
           {/* Description */}
           <div className="mt-6 bg-white/5 backdrop-blur rounded-xl p-5 border border-white/10">
             <h3 className="text-xl font-bold text-white mb-3">Description</h3>
-            <p className="text-gray-300 leading-relaxed whitespace-pre-line">{product.description}</p>
+            <p className="text-gray-300 leading-relaxed whitespace-pre-line">
+              {product.description}
+            </p>
           </div>
         </div>
       </div>

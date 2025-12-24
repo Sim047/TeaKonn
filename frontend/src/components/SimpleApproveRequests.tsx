@@ -1,17 +1,17 @@
 // Simple Approve Requests Component
-import { useState, useEffect } from "react";
-import axios from "axios";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { AlertCircle, RefreshCw, CheckCircle, XCircle, Loader } from "lucide-react";
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { AlertCircle, RefreshCw, CheckCircle, XCircle, Loader } from 'lucide-react';
 
 dayjs.extend(relativeTime);
 
-const API = (import.meta as any).env?.VITE_API_URL || "http://localhost:5000";
+const API = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000';
 
 interface SimpleBooking {
   _id: string;
-  status: "pending" | "approved" | "rejected";
+  status: 'pending' | 'approved' | 'rejected';
   transactionCode: string;
   isPaid: boolean;
   user: {
@@ -34,7 +34,7 @@ export default function SimpleApproveRequests({ token }: { token: string }) {
   const [bookings, setBookings] = useState<SimpleBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   useEffect(() => {
     loadRequests();
@@ -43,15 +43,15 @@ export default function SimpleApproveRequests({ token }: { token: string }) {
   async function loadRequests() {
     try {
       setLoading(true);
-      console.log("[SimpleApproveRequests] Loading...");
+      console.log('[SimpleApproveRequests] Loading...');
       const { data } = await axios.get(`${API}/api/bookings-simple/to-approve`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log(`[SimpleApproveRequests] Loaded ${data.bookings.length} requests`);
       setBookings(data.bookings);
     } catch (err: any) {
-      console.error("[SimpleApproveRequests] Error:", err);
-      setError(err.response?.data?.error || "Failed to load");
+      console.error('[SimpleApproveRequests] Error:', err);
+      setError(err.response?.data?.error || 'Failed to load');
       setBookings([]);
     } finally {
       setLoading(false);
@@ -61,19 +61,19 @@ export default function SimpleApproveRequests({ token }: { token: string }) {
   async function handleDecision(bookingId: string, approved: boolean) {
     try {
       setProcessing(bookingId);
-      const rejectionReason = approved ? "" : prompt("Reason for rejection (optional):") || "";
+      const rejectionReason = approved ? '' : prompt('Reason for rejection (optional):') || '';
 
       await axios.post(
         `${API}/api/bookings-simple/${bookingId}/decide`,
         { approved, rejectionReason },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      alert(approved ? "✅ Request approved!" : "❌ Request rejected");
+      alert(approved ? '✅ Request approved!' : '❌ Request rejected');
       loadRequests(); // Reload
     } catch (err: any) {
-      console.error("Decision error:", err);
-      alert(err.response?.data?.error || "Failed to process request");
+      console.error('Decision error:', err);
+      alert(err.response?.data?.error || 'Failed to process request');
     } finally {
       setProcessing(null);
     }
@@ -85,14 +85,14 @@ export default function SimpleApproveRequests({ token }: { token: string }) {
       await axios.post(
         `${API}/api/bookings-simple/${bookingId}/verify-payment`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      alert("💰 Payment verified!");
+      alert('💰 Payment verified!');
       loadRequests();
     } catch (err: any) {
-      console.error("Verify error:", err);
-      alert(err.response?.data?.error || "Failed to verify payment");
+      console.error('Verify error:', err);
+      alert(err.response?.data?.error || 'Failed to verify payment');
     } finally {
       setProcessing(null);
     }
@@ -130,7 +130,7 @@ export default function SimpleApproveRequests({ token }: { token: string }) {
             Requests to Approve
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            {bookings.length} request{bookings.length !== 1 ? "s" : ""} waiting
+            {bookings.length} request{bookings.length !== 1 ? 's' : ''} waiting
           </p>
         </div>
         <button
@@ -172,7 +172,8 @@ export default function SimpleApproveRequests({ token }: { token: string }) {
                       {booking.user.username}
                     </h3>
                     <p className="text-xs text-gray-600 dark:text-gray-400">
-                      {booking.user.status || (booking.user.username ? `@${booking.user.username}` : '')}
+                      {booking.user.status ||
+                        (booking.user.username ? `@${booking.user.username}` : '')}
                     </p>
                   </div>
                 </div>
@@ -182,7 +183,7 @@ export default function SimpleApproveRequests({ token }: { token: string }) {
                     {booking.event?.title || ''}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    📅 {dayjs(booking.event.startDate).format("MMM D, YYYY")}
+                    📅 {dayjs(booking.event.startDate).format('MMM D, YYYY')}
                   </p>
                   {booking.event.pricing && booking.event.pricing.amount > 0 && (
                     <p className="text-sm font-medium text-teal-600 dark:text-teal-400">
@@ -206,7 +207,7 @@ export default function SimpleApproveRequests({ token }: { token: string }) {
               </div>
 
               <div className="flex flex-col gap-2">
-                {booking.status === "pending" && (
+                {booking.status === 'pending' && (
                   <>
                     <button
                       onClick={() => handleDecision(booking._id, true)}
@@ -227,15 +228,18 @@ export default function SimpleApproveRequests({ token }: { token: string }) {
                   </>
                 )}
 
-                {booking.status === "approved" && !booking.isPaid && booking.event.pricing && booking.event.pricing.amount > 0 && (
-                  <button
-                    onClick={() => handleVerifyPayment(booking._id)}
-                    disabled={processing === booking._id}
-                    className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 disabled:opacity-50 text-white font-medium rounded-lg transition-all"
-                  >
-                    Verify Payment
-                  </button>
-                )}
+                {booking.status === 'approved' &&
+                  !booking.isPaid &&
+                  booking.event.pricing &&
+                  booking.event.pricing.amount > 0 && (
+                    <button
+                      onClick={() => handleVerifyPayment(booking._id)}
+                      disabled={processing === booking._id}
+                      className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 disabled:opacity-50 text-white font-medium rounded-lg transition-all"
+                    >
+                      Verify Payment
+                    </button>
+                  )}
               </div>
             </div>
           </div>
