@@ -526,6 +526,16 @@ export default function App() {
       setMessages((m) => m.map((x) => (x._id === updatedMsg._id ? updatedMsg : x)));
     });
 
+    socket.on('message_deleted', (messageId: string) => {
+      setMessages((m) => m.filter((x) => x._id !== messageId));
+    });
+
+    socket.on('messages_bulk_deleted', ({ ids }: { ids: string[] }) => {
+      if (Array.isArray(ids) && ids.length > 0) {
+        setMessages((m) => m.filter((x) => !ids.includes(String(x._id))));
+      }
+    });
+
     socket.on('message_hidden', ({ messageId }: { messageId: string }) => {
       // Only remove from my view when I hide a message
       setMessages((m) => m.filter((x) => x._id !== messageId));

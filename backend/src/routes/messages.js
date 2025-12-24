@@ -2,6 +2,7 @@
 import express from "express";
 import auth from "../middleware/auth.js";
 import Message from "../models/Message.js";
+import Event from "../models/Event.js";
 
 const router = express.Router();
 
@@ -125,7 +126,15 @@ router.delete("/:id/force", auth, async (req, res) => {
     const msg = await Message.findById(id);
     if (!msg) return res.status(404).json({ message: "Message not found" });
 
-    if (String(msg.sender) !== String(userId)) return res.status(403).json({ message: "Not allowed" });
+    // Allow deletion if sender OR organizer of the Event room
+    let allowed = String(msg.sender) === String(userId);
+    if (!allowed && typeof msg.room === 'string' && /^[0-9a-fA-F]{24}$/.test(String(msg.room))) {
+      try {
+        const ev = await Event.findById(msg.room).select('organizer');
+        if (ev && String(ev.organizer) === String(userId)) allowed = true;
+      } catch {}
+    }
+    if (!allowed) return res.status(403).json({ message: "Not allowed" });
 
     await Message.findByIdAndDelete(id);
 

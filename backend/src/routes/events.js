@@ -1,6 +1,7 @@
 // backend/src/routes/events.js
 import express from "express";
 import Event from "../models/Event.js";
+import Message from "../models/Message.js";
 import auth from "../middleware/auth.js";
 
 const router = express.Router();
@@ -564,6 +565,55 @@ router.post("/:id/leave", auth, async (req, res) => {
   } catch (err) {
     console.error("Leave event error:", err);
     res.status(500).json({ error: "Failed to leave event" });
+  }
+});
+
+// POST /api/events/:id/remove-participant/:userId (organizer only)
+router.post("/:id/remove-participant/:userId", auth, async (req, res) => {
+  try {
+    const organizerId = req.user.id;
+    const eventId = req.params.id;
+    const participantId = req.params.userId;
+
+    const event = await Event.findById(eventId).populate("participants", "username avatar");
+    if (!event) return res.status(404).json({ error: "Event not found" });
+    if (String(event.organizer) !== String(organizerId)) {
+      return res.status(403).json({ error: "Only organizer can remove participants" });
+    }
+
+    const idx = (event.participants || []).findIndex((p) => String(p._id || p) === String(participantId));
+    if (idx === -1) return res.status(400).json({ error: "User is not a participant" });
+
+    // Remove from participants
+    event.participants.splice(idx, 1);
+    if (event.capacity && typeof event.capacity.current === 'number' && event.capacity.current > 0) {
+      event.capacity.current = Math.max(0, (event.capacity.current || 0) - 1);
+    }
+
+    await event.save();
+
+    // Delete participant's messages in this event room
+    const toDelete = await Message.find({ room: event._id, sender: participantId }).select('_id');
+    const ids = toDelete.map((m) => String(m._id));
+    if (ids.length > 0) {
+      await Message.deleteMany({ room: event._id, sender: participantId });
+    }
+
+    // Emit socket updates
+    const io = req.app.get("io");
+    if (io) {
+      io.to(String(event._id)).emit("participant_removed", { eventId: String(event._id), userId: String(participantId) });
+      if (ids.length > 0) io.to(String(event._id)).emit("messages_bulk_deleted", { ids });
+    }
+
+    const populated = await Event.findById(event._id)
+      .populate("organizer", "username avatar")
+      .populate("participants", "username avatar email");
+
+    res.json({ success: true, event: populated, deletedMessageIds: ids });
+  } catch (err) {
+    console.error("Remove participant error:", err);
+    res.status(500).json({ error: "Failed to remove participant" });
   }
 });
 

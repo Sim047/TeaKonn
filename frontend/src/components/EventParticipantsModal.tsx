@@ -1,5 +1,7 @@
 // frontend/src/components/EventParticipantsModal.tsx
 import React, { useState } from 'react';
+import axios from 'axios';
+import { API_URL } from '../config/api';
 import { X, Users, Download, MessageCircle, CheckCircle, XCircle, Clock } from 'lucide-react';
 import dayjs from 'dayjs';
 
@@ -49,18 +51,23 @@ export default function EventParticipantsModal({
   isOrganizer = false,
 }: EventParticipantsModalProps) {
   const [activeTab, setActiveTab] = useState<'confirmed' | 'pending'>('confirmed');
+  const [localEvent, setLocalEvent] = useState<EventType | null>(event);
+  const API = API_URL.replace(/\/api$/, '');
+  const token = (() => {
+    try { return localStorage.getItem('token') || ''; } catch { return ''; }
+  })();
 
-  if (!event) return null;
+  if (!localEvent) return null;
 
-  const confirmedCount = event.participants?.length || 0;
-  const pendingRequests = event.joinRequests?.filter((req) => req.status === 'pending') || [];
+  const confirmedCount = localEvent.participants?.length || 0;
+  const pendingRequests = localEvent.joinRequests?.filter((req) => req.status === 'pending') || [];
   const pendingCount = pendingRequests.length;
 
   const exportParticipantsList = () => {
     try {
       const csvRows: string[] = [];
       csvRows.push(['Name', 'Username', 'Status'].join(','));
-      (event.participants || []).forEach((p) => {
+      (localEvent.participants || []).forEach((p) => {
         csvRows.push([p.username || '', p.username || '', 'Confirmed'].join(','));
       });
       (pendingRequests || []).forEach((req) => {
@@ -71,7 +78,7 @@ export default function EventParticipantsModal({
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      const safeTitle = (event.title || 'event').replace(/[^a-z0-9]/gi, '_');
+      const safeTitle = (localEvent.title || 'event').replace(/[^a-z0-9]/gi, '_');
       a.download = `${safeTitle}_participants.csv`;
       a.click();
       window.URL.revokeObjectURL(url);
@@ -87,10 +94,10 @@ export default function EventParticipantsModal({
         <div className="bg-gradient-to-r from-cyan-600 to-purple-600 p-6 flex items-center justify-between">
           <div className="flex-1">
             <h2 className="text-2xl font-bold text-white mb-1">Event Participants</h2>
-            <p className="text-cyan-100">{event.title || ''}</p>
+            <p className="text-cyan-100">{localEvent.title || ''}</p>
             <div className="flex items-center gap-4 mt-2 text-sm">
               <span className="bg-white/20 px-3 py-1 rounded-full">
-                {confirmedCount} / {event.capacity?.max || '∞'} Confirmed
+                {confirmedCount} / {localEvent.capacity?.max || '∞'} Confirmed
               </span>
               {pendingCount > 0 && (
                 <span className="bg-yellow-500/30 px-3 py-1 rounded-full">
@@ -147,7 +154,7 @@ export default function EventParticipantsModal({
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 gap-4">
-                  {(event.participants || []).map((participant) => (
+                  {(localEvent.participants || []).map((participant) => (
                     <div
                       key={participant._id}
                       className="bg-white/5 backdrop-blur rounded-lg p-4 hover:bg-white/10 transition-all"
@@ -172,7 +179,7 @@ export default function EventParticipantsModal({
                           <p className="text-gray-400 text-sm">
                             {participant._id === currentUserId
                               ? 'You'
-                              : participant._id === event.organizer?._id
+                              : participant._id === localEvent.organizer?._id
                                 ? 'Organizer'
                                 : 'Participant'}
                           </p>
@@ -184,6 +191,30 @@ export default function EventParticipantsModal({
                             title="Send message"
                           >
                             <MessageCircle className="w-4 h-4" />
+                          </button>
+                        )}
+                        {isOrganizer && participant._id !== localEvent.organizer?._id && (
+                          <button
+                            onClick={async () => {
+                              if (!token) return alert('Please log in');
+                              if (!confirm('Remove this participant? Their event chat messages will be deleted.')) return;
+                              try {
+                                const res = await axios.post(
+                                  `${API}/api/events/${localEvent._id}/remove-participant/${participant._id}`,
+                                  {},
+                                  { headers: { Authorization: `Bearer ${token}` } }
+                                );
+                                const updated = res.data?.event || null;
+                                setLocalEvent(updated);
+                              } catch (err) {
+                                console.error('Remove participant failed', err);
+                                alert('Failed to remove participant');
+                              }
+                            }}
+                            className="bg-red-500/20 hover:bg-red-500/30 text-red-400 p-2 rounded-lg transition-colors"
+                            title="Remove participant"
+                          >
+                            <X className="w-4 h-4" />
                           </button>
                         )}
                       </div>
