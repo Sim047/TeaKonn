@@ -19,6 +19,8 @@ import {
   Package,
   Search,
   MessageSquare,
+  Eye,
+  Truck,
 } from 'lucide-react';
 import CreateEventModal from '../components/CreateEventModal';
 import CreateServiceModal from '../components/CreateServiceModal';
@@ -50,6 +52,8 @@ export default function MyEvents({
   const [eventSearch, setEventSearch] = useState<string>('');
   const [services, setServices] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
+  const [serviceSearch, setServiceSearch] = useState<string>('');
+  const [productSearch, setProductSearch] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [createServiceModalOpen, setCreateServiceModalOpen] = useState(false);
@@ -120,6 +124,34 @@ export default function MyEvents({
       ev?.sport,
       ev?.location?.city,
       ev?.location?.address,
+    ].map((s: any) => String(s || '').toLowerCase());
+    return fields.some((f: string) => f.includes(q));
+  }
+
+  function matchesServiceSearch(service: any): boolean {
+    const q = serviceSearch.trim().toLowerCase();
+    if (!q) return true;
+    const fields = [
+      service?.name,
+      service?.sport,
+      service?.category,
+      service?.description,
+      service?.location?.city,
+      service?.location?.type,
+    ].map((s: any) => String(s || '').toLowerCase());
+    return fields.some((f: string) => f.includes(q));
+  }
+
+  function matchesProductSearch(product: any): boolean {
+    const q = productSearch.trim().toLowerCase();
+    if (!q) return true;
+    const fields = [
+      product?.title,
+      product?.category,
+      product?.description,
+      product?.location,
+      Array.isArray(product?.tags) ? product.tags.join(' ') : '',
+      product?.condition,
     ].map((s: any) => String(s || '').toLowerCase());
     return fields.some((f: string) => f.includes(q));
   }
@@ -685,6 +717,14 @@ export default function MyEvents({
             return (
               <>
                 {/* Services Tab Content */}
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <input
+                    className="input w-full sm:w-80"
+                    placeholder="Search my services"
+                    value={serviceSearch}
+                    onChange={(e) => setServiceSearch(e.target.value)}
+                  />
+                </div>
                 {services.length === 0 ? (
                   <div className="rounded-3xl p-12 text-center themed-card">
                     <div className="max-w-md mx-auto">
@@ -705,8 +745,9 @@ export default function MyEvents({
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {services.map((service) => (
+                  <div className="max-h-[460px] overflow-y-auto pr-1">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {services.filter(matchesServiceSearch).map((service) => (
                       <div
                         key={service._id}
                         className="rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 themed-card"
@@ -829,7 +870,8 @@ export default function MyEvents({
                           </div>
                         </div>
                       </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
               </>
@@ -838,6 +880,14 @@ export default function MyEvents({
             return (
               <>
                 {/* Products Tab Content */}
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <input
+                    className="input w-full sm:w-80"
+                    placeholder="Search my products"
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                  />
+                </div>
                 {products.length === 0 ? (
                   <div className="rounded-3xl p-12 text-center themed-card">
                     <div className="max-w-md mx-auto">
@@ -859,8 +909,9 @@ export default function MyEvents({
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {products.map((product) => (
+                  <div className="max-h-[460px] overflow-y-auto pr-1">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {products.filter(matchesProductSearch).map((product) => (
                       <div
                         key={product._id}
                         className="rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 themed-card"
@@ -985,7 +1036,8 @@ export default function MyEvents({
                           </div>
                         </div>
                       </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
               </>
