@@ -367,12 +367,22 @@ export default function EventDetailModal({
                   Past Event
                 </button>
               ) : isParticipant ? (
-                <button
-                  disabled
-                  className="flex-1 py-3 rounded-lg font-semibold bg-gray-600 text-gray-400 cursor-not-allowed"
-                >
-                  Already Joined
-                </button>
+                <div className="flex gap-3 w-full">
+                  <button
+                    disabled
+                    className="flex-1 py-3 rounded-lg font-semibold bg-gray-600 text-gray-400 cursor-not-allowed"
+                  >
+                    Already Joined
+                  </button>
+                  {onLeave && (
+                    <button
+                      onClick={() => onLeave(event._id)}
+                      className="flex-1 py-3 rounded-lg font-semibold border border-red-500 text-red-500 hover:bg-red-600 hover:text-white transition-all shadow-lg"
+                    >
+                      Leave Event
+                    </button>
+                  )}
+                </div>
               ) : (
                 <button
                   onClick={() => onJoin(event._id)}
