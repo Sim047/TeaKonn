@@ -453,40 +453,7 @@ export default function MyEvents({
         </div>
 
         {/* Stats */}
-        {activeTab === 'events' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-            <div className="rounded-2xl p-6 themed-card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-theme-secondary mb-1">Total Events</p>
-                  <p className="text-3xl font-bold text-heading">
-                    {eventsCreated.length + eventsJoined.length}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-xl flex items-center justify-center">
-                  <Trophy className="w-6 h-6 text-white" />
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl p-6 themed-card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-theme-secondary mb-1">Active Events</p>
-                  <p className="text-3xl font-bold text-heading">
-                    {
-                      [...eventsCreated, ...eventsJoined].filter((e) => e.status === 'published')
-                        .length
-                    }
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-white" />
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
+        {activeTab === 'events' ? null : (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
             <div className="rounded-2xl p-6 themed-card">
               <div className="flex items-center justify-between">
