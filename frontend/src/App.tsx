@@ -23,6 +23,7 @@ import Discover from './pages/Discover';
 import SportsEvents from './pages/SportsEvents';
 import Dashboard from './pages/Dashboard';
 import MyEvents from './pages/MyEvents';
+import PastEvents from './pages/PastEvents';
 import Posts from './pages/Posts';
 import UserContent from './pages/UserContent';
 import Avatar from './components/Avatar';
@@ -193,6 +194,7 @@ export default function App() {
     | 'direct-messages'
     | 'group-chats'
     | 'user-content'
+    | 'past-events'
   >(() => {
     // Restore previous view from localStorage
     const saved = localStorage.getItem('auralink-current-view');
@@ -1809,6 +1811,15 @@ export default function App() {
             token={token}
             onViewProfile={showProfile}
             onStartConversation={startConversationWithUser}
+          />
+        )}
+
+        {/* PAST EVENTS PAGE */}
+        {view === 'past-events' && (
+          <PastEvents
+            token={token as any}
+            onBack={() => setView('dashboard')}
+            onNavigate={(v: string) => setView(v as any)}
           />
         )}
 

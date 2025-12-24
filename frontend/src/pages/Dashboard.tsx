@@ -518,10 +518,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
               </button>
               <button
                 onClick={() => {
-                  try {
-                    localStorage.setItem('auralink-all-events-filter', 'past');
-                  } catch {}
-                  setViewMode('allEvents');
+                  onNavigate && onNavigate('past-events');
                 }}
                 className="px-6 py-3 bg-gradient-to-r from-gray-700 to-gray-500 text-white font-bold rounded-xl hover:from-gray-800 hover:to-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
               >
@@ -566,10 +563,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
               <div className="flex items-center gap-3 flex-wrap justify-end w-full sm:w-auto">
                 <button
                   onClick={() => {
-                    try {
-                      localStorage.setItem('auralink-all-events-filter', 'past');
-                    } catch {}
-                    setViewMode('allEvents');
+                    onNavigate && onNavigate('past-events');
                   }}
                   className="px-4 py-2 bg-gradient-to-r from-gray-700 to-gray-500 hover:from-gray-800 hover:to-gray-600 text-white text-sm font-medium rounded-xl transition-all duration-300 shadow-lg"
                 >
