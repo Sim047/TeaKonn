@@ -1055,6 +1055,20 @@ export default function MyEvents({
                                   Manage Participants
                                   {/* Pending join requests badge removed for a cleaner UI */}
                                 </button>
+
+                                {/* Open Event Chat */}
+                                <button
+                                  onClick={() => {
+                                    try {
+                                      localStorage.setItem('auralink-open-room', event._id);
+                                    } catch {}
+                                    onNavigate && onNavigate('chat');
+                                  }}
+                                  className="w-full mt-2 py-2 border rounded-lg text-sm hover:opacity-80"
+                                  style={{ borderColor: 'var(--border)' }}
+                                >
+                                  Open Event Chat
+                                </button>
                               </div>
 
                               {event.pricing && (

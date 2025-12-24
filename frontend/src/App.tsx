@@ -106,6 +106,7 @@ export default function App() {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Record<string, any>>({});
+  const [roomTitle, setRoomTitle] = useState<string>('');
 
   // STATUS ------------------------------------
   const [statuses, setStatuses] = useState<Record<string, any>>({});
@@ -193,6 +194,21 @@ export default function App() {
   // Persist view changes to localStorage
   useEffect(() => {
     localStorage.setItem('auralink-current-view', view);
+  }, [view]);
+
+  // Handle event chat deep-link from MyEvents (auralink-open-room)
+  useEffect(() => {
+    if (view !== 'chat') return;
+    try {
+      const rid = localStorage.getItem('auralink-open-room');
+      if (rid) {
+        setInDM(false);
+        setActiveConversation(null);
+        setRoom(rid);
+        localStorage.removeItem('auralink-open-room');
+        setTimeout(() => scrollToBottom(), 200);
+      }
+    } catch {}
   }, [view]);
 
   // Keep URL query in sync with current view to preserve on refresh
@@ -649,6 +665,31 @@ export default function App() {
       })
       .finally(() => setMessagesLoading(false));
   }, [room, token, view, inDM, user, socket]);
+
+  // Load room metadata (event title) when entering a non-DM room
+  useEffect(() => {
+    if (inDM || view !== 'chat') {
+      setRoomTitle('');
+      return;
+    }
+    // Try to fetch event title; if not an event id, fall back to id itself
+    let canceled = false;
+    (async () => {
+      try {
+        if (!room || room === 'general') {
+          if (!canceled) setRoomTitle('general');
+          return;
+        }
+        const res = await axios.get(API + '/api/events/' + room + '?fields=title');
+        if (!canceled) setRoomTitle(res.data?.title || '#' + room);
+      } catch {
+        if (!canceled) setRoomTitle('#' + room);
+      }
+    })();
+    return () => {
+      canceled = true;
+    };
+  }, [room, inDM, view]);
 
   // LOAD DM MESSAGES --------------------------------------------
   useEffect(() => {
@@ -1843,7 +1884,7 @@ export default function App() {
                   })()}
                 </div>
               ) : (
-                <h3 className="text-lg font-semibold">#{room}</h3>
+                <h3 className="text-lg font-semibold">{roomTitle || `#${room}`}</h3>
               )}
 
               <div className="text-sm opacity-80 flex flex-wrap items-center gap-2">

@@ -278,14 +278,54 @@ io.on("connection", (socket) => {
     }
   }
 
-  socket.on("join_room", (room) => {
-    socket.join(room);
-    console.log("[socket] user joined room:", room);
+  socket.on("join_room", async (room) => {
+    try {
+      // If room is an Event ID, restrict access to organizer/participants
+      if (typeof room === 'string' && /^[0-9a-fA-F]{24}$/.test(room)) {
+        const maybeEvent = await Event.findById(room).select('_id organizer participants');
+        if (maybeEvent) {
+          const authUser = socket.handshake.auth?.user || {};
+          const uid = String(authUser._id || authUser.id || '');
+          const isOrganizer = String(maybeEvent.organizer) === uid;
+          const isParticipant = (maybeEvent.participants || []).some((p) => String(p) === uid);
+          if (!isOrganizer && !isParticipant) {
+            console.warn('[socket] join denied: user not participant/organizer of event', {
+              uid,
+              room,
+            });
+            socket.emit('room_join_denied', { room, reason: 'not_participant' });
+            return;
+          }
+        }
+      }
+
+      socket.join(room);
+      console.log("[socket] user joined room:", room);
+    } catch (e) {
+      console.error('[socket] join_room error:', e);
+      socket.emit('room_join_denied', { room, reason: 'server_error' });
+    }
   });
 
   // SEND MESSAGE
   socket.on("send_message", async ({ room, message }) => {
     try {
+      // Event room guard: only organizer/participants can send
+      if (typeof room === 'string' && /^[0-9a-fA-F]{24}$/.test(room)) {
+        const maybeEvent = await Event.findById(room).select('_id organizer participants');
+        if (maybeEvent) {
+          const authUser = socket.handshake.auth?.user || {};
+          const uid = String(authUser._id || authUser.id || '');
+          const isOrganizer = String(maybeEvent.organizer) === uid;
+          const isParticipant = (maybeEvent.participants || []).some((p) => String(p) === uid);
+          if (!isOrganizer && !isParticipant) {
+            console.warn('[socket] send denied: user not participant/organizer of event', { uid, room });
+            socket.emit('error_message', { message: 'not_authorized_for_event_room' });
+            return;
+          }
+        }
+      }
+
       const saved = await Message.create({
         sender: message.sender?._id || message.sender,
         text: message.text,
@@ -303,7 +343,11 @@ io.on("connection", (socket) => {
       // If room is a Conversation ID, update lastMessage and updatedAt to keep lists fresh
       try {
         if (typeof room === 'string' && /^[0-9a-fA-F]{24}$/.test(room)) {
-          await Conversation.findByIdAndUpdate(room, { lastMessage: saved._id, updatedAt: new Date() });
+          // Only update Conversation lastMessage if this room is an actual conversation
+          const isConv = await Conversation.exists({ _id: room });
+          if (isConv) {
+            await Conversation.findByIdAndUpdate(room, { lastMessage: saved._id, updatedAt: new Date() });
+          }
         }
       } catch (e) {
         console.warn('[socket] failed to update conversation lastMessage', e?.message || e);
@@ -340,6 +384,17 @@ io.on("connection", (socket) => {
   // REACT TO MESSAGE
   socket.on("react", async ({ room, messageId, userId, emoji }) => {
     try {
+      // Event room guard for reactions as well
+      if (typeof room === 'string' && /^[0-9a-fA-F]{24}$/.test(room)) {
+        const maybeEvent = await Event.findById(room).select('_id organizer participants');
+        if (maybeEvent) {
+          const uidCheck = String((socket.handshake.auth?.user?._id) || (socket.handshake.auth?.user?.id) || userId);
+          const isOrganizer = String(maybeEvent.organizer) === uidCheck;
+          const isParticipant = (maybeEvent.participants || []).some((p) => String(p) === uidCheck);
+          if (!isOrganizer && !isParticipant) return; // silently ignore
+        }
+      }
+
       const uid = userId._id || userId.id || userId;
       const msg = await Message.findById(messageId);
       if (!msg) return;
@@ -369,7 +424,22 @@ io.on("connection", (socket) => {
 
   // TYPING
   socket.on("typing", ({ room, userId, user, typing }) => {
-    socket.to(room).emit("typing", { userId, user, typing });
+    // Best-effort event room guard; skip emit if not allowed
+    const emitTyping = async () => {
+      try {
+        if (typeof room === 'string' && /^[0-9a-fA-F]{24}$/.test(room)) {
+          const maybeEvent = await Event.findById(room).select('_id organizer participants');
+          if (maybeEvent) {
+            const uid = String((socket.handshake.auth?.user?._id) || (socket.handshake.auth?.user?.id) || userId);
+            const isOrganizer = String(maybeEvent.organizer) === uid;
+            const isParticipant = (maybeEvent.participants || []).some((p) => String(p) === uid);
+            if (!isOrganizer && !isParticipant) return;
+          }
+        }
+      } catch {}
+      socket.to(room).emit("typing", { userId, user, typing });
+    };
+    emitTyping();
   });
 
   // MESSAGE DELIVERED
