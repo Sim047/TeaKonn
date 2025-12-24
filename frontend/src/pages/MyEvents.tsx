@@ -443,7 +443,7 @@ export default function MyEvents({
                 : 'text-theme-secondary hover:text-heading'
             }`}
           >
-            <ShoppingBag className="inline w-5 h-5 mr-2" />
+            <Package className="inline w-5 h-5 mr-2" />
             My Products ({products.length})
             {activeTab === 'products' && (
               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-600"></div>
@@ -1017,7 +1017,7 @@ export default function MyEvents({
                   <div className="rounded-3xl p-12 text-center themed-card">
                     <div className="max-w-md mx-auto">
                       <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-200 dark:from-green-900 dark:to-emerald-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <ShoppingBag className="w-10 h-10 text-green-500" />
+                        <Package className="w-10 h-10 text-green-500" />
                       </div>
                       <h3 className="text-xl font-bold text-heading mb-2">No Products Yet</h3>
                       <p className="text-theme-secondary mb-6">
