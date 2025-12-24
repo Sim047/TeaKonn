@@ -140,7 +140,10 @@ router.delete("/:id/force", auth, async (req, res) => {
 
     // broadcast deletion to room so all clients can remove it
     const io = req.app.get("io");
-    if (io) io.to(msg.room).emit("message_deleted", id);
+    if (io) {
+      const reason = String(msg.sender) === String(userId) ? 'sender_delete' : 'organizer_delete';
+      io.to(msg.room).emit("message_deleted", { id, by: String(userId), reason });
+    }
 
     res.json({ success: true });
   } catch (err) {

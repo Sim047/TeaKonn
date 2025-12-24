@@ -602,8 +602,9 @@ router.post("/:id/remove-participant/:userId", auth, async (req, res) => {
     // Emit socket updates
     const io = req.app.get("io");
     if (io) {
+      const removedUser = (event.participants || []).find((p) => String(p._id || p) === String(participantId));
       io.to(String(event._id)).emit("participant_removed", { eventId: String(event._id), userId: String(participantId) });
-      if (ids.length > 0) io.to(String(event._id)).emit("messages_bulk_deleted", { ids });
+      if (ids.length > 0) io.to(String(event._id)).emit("messages_bulk_deleted", { ids, by: String(organizerId), userId: String(participantId), reason: 'participant_removed' });
     }
 
     const populated = await Event.findById(event._id)

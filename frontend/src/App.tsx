@@ -526,14 +526,27 @@ export default function App() {
       setMessages((m) => m.map((x) => (x._id === updatedMsg._id ? updatedMsg : x)));
     });
 
-    socket.on('message_deleted', (messageId: string) => {
+    socket.on('message_deleted', (payload: any) => {
+      const messageId = typeof payload === 'string' ? payload : payload?.id;
+      if (!messageId) return;
       setMessages((m) => m.filter((x) => x._id !== messageId));
+      const reason = typeof payload === 'object' ? payload?.reason : null;
+      if (reason === 'organizer_delete') {
+        setToast({ message: 'A message was removed by the organizer.', type: 'warning' });
+      }
     });
 
-    socket.on('messages_bulk_deleted', ({ ids }: { ids: string[] }) => {
+    socket.on('messages_bulk_deleted', ({ ids, reason }: { ids: string[]; reason?: string }) => {
       if (Array.isArray(ids) && ids.length > 0) {
         setMessages((m) => m.filter((x) => !ids.includes(String(x._id))));
+        if (reason === 'participant_removed') {
+          setToast({ message: 'Removed participant’s messages were cleared.', type: 'info' });
+        }
       }
+    });
+
+    socket.on('participant_removed', ({ userId }: any) => {
+      setToast({ message: 'A participant was removed by the organizer.', type: 'warning' });
     });
 
     socket.on('message_hidden', ({ messageId }: { messageId: string }) => {
