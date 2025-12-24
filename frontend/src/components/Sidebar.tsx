@@ -77,9 +77,17 @@ export default function Sidebar({
   const [assistantHidden, setAssistantHidden] = useState<boolean>(() => {
     try { return localStorage.getItem('teakonn.assistantHidden') === 'true'; } catch { return false; }
   });
+  const [joinedActiveEvents, setJoinedActiveEvents] = useState<any[]>([]);
+  const [groupUnread, setGroupUnread] = useState<Record<string, number>>({});
 
   useEffect(() => {
     loadUserStats();
+    // Initial load of group chats and polling
+    loadGroupChats();
+    const interval = setInterval(() => {
+      loadGroupChats();
+    }, 60000);
+    return () => clearInterval(interval);
   }, [token]);
 
   async function loadUserStats() {
@@ -119,6 +127,38 @@ export default function Sidebar({
       setFollowing(0);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadGroupChats() {
+    if (!token) return;
+    try {
+      const joinedRes = await axios.get(`${API}/events/my/joined`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const joined = (joinedRes.data?.events || []).filter((ev: any) => !ev.archivedAt);
+      setJoinedActiveEvents(joined);
+
+      const ids = joined.map((e: any) => e._id);
+      if (ids.length > 0) {
+        try {
+          const unreadRes = await axios.post(
+            `${API}/messages/rooms/unread-counts`,
+            { rooms: ids },
+            { headers: { Authorization: `Bearer ${token}` } },
+          );
+          setGroupUnread(unreadRes.data || {});
+        } catch (e) {
+          console.warn('Sidebar: failed to load group unread counts');
+          setGroupUnread({});
+        }
+      } else {
+        setGroupUnread({});
+      }
+    } catch (e) {
+      console.warn('Sidebar: failed to load joined events');
+      setJoinedActiveEvents([]);
+      setGroupUnread({});
     }
   }
 
@@ -381,6 +421,48 @@ export default function Sidebar({
             setIsMobileOpen(false);
           }}
         />
+        {/* Group Chats Section */}
+        {!isCollapsed && (
+          <div className="mt-2">
+            <div className="flex items-center justify-between px-1 mb-1">
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                Group Chats
+              </span>
+              <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                {joinedActiveEvents.length}
+              </span>
+            </div>
+            <div className="space-y-1">
+              {joinedActiveEvents.slice(0, 8).map((ev: any) => (
+                <button
+                  key={ev._id}
+                  className="w-full flex items-center justify-between gap-2 px-2 py-2 rounded-lg hover:bg-slate-800/50 transition-colors"
+                  onClick={() => {
+                    try { localStorage.setItem('auralink-open-room', ev._id); } catch {}
+                    onNavigate?.('chat');
+                    // Optimistic mark-as-read locally
+                    setGroupUnread((prev) => ({ ...prev, [ev._id]: 0 }));
+                  }}
+                  title={ev.title}
+                >
+                  <span className="truncate text-sm" style={{ color: 'var(--text)' }}>
+                    {ev.title}
+                  </span>
+                  {groupUnread[ev._id] > 0 && (
+                    <span className="px-1.5 py-0.5 text-[11px] rounded-full bg-emerald-500 text-white font-semibold">
+                      {groupUnread[ev._id]}
+                    </span>
+                  )}
+                </button>
+              ))}
+              {joinedActiveEvents.length === 0 && (
+                <div className="px-2 py-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+                  No active groups
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Search Users */}
