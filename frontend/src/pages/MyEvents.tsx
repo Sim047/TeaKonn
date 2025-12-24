@@ -1200,9 +1200,24 @@ export default function MyEvents({
                                       </div>
                                     </div>
                                   </div>
-                                  <span className="ml-3 px-2 py-1 rounded-lg text-[11px] font-semibold bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300">
-                                    Past Event
-                                  </span>
+                                  <div className="flex items-center gap-2 ml-3">
+                                    <button
+                                      onClick={() => {
+                                        try {
+                                          localStorage.setItem('auralink-open-room', ev._id);
+                                        } catch {}
+                                        onNavigate && onNavigate('chat');
+                                      }}
+                                      className="p-2 rounded-lg border hover:bg-slate-50 dark:hover:bg-slate-800"
+                                      style={{ borderColor: 'var(--border)' }}
+                                      title="Open Chat"
+                                    >
+                                      <MessageSquare className="w-4 h-4" />
+                                    </button>
+                                    <span className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300">
+                                      Past Event
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                             ))}
