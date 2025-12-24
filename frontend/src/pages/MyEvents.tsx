@@ -612,6 +612,9 @@ export default function MyEvents({
                               className="rounded-xl overflow-hidden themed-card cursor-pointer"
                               onClick={() => {
                                 localStorage.setItem('auralink-discover-category', 'other');
+                                try {
+                                  localStorage.setItem('auralink-highlight-post', post._id);
+                                } catch {}
                                 onNavigate && onNavigate('discover');
                               }}
                             >
@@ -725,6 +728,9 @@ export default function MyEvents({
                                       className="w-full text-left px-3 py-2 hover:bg-[var(--muted)] transition-colors"
                                       onClick={() => {
                                         localStorage.setItem('auralink-discover-category', 'other');
+                                        try {
+                                          localStorage.setItem('auralink-highlight-post', post._id);
+                                        } catch {}
                                         onNavigate && onNavigate('discover');
                                       }}
                                     >
