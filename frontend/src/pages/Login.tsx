@@ -1,38 +1,39 @@
-import React, { useState } from 'react';
-import api from '../utils/axios';
-import GoogleLoginButton from '../components/GoogleLoginButton';
-import { TeaKonnLogo } from '../components/AuralinkLogo';
+import React, { useState } from "react";
+import axios from "axios";
+import GoogleLoginButton from "../components/GoogleLoginButton";
+import Logo from "../assets/teakonn-logo.png";
 
-// Use centralized axios instance with normalized baseURL
+const API = import.meta.env.VITE_API_URL || "";
 
 export default function Login({ onSuccess, switchToRegister }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   async function handleLogin(e) {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
-      const res = await api.post('/auth/login', { email, password });
+      const res = await axios.post(API + "/api/auth/login", { email, password });
       const { token, user } = res.data;
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
       onSuccess({ token, user });
     } catch (err) {
-      setError('Invalid credentials — try again.');
+      setError("Invalid credentials — try again.");
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#071229] px-4">
       <div className="bg-slate-800/60 p-10 rounded-xl w-full max-w-md text-slate-100">
+
         {/* LOGO */}
         <div className="flex justify-center mb-6">
-          <TeaKonnLogo size={64} ariaLabel="TeaKonn" />
+          <img src={Logo} alt="TeaKonn Logo" className="h-16 w-auto object-contain drop-shadow-lg" />
         </div>
 
         {/* TITLE */}
@@ -75,7 +76,7 @@ export default function Login({ onSuccess, switchToRegister }) {
         <GoogleLoginButton onSuccess={onSuccess} className="flex justify-center" />
 
         <p className="mt-6 text-sm text-center opacity-80">
-          Don’t have an account?{' '}
+          Don’t have an account?{" "}
           <button onClick={switchToRegister} className="text-cyan-300 hover:underline">
             Register
           </button>
