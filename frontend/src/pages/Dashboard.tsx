@@ -168,6 +168,7 @@ type Event = {
 
 export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+  const [joinedActiveEvents, setJoinedActiveEvents] = useState<Event[]>([]);
   const [eventsFilter, setEventsFilter] = useState<'all' | 'free' | 'paid'>(() => {
     const saved = localStorage.getItem('auralink-dashboard-events-filter');
     return (saved as any) || 'all';
@@ -221,6 +222,13 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
       });
 
       setUpcomingEvents(events);
+
+      // Load active (non-archived) events the user joined — used for Group Chats
+      const joinedRes = await axios.get(`${API}/api/events/my/joined`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const joined = (joinedRes.data?.events || []).filter((ev: any) => !ev.archivedAt);
+      setJoinedActiveEvents(joined);
 
       const eventNotifications = events.slice(0, 3).map((event: Event) => ({
         id: event._id,
@@ -399,6 +407,53 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
         <div className="rounded-2xl p-4 themed-card">
           <DashboardSearch token={token} onNavigate={onNavigate} onViewProfile={onViewProfile} />
         </div>
+
+        {/* Group Chats (Active Events joined) */}
+        {joinedActiveEvents && joinedActiveEvents.length > 0 && (
+          <div className="rounded-2xl p-6 themed-card">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xl font-bold text-heading">Group Chats</h2>
+              <span className="text-sm text-theme-secondary">{joinedActiveEvents.length}</span>
+            </div>
+            <div className="space-y-2">
+              {joinedActiveEvents.slice(0, 6).map((ev) => (
+                <div
+                  key={ev._id}
+                  className="flex items-center justify-between gap-3 p-3 rounded-xl border hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors"
+                  style={{ borderColor: 'var(--border)' }}
+                >
+                  <div className="min-w-0">
+                    <div className="font-semibold text-heading truncate" title={ev.title}>
+                      {ev.title}
+                    </div>
+                    <div className="text-xs text-theme-secondary flex items-center gap-3">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" /> {dayjs(ev.startDate).format('MMM D, YYYY')}
+                      </span>
+                      {ev.location?.city && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5" /> {ev.location.city}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="shrink-0">
+                    <button
+                      onClick={() => {
+                        try { localStorage.setItem('auralink-open-room', ev._id); } catch {}
+                        onNavigate && onNavigate('chat');
+                      }}
+                      className="px-3 py-1.5 text-sm rounded-lg border hover:bg-slate-100 dark:hover:bg-slate-800"
+                      style={{ borderColor: 'var(--border)' }}
+                    >
+                      Open Chat
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Stats Cards (bookings removed) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
