@@ -444,7 +444,6 @@ export default function Sidebar({
         <NavButton
           icon={Users}
           label="Group Chats"
-          badge={totalGroupUnread}
           isCollapsed={isCollapsed}
           onClick={() => {
             onNavigate?.('group-chats');
