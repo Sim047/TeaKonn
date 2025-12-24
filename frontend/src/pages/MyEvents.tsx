@@ -47,6 +47,7 @@ export default function MyEvents({
   const [eventsCreated, setEventsCreated] = useState<any[]>([]);
   const [eventsJoined, setEventsJoined] = useState<any[]>([]);
   const [eventsTab, setEventsTab] = useState<'organizing' | 'joined'>('organizing');
+  const [eventSearch, setEventSearch] = useState<string>('');
   const [services, setServices] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,6 +110,18 @@ export default function MyEvents({
     } finally {
       setLoading(false);
     }
+  }
+
+  function matchesEventSearch(ev: any): boolean {
+    const q = eventSearch.trim().toLowerCase();
+    if (!q) return true;
+    const fields = [
+      ev?.title,
+      ev?.sport,
+      ev?.location?.city,
+      ev?.location?.address,
+    ].map((s: any) => String(s || '').toLowerCase());
+    return fields.some((f: string) => f.includes(q));
   }
 
 
@@ -523,6 +536,15 @@ export default function MyEvents({
           if (activeTab === 'events') {
             return (
               <div className="space-y-8">
+                {/* Search My Events */}
+                <div className="flex items-center justify-between gap-3">
+                  <input
+                    className="input w-full sm:w-80"
+                    placeholder="Search my events"
+                    value={eventSearch}
+                    onChange={(e) => setEventSearch(e.target.value)}
+                  />
+                </div>
                 {/* Events I Created */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -545,8 +567,9 @@ export default function MyEvents({
                       </button>
                     </div>
                   ) : organizingListOpen ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {eventsCreated.map((ev) => (
+                    <div className="max-h-[460px] overflow-y-auto pr-1">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {eventsCreated.filter(matchesEventSearch).map((ev) => (
                         <div key={ev._id} className="rounded-2xl overflow-hidden themed-card">
                           <div className="bg-gradient-to-r from-cyan-600 to-purple-600 p-5">
                             <h3 className="text-white text-xl font-semibold line-clamp-1">{ev.title}</h3>
@@ -590,7 +613,8 @@ export default function MyEvents({
                             </div>
                           </div>
                         </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   ) : null}
                 </div>
@@ -611,8 +635,9 @@ export default function MyEvents({
                       <p className="text-theme-secondary">You haven\'t joined any events yet.</p>
                     </div>
                   ) : joinedListOpen ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {eventsJoined.map((ev) => (
+                    <div className="max-h-[460px] overflow-y-auto pr-1">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {eventsJoined.filter(matchesEventSearch).map((ev) => (
                         <div key={ev._id} className="rounded-2xl overflow-hidden themed-card">
                           <div className="bg-gradient-to-r from-emerald-600 to-cyan-600 p-5">
                             <h3 className="text-white text-xl font-semibold line-clamp-1">{ev.title}</h3>
@@ -649,7 +674,8 @@ export default function MyEvents({
                             </div>
                           </div>
                         </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   ) : null}
                 </div>
