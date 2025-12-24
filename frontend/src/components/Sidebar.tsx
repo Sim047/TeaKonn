@@ -25,6 +25,7 @@ import StatusPicker from "./StatusPicker";
 import SearchUsers from "./SearchUsers";
 import logo from "../assets/teakonn-logo.png";
 import { socket } from "../socket";
+import dayjs from "dayjs";
 
 // Use normalized absolute API base
 import { API_URL } from "../config/api";
@@ -448,35 +449,56 @@ export default function Sidebar({
                 {joinedActiveEvents.length}
               </span>
             </div>
-            <div className="space-y-1">
-              {joinedActiveEvents.slice(0, 8).map((ev: any) => (
-                <button
-                  key={ev._id}
-                  className="w-full flex items-center justify-between gap-2 px-2 py-2 rounded-lg hover:bg-slate-800/50 transition-colors"
-                  onClick={() => {
-                    try { localStorage.setItem('auralink-open-room', ev._id); } catch {}
-                    onNavigate?.('chat');
-                    // Optimistic mark-as-read locally
-                    setGroupUnread((prev) => ({ ...prev, [ev._id]: 0 }));
-                    // Best-effort server-side mark as read
-                    axios.post(
-                      `${API}/messages/rooms/${ev._id}/mark-read`,
-                      {},
-                      { headers: { Authorization: `Bearer ${token}` } }
-                    ).catch(() => {});
-                  }}
-                  title={ev.title}
-                >
-                  <span className="truncate text-sm" style={{ color: 'var(--text)' }}>
-                    {ev.title}
-                  </span>
-                  {groupUnread[ev._id] > 0 && (
-                    <span className="px-1.5 py-0.5 text-[11px] rounded-full bg-emerald-500 text-white font-semibold">
-                      {groupUnread[ev._id]}
-                    </span>
-                  )}
-                </button>
-              ))}
+            <div className="space-y-2">
+              {joinedActiveEvents.slice(0, 8).map((ev: any) => {
+                const unread = groupUnread[ev._id] || 0;
+                return (
+                  <div
+                    key={ev._id}
+                    className={`
+                      relative p-3 rounded-lg bg-white dark:bg-slate-800 border-2 transition-all cursor-pointer
+                      ${
+                        unread > 0
+                          ? 'border-emerald-400 dark:border-emerald-500 shadow-md shadow-emerald-100 dark:shadow-emerald-900/30'
+                          : 'border-gray-200 dark:border-gray-700 hover:shadow-md'
+                      }
+                    `}
+                    onClick={() => {
+                      try { localStorage.setItem('auralink-open-room', ev._id); } catch {}
+                      onNavigate?.('chat');
+                      setGroupUnread((prev) => ({ ...prev, [ev._id]: 0 }));
+                      axios
+                        .post(
+                          `${API}/messages/rooms/${ev._id}/mark-read`,
+                          {},
+                          { headers: { Authorization: `Bearer ${token}` } }
+                        )
+                        .catch(() => {});
+                    }}
+                    title={ev.title}
+                  >
+                    {unread > 0 && (
+                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-emerald-500 to-indigo-600 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center shadow-lg">
+                        {unread > 99 ? '99+' : unread}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-md bg-gradient-to-br from-accent to-accent-light text-white font-bold flex items-center justify-center shadow">
+                        {dayjs(ev.startDate).format('DD')}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className={`font-bold truncate ${unread > 0 ? 'text-cyan-600 dark:text-cyan-400' : ''}`}>
+                          {ev.title}
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                          {dayjs(ev.startDate).format('MMM D, YYYY')}
+                          {ev.location?.city ? ` • ${ev.location.city}` : ''}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
               {joinedActiveEvents.length === 0 && (
                 <div className="px-2 py-2 text-xs" style={{ color: 'var(--text-muted)' }}>
                   No active groups
