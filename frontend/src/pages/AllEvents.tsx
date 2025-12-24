@@ -93,9 +93,30 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
         );
       });
 
-      // Get user ID from token
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const userId = payload.id || payload._id;
+      // Get user ID from token with localStorage fallback
+      let userId: string | undefined = undefined;
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.id || payload._id;
+        } catch {
+          try {
+            const raw = localStorage.getItem('user');
+            if (raw) {
+              const u = JSON.parse(raw);
+              userId = u?._id || u?.id;
+            }
+          } catch {}
+        }
+      } else {
+        try {
+          const raw = localStorage.getItem('user');
+          if (raw) {
+            const u = JSON.parse(raw);
+            userId = u?._id || u?.id;
+          }
+        } catch {}
+      }
 
       const participating = all
         .filter((e: any) => e.participants?.some((p: any) => p._id === userId || p === userId))

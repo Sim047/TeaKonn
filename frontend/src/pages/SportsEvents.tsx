@@ -50,7 +50,18 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
         const payload = JSON.parse(atob(token.split('.')[1]));
         setCurrentUserId(payload.id || payload._id);
       } else {
-        setCurrentUserId(undefined);
+        // Fallback: try localStorage user
+        try {
+          const raw = localStorage.getItem('user');
+          if (raw) {
+            const u = JSON.parse(raw);
+            setCurrentUserId(u?._id || u?.id);
+          } else {
+            setCurrentUserId(undefined);
+          }
+        } catch {
+          setCurrentUserId(undefined);
+        }
       }
     } catch {
       setCurrentUserId(undefined);
@@ -176,8 +187,13 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
               </div>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => {
-                    setSelectedEvent(ev);
+                  onClick={async () => {
+                    try {
+                      const resp = await axios.get(`${API_URL}/events/${ev._id}`);
+                      setSelectedEvent(resp.data as any);
+                    } catch {
+                      setSelectedEvent(ev);
+                    }
                   }}
                   className="text-sm text-cyan-600"
                 >

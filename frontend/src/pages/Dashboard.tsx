@@ -196,12 +196,39 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
   const [participantsModalEvent, setParticipantsModalEvent] = useState<any | null>(null);
 
   useEffect(() => {
-    if (!token) return;
-    loadDashboardData();
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1])) || {};
-      setCurrentUserId(payload.id || payload._id);
-    } catch {}
+    if (token) {
+      loadDashboardData();
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1])) || {};
+        setCurrentUserId(payload.id || payload._id);
+      } catch {
+        // If token parsing fails, try localStorage fallback
+        try {
+          const raw = localStorage.getItem('user');
+          if (raw) {
+            const u = JSON.parse(raw);
+            setCurrentUserId(u?._id || u?.id);
+          } else {
+            setCurrentUserId(undefined);
+          }
+        } catch {
+          setCurrentUserId(undefined);
+        }
+      }
+    } else {
+      // No token: still try to infer user from localStorage
+      try {
+        const raw = localStorage.getItem('user');
+        if (raw) {
+          const u = JSON.parse(raw);
+          setCurrentUserId(u?._id || u?.id);
+        } else {
+          setCurrentUserId(undefined);
+        }
+      } catch {
+        setCurrentUserId(undefined);
+      }
+    }
   }, [token]);
 
   async function loadDashboardData() {
