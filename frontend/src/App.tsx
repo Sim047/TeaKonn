@@ -15,6 +15,7 @@ import Register from './pages/Register';
 import StatusPicker from './components/StatusPicker';
 import SearchUsers from './components/SearchUsers';
 import ConversationsList from './components/ConversationsList';
+import GroupChatsList from './components/GroupChatsList';
 import AllUsers from './pages/AllUsersModern';
 import FollowersList from './pages/FollowersList';
 import FollowingList from './pages/FollowingList';
@@ -190,6 +191,7 @@ export default function App() {
     | 'following'
     | 'posts'
     | 'direct-messages'
+    | 'group-chats'
     | 'user-content'
   >(() => {
     // Restore previous view from localStorage
@@ -1873,6 +1875,20 @@ export default function App() {
               onShowProfile={(u: any) => showProfile(u)}
               onOpenConversation={(c: any) => openConversation(c)}
               onlineUsers={onlineUsers}
+            />
+          </div>
+        )}
+
+        {/* GROUP CHATS PAGE */}
+        {view === 'group-chats' && (
+          <div className="p-6">
+            <h2 className="text-2xl font-bold mb-6">👥 Group Chats</h2>
+            <GroupChatsList
+              token={token}
+              onOpenRoom={(rid: string) => {
+                try { localStorage.setItem('auralink-open-room', rid); } catch {}
+                setView('chat');
+              }}
             />
           </div>
         )}
