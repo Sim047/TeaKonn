@@ -16,11 +16,6 @@ import {
   Trophy,
   Stethoscope,
   Star,
-  ShoppingBag,
-  Package,
-  Eye,
-  Truck,
-  Image as ImageIcon,
   Search,
   MessageSquare,
 } from 'lucide-react';
@@ -82,8 +77,6 @@ export default function MyEvents({
   const [otherListOpen, setOtherListOpen] = useState<boolean>(true);
   const [organizingListOpen, setOrganizingListOpen] = useState<boolean>(true);
   const [joinedListOpen, setJoinedListOpen] = useState<boolean>(true);
-  const [pastListOpen, setPastListOpen] = useState<boolean>(true);
-  const [pastSort, setPastSort] = useState<'asc' | 'desc'>('desc');
   const [toast, setToast] = useState<{
     message: string;
     type: 'success' | 'error' | 'info' | 'warning';
@@ -93,7 +86,6 @@ export default function MyEvents({
   useEffect(() => {
     if (!token) return;
     loadMyEventsAll();
-    loadMyArchivedEvents();
     loadMyServices();
     loadMyProducts();
     loadOtherEvents();
@@ -104,12 +96,6 @@ export default function MyEvents({
       localStorage.removeItem('auralink-my-activities-tab');
     }
   }, [token]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('auralink-show-past-events', String(showPastEvents));
-    } catch {}
-  }, [showPastEvents]);
 
   async function loadMyEventsAll() {
     try {
@@ -129,17 +115,6 @@ export default function MyEvents({
     }
   }
 
-  async function loadMyArchivedEvents() {
-    try {
-      const res = await axios.get(`${API}/api/events/my/archived`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setArchivedEvents(res.data.events || []);
-    } catch (err) {
-      console.error('Load my archived events error:', err);
-      setArchivedEvents([]);
-    }
-  }
 
   async function loadOtherEvents() {
     try {
