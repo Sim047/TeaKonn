@@ -574,6 +574,12 @@ export default function App() {
           ? 'You are not a participant of this event.'
           : 'Unable to join event chat.';
       setToast({ message, type: 'error' });
+      try { localStorage.removeItem('auralink-open-room'); } catch {}
+      // Bounce the user back to My Events and reset to a safe room
+      setInDM(false);
+      setActiveConversation(null);
+      setRoom('general');
+      setView('my-events');
     });
 
     // Join request notifications
