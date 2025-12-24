@@ -97,6 +97,13 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
       );
       setNotification({ message: res.data.message || 'Joined event', type: 'success' });
       await fetchEvents();
+      // Refresh selectedEvent in modal so it reflects joined state
+      if (selectedEvent && selectedEvent._id === eventId) {
+        const refreshed = await axios.get(`${API_URL}/events/${eventId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setSelectedEvent(refreshed.data as any);
+      }
     } catch (err: any) {
       setNotification({ message: err?.response?.data?.message || 'Failed to join', type: 'error' });
     }
