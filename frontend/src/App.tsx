@@ -255,6 +255,7 @@ export default function App() {
   const AVAILABLE_REACTIONS = ['❤️', '🔥', '😂', '😔'];
   const composerTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [replyTo, setReplyTo] = useState<any | null>(null);
+  const [openReactionPicker, setOpenReactionPicker] = useState<Record<string, boolean>>({});
 
   function startMessagePress(id: string) {
     try {
@@ -1337,9 +1338,10 @@ export default function App() {
 
               {/* Reactions */}
               <div className="mt-2 flex items-center gap-2 flex-wrap">
-                {/* Reaction chips: single control to add/remove/change */}
+                {/* Existing reaction chips (hide chips with zero counts) */}
                 {AVAILABLE_REACTIONS.map((e) => {
                   const count = reactionCount(m, e);
+                  if (!count) return null;
                   const mine = hasReacted(m, e);
                   return (
                     <button
@@ -1353,11 +1355,48 @@ export default function App() {
                       aria-label={mine ? 'Remove your reaction' : 'React'}
                     >
                       <span className="emoji">{e}</span>
-                      {count > 0 && <span className="count">{count}</span>}
+                      <span className="count">{count}</span>
                     </button>
                   );
                 })}
+
+                {/* Add reaction trigger */}
+                <button
+                  className="reaction-btn"
+                  onClick={(ev) => {
+                    ev.stopPropagation();
+                    setOpenReactionPicker((prev) => ({ ...prev, [m._id]: !prev[m._id] }));
+                  }}
+                  aria-label="Add reaction"
+                  title="Add reaction"
+                >
+                  + Add reaction
+                </button>
               </div>
+
+              {/* Inline reaction picker */}
+              {openReactionPicker[m._id] && (
+                <div
+                  className="reaction-picker mt-2"
+                  onClick={(e) => e.stopPropagation()}
+                  role="menu"
+                  aria-label="Pick a reaction"
+                >
+                  {AVAILABLE_REACTIONS.map((e) => (
+                    <button
+                      key={e}
+                      className="reaction-option"
+                      onClick={() => {
+                        toggleReaction(m, e);
+                        setOpenReactionPicker((prev) => ({ ...prev, [m._id]: false }));
+                      }}
+                      aria-label={`React with ${e}`}
+                    >
+                      {e}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {openMessageActions === m._id && (
                 <div
