@@ -703,6 +703,16 @@ export default function App() {
             }
           });
         }
+
+        // Also mark the entire room as read via API to ensure counts clear
+        // immediately (efficient batch update instead of per-message emits).
+        try {
+          axios.post(
+            `${API}/api/messages/rooms/${room}/mark-read`,
+            {},
+            { headers: { Authorization: 'Bearer ' + token } }
+          ).catch(() => {});
+        } catch {}
       })
       .catch((e) => {
         try {

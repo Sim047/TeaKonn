@@ -30,6 +30,7 @@ export default function GroupChatsList({ token, onOpenRoom }: GroupChatsListProp
       socket?.on('receive_message', handler);
       socket?.on('message_deleted', handler);
       socket?.on('messages_bulk_deleted', handler);
+      socket?.on('message_status_update', handler); // read/delivered updates
     } catch {}
     return () => {
       window.clearInterval(poll);
@@ -37,6 +38,7 @@ export default function GroupChatsList({ token, onOpenRoom }: GroupChatsListProp
         socket?.off('receive_message', handler);
         socket?.off('message_deleted', handler);
         socket?.off('messages_bulk_deleted', handler);
+        socket?.off('message_status_update', handler);
       } catch {}
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

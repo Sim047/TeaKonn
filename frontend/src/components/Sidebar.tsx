@@ -99,10 +99,12 @@ export default function Sidebar({
       socket?.on?.('receive_message', handler);
       socket?.on?.('message_deleted', handler);
       socket?.on?.('messages_bulk_deleted', handler);
+      socket?.on?.('message_status_update', handler); // read/delivered updates
       return () => {
         socket?.off?.('receive_message', handler);
         socket?.off?.('message_deleted', handler);
         socket?.off?.('messages_bulk_deleted', handler);
+        socket?.off?.('message_status_update', handler);
       };
     } catch {}
   }, []);
