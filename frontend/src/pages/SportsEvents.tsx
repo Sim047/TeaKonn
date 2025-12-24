@@ -162,7 +162,9 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
       await fetchEvents();
       // Refresh selectedEvent if open
       if (selectedEvent && selectedEvent._id === eventId) {
-        const refreshed = await axios.get(`${API}/api/events/${eventId}`);
+        const refreshed = await axios.get(`${API}/api/events/${eventId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
         setSelectedEvent(refreshed.data);
       }
     } catch (err: any) {
