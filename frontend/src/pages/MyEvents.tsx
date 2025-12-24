@@ -79,6 +79,10 @@ export default function MyEvents({
   const [uploadingOtherImage, setUploadingOtherImage] = useState<boolean>(false);
   const [otherSearchTerm, setOtherSearchTerm] = useState<string>('');
   const [otherListOpen, setOtherListOpen] = useState<boolean>(true);
+  const [organizingListOpen, setOrganizingListOpen] = useState<boolean>(true);
+  const [joinedListOpen, setJoinedListOpen] = useState<boolean>(true);
+  const [pastListOpen, setPastListOpen] = useState<boolean>(true);
+  const [pastSort, setPastSort] = useState<'asc' | 'desc'>('desc');
   const [toast, setToast] = useState<{
     message: string;
     type: 'success' | 'error' | 'info' | 'warning';
@@ -881,7 +885,7 @@ export default function MyEvents({
                       Joined ({eventsJoined.length})
                     </button>
                   </div>
-                  <div className="mt-3 flex items-center gap-3">
+                  <div className="mt-3 flex items-center gap-3 flex-wrap">
                     <label className="inline-flex items-center gap-2 text-sm text-theme-secondary">
                       <input
                         type="checkbox"
@@ -900,6 +904,22 @@ export default function MyEvents({
                       />
                       Show Past Events
                     </label>
+                    <button
+                      onClick={() =>
+                        eventsTab === 'organizing'
+                          ? setOrganizingListOpen((v) => !v)
+                          : setJoinedListOpen((v) => !v)
+                      }
+                      className="px-4 py-2 btn"
+                    >
+                      {eventsTab === 'organizing'
+                        ? organizingListOpen
+                          ? 'Hide Organizing List'
+                          : 'Show Organizing List'
+                        : joinedListOpen
+                          ? 'Hide Joined List'
+                          : 'Show Joined List'}
+                    </button>
                   </div>
                 </div>
                 {(eventsTab === 'organizing' ? eventsCreated : eventsJoined).filter((e: any) =>
@@ -924,7 +944,8 @@ export default function MyEvents({
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  (eventsTab === 'organizing' ? organizingListOpen : joinedListOpen) ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {(eventsTab === 'organizing' ? eventsCreated : eventsJoined)
                       .filter((e: any) => (hideInactiveEvents ? e.status === 'published' : true))
                       .map((event) => (
@@ -935,18 +956,18 @@ export default function MyEvents({
                           {/* Event Header */}
                           <div className="bg-gradient-to-r from-slate-600 to-slate-700 dark:from-slate-700 dark:to-slate-800 p-6">
                             <div className="flex items-start justify-between mb-3">
-                              <div className="flex-1">
+                              <div className="flex-1 min-w-0">
                                 <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">
                                   {event.title}
                                 </h3>
                                 <div className="flex items-center gap-2">
                                   {event.sport && (
-                                    <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-lg text-xs font-medium">
+                                    <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-lg text-xs font-medium truncate max-w-[12rem]">
                                       {event.sport}
                                     </span>
                                   )}
                                   {event.pricing && (
-                                    <span className="inline-block px-3 py-1 bg-white/10 text-white rounded-lg text-xs font-medium">
+                                    <span className="inline-block px-3 py-1 bg-white/10 text-white rounded-lg text-xs font-medium truncate max-w-[12rem]">
                                       {event.pricing.type === 'paid'
                                         ? `${event.pricing.currency} ${event.pricing.amount}`
                                         : 'Free'}
@@ -1075,61 +1096,92 @@ export default function MyEvents({
                           </div>
                         </div>
                       ))}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl p-4 themed-card text-sm text-theme-secondary">
+                      {eventsTab === 'organizing' ? 'Organizing list hidden' : 'Joined list hidden'}
+                    </div>
+                  )
                 )}
                 {/* Past Events */}
                 {showPastEvents && (
                   <div className="mt-10">
                     <div className="rounded-2xl p-6 themed-card">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-3 flex-wrap">
                         <h3 className="text-xl font-bold text-heading">Past Events</h3>
                         <span className="text-sm text-theme-secondary">
                           {archivedEvents.length}
                         </span>
+                        <div className="flex items-center gap-2 ml-auto">
+                          <label className="text-sm text-theme-secondary hidden sm:block">Sort</label>
+                          <select
+                            value={pastSort}
+                            onChange={(e) => setPastSort(e.target.value as 'asc' | 'desc')}
+                            className="input text-sm py-1"
+                            aria-label="Sort past events"
+                          >
+                            <option value="desc">Newest First</option>
+                            <option value="asc">Oldest First</option>
+                          </select>
+                          <button
+                            onClick={() => setPastListOpen((v) => !v)}
+                            className="px-3 py-2 btn"
+                          >
+                            {pastListOpen ? 'Hide List' : 'Show List'}
+                          </button>
+                        </div>
                       </div>
                       {archivedEvents.length === 0 ? (
                         <p className="mt-3 text-sm text-theme-secondary">No past events yet.</p>
-                      ) : (
+                      ) : pastListOpen ? (
                         <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
-                          {archivedEvents.map((ev) => (
-                            <div key={ev._id} className="rounded-xl p-4 themed-card">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="text-sm font-semibold text-heading line-clamp-2">
-                                    {ev.title || 'Untitled Event'}
-                                  </h4>
-                                  <div className="mt-2 space-y-1 text-xs text-theme-secondary">
-                                    <div className="flex items-center gap-2">
-                                      <Calendar className="w-4 h-4 text-slate-500" />
-                                      <span>
-                                        {ev.startDate
-                                          ? dayjs(ev.startDate).format('MMM D, YYYY')
-                                          : 'Date unknown'}
-                                      </span>
-                                    </div>
-                                    {ev.location?.city && (
+                          {[...archivedEvents]
+                            .sort((a, b) => {
+                              const ad = a.startDate ? dayjs(a.startDate).valueOf() : 0;
+                              const bd = b.startDate ? dayjs(b.startDate).valueOf() : 0;
+                              return pastSort === 'desc' ? bd - ad : ad - bd;
+                            })
+                            .map((ev) => (
+                              <div key={ev._id} className="rounded-xl p-4 themed-card">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="text-sm font-semibold text-heading line-clamp-2">
+                                      {ev.title || 'Untitled Event'}
+                                    </h4>
+                                    <div className="mt-2 space-y-1 text-xs text-theme-secondary">
                                       <div className="flex items-center gap-2">
-                                        <MapPin className="w-4 h-4 text-slate-500" />
-                                        <span className="truncate">
-                                          {ev.location?.name ? `${ev.location.name}, ` : ''}
-                                          {ev.location.city}
-                                          {ev.location.state ? `, ${ev.location.state}` : ''}
+                                        <Calendar className="w-4 h-4 text-slate-500" />
+                                        <span>
+                                          {ev.startDate
+                                            ? dayjs(ev.startDate).format('MMM D, YYYY')
+                                            : 'Date unknown'}
                                         </span>
                                       </div>
-                                    )}
-                                    <div className="flex items-center gap-2">
-                                      <Users className="w-4 h-4 text-slate-500" />
-                                      <span>{ev.participants?.length || 0} joined</span>
+                                      {ev.location?.city && (
+                                        <div className="flex items-center gap-2">
+                                          <MapPin className="w-4 h-4 text-slate-500" />
+                                          <span className="truncate">
+                                            {ev.location?.name ? `${ev.location.name}, ` : ''}
+                                            {ev.location.city}
+                                            {ev.location.state ? `, ${ev.location.state}` : ''}
+                                          </span>
+                                        </div>
+                                      )}
+                                      <div className="flex items-center gap-2">
+                                        <Users className="w-4 h-4 text-slate-500" />
+                                        <span>{ev.participants?.length || 0} joined</span>
+                                      </div>
                                     </div>
                                   </div>
+                                  <span className="ml-3 px-2 py-1 rounded-lg text-[11px] font-semibold bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300">
+                                    Past Event
+                                  </span>
                                 </div>
-                                <span className="ml-3 px-2 py-1 rounded-lg text-[11px] font-semibold bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300">
-                                  Past Event
-                                </span>
                               </div>
-                            </div>
-                          ))}
+                            ))}
                         </div>
+                      ) : (
+                        <div className="mt-3 text-sm text-theme-secondary">Past events list hidden</div>
                       )}
                     </div>
                   </div>
