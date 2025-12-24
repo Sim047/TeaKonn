@@ -30,6 +30,7 @@ import AssistantWidget from './components/AssistantWidget';
 import tkLogo from './assets/teakonn-logo.png';
 import { API_URL } from './config/api';
 import UserProfileModal from './components/UserProfileModal';
+import NotificationToast from './components/NotificationToast';
 
 dayjs.extend(localizedFormat);
 dayjs.extend(relativeTime);
@@ -107,6 +108,11 @@ export default function App() {
   const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Record<string, any>>({});
   const [roomTitle, setRoomTitle] = useState<string>('');
+  const [roomSubtitle, setRoomSubtitle] = useState<string>('');
+  const [toast, setToast] = useState<
+    | { message: string; type: 'success' | 'error' | 'info' | 'warning' }
+    | null
+  >(null);
 
   // STATUS ------------------------------------
   const [statuses, setStatuses] = useState<Record<string, any>>({});
@@ -561,6 +567,15 @@ export default function App() {
       setOnlineUsers(new Set(userIds));
     });
 
+    socket.on('room_join_denied', ({ room, reason }: any) => {
+      console.warn('[Socket] room_join_denied:', { room, reason });
+      const message =
+        reason === 'not_participant'
+          ? 'You are not a participant of this event.'
+          : 'Unable to join event chat.';
+      setToast({ message, type: 'error' });
+    });
+
     // Join request notifications
     socket.on('join_request_created', ({ eventTitle, organizerId }: any) => {
       if (user?._id === organizerId) {
@@ -670,6 +685,7 @@ export default function App() {
   useEffect(() => {
     if (inDM || view !== 'chat') {
       setRoomTitle('');
+      setRoomSubtitle('');
       return;
     }
     // Try to fetch event title; if not an event id, fall back to id itself
@@ -678,12 +694,28 @@ export default function App() {
       try {
         if (!room || room === 'general') {
           if (!canceled) setRoomTitle('general');
+          if (!canceled) setRoomSubtitle('');
           return;
         }
-        const res = await axios.get(API + '/api/events/' + room + '?fields=title');
-        if (!canceled) setRoomTitle(res.data?.title || '#' + room);
+        const res = await axios.get(
+          API + '/api/events/' + room + '?fields=title,startDate,location'
+        );
+        if (!canceled) {
+          setRoomTitle(res.data?.title || '#' + room);
+          const dateStr = res.data?.startDate
+            ? dayjs(res.data.startDate).format('MMM D, YYYY')
+            : '';
+          const city = res.data?.location?.city || '';
+          const name = res.data?.location?.name || '';
+          const locParts = [name, city].filter(Boolean);
+          const locStr = locParts.join(', ');
+          setRoomSubtitle([dateStr, locStr].filter(Boolean).join(' • '));
+        }
       } catch {
-        if (!canceled) setRoomTitle('#' + room);
+        if (!canceled) {
+          setRoomTitle('#' + room);
+          setRoomSubtitle('');
+        }
       }
     })();
     return () => {
@@ -1713,6 +1745,16 @@ export default function App() {
             <span className="text-heading font-semibold">TeaKonn</span>
           </div>
         )}
+
+        {/* Toasts */}
+        {toast && (
+          <NotificationToast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+            duration={5000}
+          />
+        )}
         {/* DASHBOARD PAGE */}
         {view === 'dashboard' && (
           <Dashboard
@@ -1884,7 +1926,12 @@ export default function App() {
                   })()}
                 </div>
               ) : (
-                <h3 className="text-lg font-semibold">{roomTitle || `#${room}`}</h3>
+                <div className="flex flex-col">
+                  <h3 className="text-lg font-semibold">{roomTitle || `#${room}`}</h3>
+                  {roomSubtitle && (
+                    <span className="text-xs opacity-75">{roomSubtitle}</span>
+                  )}
+                </div>
               )}
 
               <div className="text-sm opacity-80 flex flex-wrap items-center gap-2">
