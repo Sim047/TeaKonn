@@ -355,37 +355,35 @@ export default function EventDetailModal({
           {/* Action Buttons */}
           {!isOrganizer && (
             <div className="flex gap-3">
-              <button
-                onClick={() => onJoin(event._id)}
-                disabled={isParticipant || isFull || isArchived}
-                className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
-                  isArchived
-                    ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                    : isParticipant
-                      ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                      : isFull
-                        ? 'bg-red-600/50 text-red-300 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white hover:from-cyan-600 hover:to-purple-700 shadow-lg'
-                }`}
-              >
-                {isArchived
-                  ? 'Past Event'
-                  : isParticipant
-                    ? event.requiresApproval
-                      ? 'Request Pending / Joined'
-                      : 'Already Joined'
-                    : isFull
-                      ? 'Event Full'
-                      : event.requiresApproval
-                        ? 'Request to Join'
-                        : 'Join Event'}
-              </button>
-              {onLeave && isParticipant && !isArchived && (
+              {isArchived ? (
+                <button
+                  disabled
+                  className="flex-1 py-3 rounded-lg font-semibold bg-gray-600 text-gray-400 cursor-not-allowed"
+                >
+                  Past Event
+                </button>
+              ) : isParticipant && onLeave ? (
                 <button
                   onClick={() => onLeave(event._id)}
-                  className="px-4 py-3 rounded-lg font-semibold transition-all bg-red-600 text-white hover:bg-red-700 shadow-lg inline-flex items-center gap-2"
+                  className="flex-1 py-3 rounded-lg font-semibold bg-red-600 text-white hover:bg-red-700 transition-all shadow-lg inline-flex items-center justify-center gap-2"
                 >
                   <XCircle className="w-4 h-4" /> Leave Event
+                </button>
+              ) : (
+                <button
+                  onClick={() => onJoin(event._id)}
+                  disabled={isFull}
+                  className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
+                    isFull
+                      ? 'bg-red-600/50 text-red-300 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white hover:from-cyan-600 hover:to-purple-700 shadow-lg'
+                  }`}
+                >
+                  {isFull
+                    ? 'Event Full'
+                    : event.requiresApproval
+                      ? 'Request to Join'
+                      : 'Join Event'}
                 </button>
               )}
             </div>
