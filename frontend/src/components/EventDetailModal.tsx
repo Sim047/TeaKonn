@@ -366,12 +366,12 @@ export default function EventDetailModal({
                 >
                   Past Event
                 </button>
-              ) : isParticipant && onLeave ? (
+              ) : isParticipant ? (
                 <button
-                  onClick={() => onLeave(event._id)}
-                  className="flex-1 py-3 rounded-lg font-semibold bg-red-600 text-white hover:bg-red-700 transition-all shadow-lg inline-flex items-center justify-center gap-2"
+                  disabled
+                  className="flex-1 py-3 rounded-lg font-semibold bg-gray-600 text-gray-400 cursor-not-allowed"
                 >
-                  <XCircle className="w-4 h-4" /> Leave Event
+                  Already Joined
                 </button>
               ) : (
                 <button
