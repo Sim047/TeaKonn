@@ -457,15 +457,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
           </button>
         </div>
 
-        {/* Quick link: Past Events */}
-        <div className="flex items-center justify-end">
-          <button
-            onClick={() => onNavigate && onNavigate('past-events')}
-            className="text-sm font-medium text-theme-secondary hover:text-accent underline underline-offset-4"
-          >
-            View Past Events
-          </button>
-        </div>
+        {/* Past Events link removed per request */}
 
         {/* Ready to Train Banner - Always at the bottom */}
         <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
