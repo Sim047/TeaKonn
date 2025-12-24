@@ -45,11 +45,6 @@ export default function MyEvents({
   const [hideInactiveEvents, setHideInactiveEvents] = useState<boolean>(true);
   const [eventsCreated, setEventsCreated] = useState<any[]>([]);
   const [eventsJoined, setEventsJoined] = useState<any[]>([]);
-  const [archivedEvents, setArchivedEvents] = useState<any[]>([]);
-  const [showPastEvents, setShowPastEvents] = useState<boolean>(() => {
-    const saved = localStorage.getItem('auralink-show-past-events');
-    return saved === null ? true : saved === 'true';
-  });
   const [eventsTab, setEventsTab] = useState<'organizing' | 'joined'>('organizing');
   const [services, setServices] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
