@@ -114,7 +114,7 @@ export default function MyEvents({
   async function loadOtherEvents() {
     try {
       setLoadingOther(true);
-      const res = await axios.get(`${API}/posts`, {
+      const res = await axios.get(`${API}/api/posts`, {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
       const posts = res.data.posts || res.data || [];
