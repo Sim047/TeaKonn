@@ -9,7 +9,7 @@ dayjs.extend(relativeTime);
 
 const API = API_URL.replace(/\/api$/, '');
 
-export default function PastEvents({ token, onBack, onNavigate }: { token: string; onBack: () => void; onNavigate: (v: string) => void }) {
+export default function PastEvents({ token, onBack, onNavigate }: { token?: string; onBack: () => void; onNavigate: (v: string) => void }) {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -24,23 +24,38 @@ export default function PastEvents({ token, onBack, onNavigate }: { token: strin
       setLoading(true);
       setError('');
 
-      const [createdRes, allRes] = await Promise.all([
-        axios.get(`${API}/api/events/my/created`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+      const requests: Promise<any>[] = [];
+      if (token) {
+        requests.push(
+          axios.get(`${API}/api/events/my/created`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        );
+      }
+      requests.push(
         axios.get(`${API}/api/events?status=published`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         }),
-      ]);
+      );
+      const results = await Promise.all(requests);
+      const createdRes = token ? results[0] : { data: { events: [] } };
+      const allRes = token ? results[1] : results[0];
 
       const created = createdRes.data.events || [];
       const all = allRes.data.events || [];
 
       // Decode user id from token
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const userId = payload.id || payload._id;
+      let userId: string | null = null;
+      try {
+        if (token) {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.id || payload._id;
+        }
+      } catch {}
 
-      const participating = all.filter((e: any) => (e.participants || []).some((p: any) => String(p?._id || p) === String(userId)));
+      const participating = userId
+        ? all.filter((e: any) => (e.participants || []).some((p: any) => String(p?._id || p) === String(userId)))
+        : [];
 
       const combined = [...created, ...participating];
 
