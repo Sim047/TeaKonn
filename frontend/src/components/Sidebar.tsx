@@ -25,7 +25,9 @@ import StatusPicker from "./StatusPicker";
 import SearchUsers from "./SearchUsers";
 import logo from "../assets/teakonn-logo.png";
 
-const API = (import.meta as any).env?.VITE_API_URL || "";
+// Use normalized absolute API base
+import { API_URL } from "../config/api";
+const API = API_URL;
 
 interface SidebarProps {
   token: string;
@@ -86,9 +88,9 @@ export default function Sidebar({
     try {
       setLoading(true);
       setError(false);
-      console.log("Loading user stats from:", `${API}/api/users/me`);
+      console.log("Loading user stats from:", `${API}/users/me`);
       
-      const res = await axios.get(`${API}/api/users/me`, {
+      const res = await axios.get(`${API}/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
         validateStatus: (status) => status < 500,
       });
