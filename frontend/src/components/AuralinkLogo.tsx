@@ -21,6 +21,7 @@ export function TeaKonnLogo({
   const gid = useId();
   const gradientId = `tk-grad-${gid}`;
   const [prefersDark, setPrefersDark] = useState<boolean | null>(null);
+  const [rootDark, setRootDark] = useState<boolean>(false);
 
   useEffect(() => {
     try {
@@ -34,10 +35,24 @@ export function TeaKonnLogo({
     }
   }, []);
 
+  // Also consider app-level theme (e.g., a 'dark' class on <html>)
+  useEffect(() => {
+    try {
+      const root = document.documentElement;
+      const check = () => setRootDark(root.classList.contains('dark'));
+      check();
+      const observer = new MutationObserver(check);
+      observer.observe(root, { attributes: true, attributeFilter: ['class'] });
+      return () => observer.disconnect();
+    } catch {
+      setRootDark(false);
+    }
+  }, []);
+
   const effectiveTheme: 'gradient' | 'mono' = (() => {
     if (theme === 'auto') {
-      if (prefersDark === null) return 'gradient';
-      return prefersDark ? 'gradient' : 'mono';
+      const isDark = rootDark || prefersDark === true;
+      return isDark ? 'gradient' : 'mono';
     }
     return theme === 'mono' ? 'mono' : 'gradient';
   })();
@@ -45,16 +60,14 @@ export function TeaKonnLogo({
   return (
     <div
       className={className}
-      style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: effectiveTheme === 'mono' ? '#111' : undefined }}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: effectiveTheme === 'mono' ? '#111' : undefined }}
     >
       {effectiveTheme === 'mono' ? (
-        // Light theme: use provided wordmark image
+        // Light theme: use provided wordmark image (scale by height)
         <img
           src={logoPng}
           alt={ariaLabel}
-          width={size}
-          height={size}
-          style={{ display: 'block', objectFit: 'contain' }}
+          style={{ display: 'block', height: size, width: 'auto', objectFit: 'contain' }}
         />
       ) : (
         <svg
@@ -93,13 +106,14 @@ export function TeaKonnLogo({
         </svg>
       )}
 
-      {variant === 'lockup' && (
+      {/* Only render text lockup alongside the gradient mark; mono uses a full wordmark image */}
+      {effectiveTheme === 'gradient' && variant === 'lockup' && (
         <span
           style={{
             fontWeight: 700,
             letterSpacing: 0.2,
-            fontSize: Math.round(size * 0.42),
-            lineHeight: 1,
+            fontSize: Math.round(size * 0.4),
+            lineHeight: 1.1,
           }}
         >
           TeaKonn

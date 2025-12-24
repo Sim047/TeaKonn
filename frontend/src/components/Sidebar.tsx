@@ -529,6 +529,13 @@ export default function Sidebar({
       {/* Mobile Toggle Button */}
       <MobileToggle />
 
+      {/* Mobile Brand: show small logo when sidebar is closed */}
+      {!isMobileOpen && (
+        <div className="lg:hidden fixed top-4 right-4 z-30">
+          <TeaKonnLogo size={28} theme="auto" variant="lockup" ariaLabel="TeaKonn" />
+        </div>
+      )}
+
       {/* Mobile Overlay */}
       {isMobileOpen && (
         <div
