@@ -252,7 +252,8 @@ export default function App() {
   // Per-message actions dropdown (collapsed by default)
   const [openMessageActions, setOpenMessageActions] = useState<string | null>(null);
   const messagePressTimer = useRef<number | null>(null);
-  const AVAILABLE_REACTIONS = ['❤️', '🔥', '😂', '😔'];
+  // Reactions disabled
+  const AVAILABLE_REACTIONS: string[] = [];
   const composerTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [replyTo, setReplyTo] = useState<any | null>(null);
 
@@ -469,9 +470,7 @@ export default function App() {
       });
     });
 
-    socket.on('reaction_update', (msg: any) => {
-      setMessages((m) => m.map((x) => (x._id === msg._id ? msg : x)));
-    });
+    // Reactions disabled: do not process reaction updates
 
     socket.on('typing', ({ userId, typing, user: typingUser }: any) => {
       console.log('[Socket] Typing event:', { userId, typing, user: typingUser });
@@ -930,50 +929,7 @@ export default function App() {
     setImagePreviewOpen(false);
   }
 
-  // REACTIONS ----------------------------------------------------
-  function reactionCount(msg: any, emoji: string) {
-    return msg.reactions?.filter((r: any) => r.emoji === emoji).length || 0;
-  }
-
-  function hasReacted(msg: any, emoji: string) {
-    const uid = String(user?._id || user?.id);
-    return msg.reactions?.some((r: any) => r.userId === uid && r.emoji === emoji) || false;
-  }
-
-  function toggleReaction(msg: any, emoji: string) {
-    const uid = String(user?._id || user?.id);
-
-    // Optimistic update - update UI immediately
-    setMessages((m) =>
-      m.map((message) => {
-        if (message._id !== msg._id) return message;
-
-        const reactions = message.reactions || [];
-        const myExisting = reactions.find((r: any) => r.userId === uid);
-
-        // If clicking the emoji I already reacted with -> remove it.
-        if (myExisting && myExisting.emoji === emoji) {
-          const newReactions = reactions.filter(
-            (r: any) => !(r.userId === uid && r.emoji === emoji),
-          );
-          return { ...message, reactions: newReactions };
-        }
-
-        // Otherwise, enforce single reaction per user: remove any prior and add the new one
-        const withoutMine = reactions.filter((r: any) => r.userId !== uid);
-        const newReactions = [...withoutMine, { userId: uid, emoji }];
-        return { ...message, reactions: newReactions };
-      }),
-    );
-
-    // Send to server
-    socket.emit('react', {
-      room: inDM && activeConversation ? activeConversation._id : room,
-      messageId: msg._id,
-      userId: user?._id,
-      emoji,
-    });
-  }
+  // Reactions disabled: removed reaction handlers
 
   // PROFILE FIXED FUNCTION --------------------------------------
   async function showProfile(userOrId: any) {
@@ -1335,29 +1291,7 @@ export default function App() {
                 </>
               )}
 
-              {/* Reactions */}
-              <div className="mt-2 flex items-center gap-2 flex-wrap">
-                {/* Reaction chips: single control to add/remove/change */}
-                {AVAILABLE_REACTIONS.map((e) => {
-                  const count = reactionCount(m, e);
-                  if (!count) return null;
-                  const mine = hasReacted(m, e);
-                  return (
-                    <button
-                      key={e}
-                      className={clsx('reaction-chip', mine && 'mine')}
-                      onClick={(ev) => {
-                        ev.stopPropagation();
-                        toggleReaction(m, e);
-                      }}
-                      title={mine ? 'Remove your reaction' : 'React'}
-                    >
-                      <span>{e}</span>
-                      <span className="text-xs opacity-70">{count}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              {/* Reactions disabled */}
 
               {openMessageActions === m._id && (
                 <div
@@ -1387,7 +1321,7 @@ export default function App() {
                     </button>
                   )}
 
-                  {/* Removed explicit change reaction action; use chips above */}
+                  {/* Reactions disabled */}
 
                   <button
                     className="text-xs px-3 py-1 rounded-md border"
