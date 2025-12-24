@@ -114,16 +114,31 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
       window.open(url, '_blank');
     }
   }
-  function downloadImage(url: string) {
+  async function downloadImage(url: string) {
+    const filename = (url.split('/').pop() || 'image.jpg').split('?')[0];
     try {
+      const res = await fetch(url, { mode: 'cors', credentials: 'omit' });
+      if (!res.ok) throw new Error('fetch_failed');
+      const blob = await res.blob();
+      const objectUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = url.split('/').pop() || 'image.jpg';
+      a.href = objectUrl;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    } catch {
-      window.open(url, '_blank');
+      window.URL.revokeObjectURL(objectUrl);
+    } catch (e) {
+      // Fallback: open in a new tab if CORS blocks Blob download
+      try {
+        const a = document.createElement('a');
+        a.href = url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.click();
+      } catch {
+        window.open(url, '_blank');
+      }
     }
   }
 

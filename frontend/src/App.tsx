@@ -1687,16 +1687,30 @@ export default function App() {
       alert('Image link copied');
     } catch {}
   }
-  function downloadMessageImage() {
+  async function downloadMessageImage() {
+    const url = messageImageUrls[messageImageViewer?.index || 0];
+    const filename = (url.split('/').pop() || 'image.jpg').split('?')[0];
     try {
-      const url = messageImageUrls[messageImageViewer?.index || 0];
+      const res = await fetch(url, { mode: 'cors', credentials: 'omit' });
+      if (!res.ok) throw new Error('fetch_failed');
+      const blob = await res.blob();
+      const objectUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = url.split('/').pop() || 'image.jpg';
+      a.href = objectUrl;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    } catch {}
+      window.URL.revokeObjectURL(objectUrl);
+    } catch {
+      try {
+        const a = document.createElement('a');
+        a.href = url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.click();
+      } catch {}
+    }
   }
   React.useEffect(() => {
     if (!messageImageViewer) return;
