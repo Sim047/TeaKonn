@@ -174,4 +174,52 @@ router.delete("/room/:roomId/clear", auth, async (req, res) => {
   }
 });
 
+/**
+ * POST /api/messages/rooms/unread-counts
+ * Returns unread counts per room for the authenticated user.
+ * Body: { rooms: string[] }
+ */
+router.post('/rooms/unread-counts', auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const rooms = Array.isArray(req.body?.rooms) ? req.body.rooms.filter(Boolean) : [];
+    if (!rooms.length) return res.json({});
+
+    const pipeline = [
+      { $match: { room: { $in: rooms }, sender: { $ne: userId }, readBy: { $ne: userId } } },
+      { $group: { _id: '$room', count: { $sum: 1 } } },
+    ];
+    const agg = await Message.aggregate(pipeline);
+    const result = {};
+    for (const row of agg) result[String(row._id)] = row.count || 0;
+    res.json(result);
+  } catch (err) {
+    console.error('[messages/unread-counts]', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/messages/rooms/:roomId/mark-read
+ * Marks all messages in a room as read for the authenticated user.
+ */
+router.post('/rooms/:roomId/mark-read', auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { roomId } = req.params;
+    if (!roomId) return res.status(400).json({ message: 'roomId required' });
+
+    // Mark all messages in this room as read for this user, excluding their own
+    await Message.updateMany(
+      { room: roomId, sender: { $ne: userId }, readBy: { $ne: userId } },
+      { $addToSet: { readBy: userId } }
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[messages/mark-read]', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 export default router;

@@ -24,6 +24,7 @@ import Avatar from "./Avatar";
 import StatusPicker from "./StatusPicker";
 import SearchUsers from "./SearchUsers";
 import logo from "../assets/teakonn-logo.png";
+import { socket } from "../socket";
 
 // Use normalized absolute API base
 import { API_URL } from "../config/api";
@@ -89,6 +90,21 @@ export default function Sidebar({
     }, 60000);
     return () => clearInterval(interval);
   }, [token]);
+
+  // Socket-driven refresh for incoming events
+  useEffect(() => {
+    try {
+      const handler = () => loadGroupChats();
+      socket?.on?.('receive_message', handler);
+      socket?.on?.('message_deleted', handler);
+      socket?.on?.('messages_bulk_deleted', handler);
+      return () => {
+        socket?.off?.('receive_message', handler);
+        socket?.off?.('message_deleted', handler);
+        socket?.off?.('messages_bulk_deleted', handler);
+      };
+    } catch {}
+  }, []);
 
   async function loadUserStats() {
     if (!token) return;
@@ -442,6 +458,12 @@ export default function Sidebar({
                     onNavigate?.('chat');
                     // Optimistic mark-as-read locally
                     setGroupUnread((prev) => ({ ...prev, [ev._id]: 0 }));
+                    // Best-effort server-side mark as read
+                    axios.post(
+                      `${API}/messages/rooms/${ev._id}/mark-read`,
+                      {},
+                      { headers: { Authorization: `Bearer ${token}` } }
+                    ).catch(() => {});
                   }}
                   title={ev.title}
                 >
