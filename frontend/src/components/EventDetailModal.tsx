@@ -90,10 +90,12 @@ export default function EventDetailModal({
 
   const [participantsCollapsed, setParticipantsCollapsed] = useState(true);
 
-  const isParticipant =
-    currentUserId &&
-    event.participants?.some((p: any) => p._id === currentUserId || p === currentUserId);
-  const isOrganizer = currentUserId && event.organizer._id === currentUserId;
+  const isParticipant = Array.isArray(event.participants)
+    ? event.participants.some(
+        (p: any) => String(p?._id || p) === String(currentUserId),
+      )
+    : false;
+  const isOrganizer = String(event.organizer?._id) === String(currentUserId);
   const isFull = (event.participants?.length || 0) >= (event.capacity?.max || 0);
   const isArchived = !!(event as any).archivedAt;
 
