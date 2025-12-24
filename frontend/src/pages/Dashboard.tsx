@@ -510,12 +510,12 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
               </button>
               <button
                 onClick={() => {
-                  onNavigate && onNavigate('other-events');
+                  onNavigate && onNavigate('past-events');
                 }}
                 className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
               >
                 <Calendar className="w-5 h-5" />
-                Other Events
+                Past Events
               </button>
               <button
                 onClick={() => {
