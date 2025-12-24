@@ -538,33 +538,35 @@ router.get("/my-events-requests", auth, async (req, res) => {
 router.post("/:id/leave", auth, async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ error: "Event not found" });
 
-    if (!event) {
-      return res.status(404).json({ error: "Event not found" });
+    // Find participant by string comparison to support ObjectId arrays
+    const idx = (event.participants || []).findIndex(
+      (p) => String(p?._id || p) === String(req.user.id)
+    );
+    if (idx === -1) return res.status(400).json({ error: "Not a participant" });
+
+    // Remove participant and update capacity safely
+    event.participants.splice(idx, 1);
+    if (event.capacity && typeof event.capacity.current === 'number') {
+      event.capacity.current = Math.max(0, (event.capacity.current || 0) - 1);
     }
 
-    const index = event.participants.indexOf(req.user.id);
-    if (index === -1) {
-      return res.status(400).json({ error: "Not a participant" });
-    }
-
-    event.participants.splice(index, 1);
-    event.capacity.current -= 1;
-
-    // Move someone from waitlist if available
-    if (event.waitlist.length > 0) {
+    // Optional: move from waitlist if present (guard undefined)
+    if (Array.isArray(event.waitlist) && event.waitlist.length > 0) {
       const nextUser = event.waitlist.shift();
       event.participants.push(nextUser);
-      event.capacity.current += 1;
+      if (event.capacity && typeof event.capacity.current === 'number') {
+        event.capacity.current = (event.capacity.current || 0) + 1;
+      }
     }
 
     await event.save();
     await event.populate("participants", "username avatar");
-
-    res.json(event);
+    return res.json(event);
   } catch (err) {
     console.error("Leave event error:", err);
-    res.status(500).json({ error: "Failed to leave event" });
+    return res.status(500).json({ error: "Failed to leave event" });
   }
 });
 
