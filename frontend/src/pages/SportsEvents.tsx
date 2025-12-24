@@ -30,6 +30,7 @@ interface Props {
 }
 
 export default function SportsEvents({ token, onViewProfile }: Props) {
+  const API = API_URL.replace(/\/api$/, '');
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -75,7 +76,7 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_URL}/events`);
+      const res = await axios.get(`${API}/api/events?status=published`);
       setEvents(res.data.events || res.data);
     } catch (err) {
       console.error('SportsEvents: fetchEvents', err);
@@ -102,7 +103,7 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
 
     try {
       const res = await axios.post(
-        `${API_URL}/events/${eventId}/join`,
+        `${API}/api/events/${eventId}/join`,
         {},
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -110,7 +111,7 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
       await fetchEvents();
       // Refresh selectedEvent in modal so it reflects joined state
       if (selectedEvent && selectedEvent._id === eventId) {
-        const refreshed = await axios.get(`${API_URL}/events/${eventId}`, {
+        const refreshed = await axios.get(`${API}/api/events/${eventId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSelectedEvent(refreshed.data as any);
@@ -124,7 +125,7 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
     if (!paymentModalData.event || !token) return;
     try {
       const res = await axios.post(
-        `${API_URL}/events/${paymentModalData.event._id}/join`,
+        `${API}/api/events/${paymentModalData.event._id}/join`,
         { transactionCode, transactionDetails },
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -153,7 +154,7 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
     if (!confirmLeave) return;
     try {
       await axios.post(
-        `${API_URL}/events/${eventId}/leave`,
+        `${API}/api/events/${eventId}/leave`,
         {},
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -161,7 +162,7 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
       await fetchEvents();
       // Refresh selectedEvent if open
       if (selectedEvent && selectedEvent._id === eventId) {
-        const refreshed = await axios.get(`${API_URL}/events/${eventId}`);
+        const refreshed = await axios.get(`${API}/api/events/${eventId}`);
         setSelectedEvent(refreshed.data);
       }
     } catch (err: any) {
@@ -189,7 +190,7 @@ export default function SportsEvents({ token, onViewProfile }: Props) {
                 <button
                   onClick={async () => {
                     try {
-                      const resp = await axios.get(`${API_URL}/events/${ev._id}`);
+                      const resp = await axios.get(`${API}/api/events/${ev._id}`);
                       setSelectedEvent(resp.data as any);
                     } catch {
                       setSelectedEvent(ev);
