@@ -27,7 +27,7 @@ import UserContent from './pages/UserContent';
 import Avatar from './components/Avatar';
 import Sidebar from './components/Sidebar';
 import AssistantWidget from './components/AssistantWidget';
-import logo from './assets/logo.png';
+import tkLogo from './assets/teakonn-logo.png';
 import { API_URL } from './config/api';
 import UserProfileModal from './components/UserProfileModal';
 
@@ -1588,6 +1588,16 @@ export default function App() {
         )}
         style={{ color: 'var(--text)' }}
       >
+        {/* Top brand bar with app icon (hidden in chat view) */}
+        {view !== 'chat' && (
+          <div
+            className="flex items-center gap-2 mb-4"
+            aria-label="TeaKonn app header"
+          >
+            <img src={tkLogo} alt="TeaKonn" className="w-6 h-6 object-contain" />
+            <span className="text-heading font-semibold">TeaKonn</span>
+          </div>
+        )}
         {/* DASHBOARD PAGE */}
         {view === 'dashboard' && (
           <Dashboard
