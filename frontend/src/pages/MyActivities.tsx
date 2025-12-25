@@ -16,36 +16,40 @@ export default function MyActivities({ token, onOpenConversation }: { token: str
   const [initialEventToken, setInitialEventToken] = useState<string>('');
   const [createdEvents, setCreatedEvents] = useState<any[]>([]);
   const [joinedEvents, setJoinedEvents] = useState<any[]>([]);
+  const [archivedEvents, setArchivedEvents] = useState<any[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
+  const [includeArchived, setIncludeArchived] = useState<boolean>(false);
 
-  useEffect(() => {
+  async function refreshAll() {
     if (!token) return;
     const headers = { Authorization: `Bearer ${token}` };
-    (async () => {
-      try {
-        const meRes = await axios.get(`${API_URL}/users/me`, { headers });
-        setMe(meRes.data || null);
-        const [v, s, r, g, t, ce, je] = await Promise.all([
-          axios.get(`${API_URL}/venues/my`, { headers }),
-          axios.get(`${API_URL}/booking-requests/my/sent`, { headers }),
-          axios.get(`${API_URL}/booking-requests/my/received`, { headers }),
-          axios.get(`${API_URL}/tokens/my/generated`, { headers }),
-          axios.get(`${API_URL}/tokens/my/received`, { headers }),
-          axios.get(`${API_URL}/events/my/created`, { headers }),
-          axios.get(`${API_URL}/events/my/joined`, { headers }),
-        ]);
-        setMyVenues(v.data.venues || []);
-        setSentRequests(s.data.requests || []);
-        setReceivedRequests(r.data.requests || []);
-        setGeneratedTokens(g.data.tokens || []);
-        setReceivedTokens(t.data.tokens || []);
-        setCreatedEvents(ce.data.events || []);
-        setJoinedEvents(je.data.events || []);
-      } catch (e) {
-        // swallow errors in dashboard
-      }
-    })();
-  }, [token]);
+    try {
+      const meRes = await axios.get(`${API_URL}/users/me`, { headers });
+      setMe(meRes.data || null);
+      const [v, s, r, g, t, ce, je, ae] = await Promise.all([
+        axios.get(`${API_URL}/venues/my`, { headers }),
+        axios.get(`${API_URL}/booking-requests/my/sent`, { headers }),
+        axios.get(`${API_URL}/booking-requests/my/received`, { headers }),
+        axios.get(`${API_URL}/tokens/my/generated`, { headers }),
+        axios.get(`${API_URL}/tokens/my/received`, { headers }),
+        axios.get(`${API_URL}/events/my/created?includeArchived=${includeArchived}`, { headers }),
+        axios.get(`${API_URL}/events/my/joined?includeArchived=${includeArchived}`, { headers }),
+        includeArchived ? axios.get(`${API_URL}/events/my/archived`, { headers }) : Promise.resolve({ data: { events: [] } }),
+      ]);
+      setMyVenues(v.data.venues || []);
+      setSentRequests(s.data.requests || []);
+      setReceivedRequests(r.data.requests || []);
+      setGeneratedTokens(g.data.tokens || []);
+      setReceivedTokens(t.data.tokens || []);
+      setCreatedEvents(ce.data.events || []);
+      setJoinedEvents(je.data.events || []);
+      setArchivedEvents(ae.data.events || []);
+    } catch (e) {
+      // swallow errors in dashboard
+    }
+  }
+
+  useEffect(() => { refreshAll(); }, [token, includeArchived]);
 
   async function generateTokenForRequest(reqItem: any) {
     if (!token) return;
@@ -138,10 +142,11 @@ export default function MyActivities({ token, onOpenConversation }: { token: str
 
   return (
     <>
-    <div className="p-4 space-y-6">
-      <h2 className="text-2xl font-bold">My Activities</h2>
+    <div className="min-h-full bg-gradient-to-b from-white to-gray-50 dark:from-black dark:to-gray-900">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">My Activities</h2>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <button
           className="px-3 py-2 rounded bg-teal-600 text-white"
           onClick={() => { setInitialEventToken(''); setShowCreateEvent(true); }}
@@ -151,6 +156,16 @@ export default function MyActivities({ token, onOpenConversation }: { token: str
         {me?.role === 'venue_owner' && (
           <button className="px-3 py-2 rounded bg-indigo-600 text-white" onClick={() => setShowCreateVenue(true)}>Create Venue</button>
         )}
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-sm">Show past</span>
+          <button
+            onClick={() => setIncludeArchived(a => !a)}
+            className={`text-sm px-3 py-1 rounded-full border ${includeArchived ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-black' : 'bg-white dark:bg-gray-800 text-gray-700'}`}
+            aria-pressed={includeArchived}
+          >
+            {includeArchived ? 'On' : 'Off'}
+          </button>
+        </div>
       </div>
 
       <section>
@@ -321,6 +336,37 @@ export default function MyActivities({ token, onOpenConversation }: { token: str
           {receivedTokens.length === 0 && <p className="text-sm text-gray-500">No received tokens.</p>}
         </div>
       </section>
+
+      {includeArchived && (
+        <section>
+          <h3 className="text-xl font-semibold mb-2">Past Events</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {archivedEvents.map((e) => (
+              <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{e.title}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-300">{e.location?.city || e.location?.name}</div>
+                  </div>
+                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">Ended</span>
+                </div>
+                <div className="mt-2 text-sm">Started: {new Date(e.startDate).toLocaleString()}</div>
+                <div className="text-sm">Participants: {(e.participants?.length || 0)}</div>
+                {e.organizer?._id && (
+                  <div className="mt-3">
+                    <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => startConversationWithUser(e.organizer._id)}>
+                      Message Organizer
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+            {archivedEvents.length === 0 && <p className="text-sm text-gray-500">No past events.</p>}
+          </div>
+        </section>
+      )}
+
+      </div>
     </div>
     {showCreateVenue && (
       <CreateVenueModal isOpen={showCreateVenue} onClose={() => setShowCreateVenue(false)} token={token} onCreated={async () => {
