@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../config/api';
 import CreateProductModal from '../components/CreateProductModal';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 interface MyProductsProps {
   token: string | null;
@@ -16,6 +17,7 @@ export default function MyProducts({ token, onNavigate, onToast }: MyProductsPro
   const [openCreate, setOpenCreate] = useState<boolean>(false);
   const [me, setMe] = useState<any | null>(null);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [confirmDeleteProductId, setConfirmDeleteProductId] = useState<string | null>(null);
 
   async function refresh() {
     if (!token) return;
@@ -76,19 +78,7 @@ export default function MyProducts({ token, onNavigate, onToast }: MyProductsPro
                 <div className="mt-3 flex gap-2">
                   <button className="px-3 py-2 rounded-md bg-indigo-600 text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400" onClick={() => { setEditingProduct(p); setOpenCreate(true); }}>Edit</button>
                   <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => onNavigate && onNavigate('my-activities')}>Back</button>
-                  <button className="px-3 py-2 rounded-md border border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 focus:outline-none focus:ring-2 focus:ring-red-300" onClick={async () => {
-                    if (!token) return;
-                    if (!confirm('Delete this product? This cannot be undone.')) return;
-                    try {
-                      const API = API_URL.replace(/\/api$/, '');
-                      const headers = { Authorization: `Bearer ${token}` };
-                      await axios.delete(`${API}/api/marketplace/${p._id}`, { headers });
-                      refresh();
-                      onToast && onToast('Product deleted.', 'success');
-                    } catch (e: any) {
-                      onToast && onToast(e.response?.data?.error || 'Failed to delete product', 'error');
-                    }
-                  }}>Delete</button>
+                  <button className="px-3 py-2 rounded-md border border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 focus:outline-none focus:ring-2 focus:ring-red-300" onClick={() => setConfirmDeleteProductId(p._id)}>Delete</button>
                 </div>
               </div>
             ))}
@@ -105,6 +95,28 @@ export default function MyProducts({ token, onNavigate, onToast }: MyProductsPro
           editProduct={editingProduct}
         />
       )}
+      <ConfirmDialog
+        isOpen={!!confirmDeleteProductId}
+        title="Delete Product"
+        message="Delete this product? This cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={async () => {
+          if (!token || !confirmDeleteProductId) return;
+          try {
+            const API = API_URL.replace(/\/api$/, '');
+            const headers = { Authorization: `Bearer ${token}` };
+            await axios.delete(`${API}/api/marketplace/${confirmDeleteProductId}`, { headers });
+            await refresh();
+            onToast && onToast('Product deleted.', 'success');
+          } catch (e: any) {
+            onToast && onToast(e.response?.data?.error || 'Failed to delete product', 'error');
+          } finally {
+            setConfirmDeleteProductId(null);
+          }
+        }}
+        onCancel={() => setConfirmDeleteProductId(null)}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../config/api';
 import CreateServiceModal from '../components/CreateServiceModal';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 interface MyServicesProps {
   token: string | null;
@@ -15,6 +16,7 @@ export default function MyServices({ token, onNavigate, onToast }: MyServicesPro
   const [error, setError] = useState<string>('');
   const [openCreate, setOpenCreate] = useState<boolean>(false);
   const [editingService, setEditingService] = useState<any | null>(null);
+  const [confirmDeleteServiceId, setConfirmDeleteServiceId] = useState<string | null>(null);
 
   async function refresh() {
     if (!token) return;
@@ -67,18 +69,7 @@ export default function MyServices({ token, onNavigate, onToast }: MyServicesPro
                 <div className="mt-3 flex gap-2">
                   <button className="px-3 py-2 rounded-md bg-indigo-600 text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400" onClick={() => { setEditingService(s); setOpenCreate(true); }}>Edit</button>
                   <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => onNavigate && onNavigate('my-activities')}>Back</button>
-                  <button className="px-3 py-2 rounded-md border border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 focus:outline-none focus:ring-2 focus:ring-red-300" onClick={async () => {
-                    if (!token) return;
-                    if (!confirm('Delete this service? This cannot be undone.')) return;
-                    try {
-                      const headers = { Authorization: `Bearer ${token}` };
-                      await axios.delete(`${API_URL}/services/${s._id}`, { headers });
-                      refresh();
-                      onToast && onToast('Service deleted.', 'success');
-                    } catch (e: any) {
-                      onToast && onToast(e.response?.data?.error || 'Failed to delete service', 'error');
-                    }
-                  }}>Delete</button>
+                  <button className="px-3 py-2 rounded-md border border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 focus:outline-none focus:ring-2 focus:ring-red-300" onClick={() => setConfirmDeleteServiceId(s._id)}>Delete</button>
                 </div>
               </div>
             ))}
@@ -95,6 +86,27 @@ export default function MyServices({ token, onNavigate, onToast }: MyServicesPro
           editService={editingService}
         />
       )}
+      <ConfirmDialog
+        isOpen={!!confirmDeleteServiceId}
+        title="Delete Service"
+        message="Delete this service? This cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={async () => {
+          if (!token || !confirmDeleteServiceId) return;
+          try {
+            const headers = { Authorization: `Bearer ${token}` };
+            await axios.delete(`${API_URL}/services/${confirmDeleteServiceId}`, { headers });
+            await refresh();
+            onToast && onToast('Service deleted.', 'success');
+          } catch (e: any) {
+            onToast && onToast(e.response?.data?.error || 'Failed to delete service', 'error');
+          } finally {
+            setConfirmDeleteServiceId(null);
+          }
+        }}
+        onCancel={() => setConfirmDeleteServiceId(null)}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { API_URL } from '../config/api';
 import CreateVenueModal from '../components/CreateVenueModal';
 import CreateEventModal from '../components/CreateEventModal';
 import ConfirmDialog from '../components/ConfirmDialog';
+import EventDetailModal from '../components/EventDetailModal';
 
 export default function MyActivities({ token, onOpenConversation, onNavigate, onToast }: { token: string | null, onOpenConversation?: (conv: any) => void, onNavigate?: (view: string) => void, onToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void }) {
   const [myVenues, setMyVenues] = useState<any[]>([]);
@@ -25,6 +26,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
   const [includeArchived, setIncludeArchived] = useState<boolean>(true);
   const [servicesCount, setServicesCount] = useState<number>(0);
   const [productsCount, setProductsCount] = useState<number>(0);
+  const [confirmDeleteEventId, setConfirmDeleteEventId] = useState<string | null>(null);
+  const [confirmDeleteVenueId, setConfirmDeleteVenueId] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
 
   async function refreshAll() {
     if (!token) return;
@@ -240,19 +244,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               <div className="mt-2 text-sm">Capacity: {v.capacity?.max}</div>
               <div className="mt-3 flex gap-2">
                 <button className="px-3 py-2 rounded-md bg-indigo-600 text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400" onClick={() => { setEditingVenue(v); setShowCreateVenue(true); }}>Edit</button>
-                <button className="px-3 py-2 rounded-md border border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 focus:outline-none focus:ring-2 focus:ring-red-300" onClick={async () => {
-                  if (!token) return;
-                  if (!confirm('Delete this venue? This cannot be undone.')) return;
-                  try {
-                    const headers = { Authorization: `Bearer ${token}` };
-                    await axios.delete(`${API_URL}/venues/${v._id}`, { headers });
-                    const vr = await axios.get(`${API_URL}/venues/my`, { headers });
-                    setMyVenues(vr.data.venues || []);
-                    onToast && onToast('Venue deleted.', 'success');
-                  } catch (e: any) {
-                    onToast && onToast(e.response?.data?.error || 'Failed to delete venue', 'error');
-                  }
-                }}>Delete</button>
+                <button className="px-3 py-2 rounded-md border border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 focus:outline-none focus:ring-2 focus:ring-red-300" onClick={() => setConfirmDeleteVenueId(v._id)}>Delete</button>
               </div>
             </div>
           ))}
@@ -288,6 +280,12 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                 </button>
                 <button
                   className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  onClick={() => setSelectedEvent(e)}
+                >
+                  View
+                </button>
+                <button
+                  className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300"
                   onClick={async () => {
                     if (!token) return;
                     const headers = { Authorization: `Bearer ${token}` };
@@ -302,15 +300,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                 </button>
                 <button
                   className="px-3 py-2 rounded-md border border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 focus:outline-none focus:ring-2 focus:ring-red-300"
-                  onClick={async () => {
-                    if (!token) return;
-                    if (!confirm('Delete this event? This cannot be undone.')) return;
-                    const headers = { Authorization: `Bearer ${token}` };
-                    await axios.delete(`${API_URL}/events/${e._id}`, { headers });
-                    const ce = await axios.get(`${API_URL}/events/my/created?includeArchived=${includeArchived}`, { headers });
-                    setCreatedEvents(ce.data.events || []);
-                    onToast && onToast('Event deleted.', 'success');
-                  }}
+                  onClick={() => setConfirmDeleteEventId(e._id)}
                 >
                   Delete
                 </button>
@@ -340,6 +330,12 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                     Message Organizer
                   </button>
                 )}
+                <button
+                  className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  onClick={() => setSelectedEvent(e)}
+                >
+                  View
+                </button>
                 <button
                   className="px-3 py-2 rounded-md bg-red-600 text-white disabled:opacity-50 shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
                   disabled={busy === e._id}
@@ -464,6 +460,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                     <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => startConversationWithUser(e.organizer._id)}>
                       Message Organizer
                     </button>
+                    <button className="ml-2 px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => setSelectedEvent(e)}>
+                      View
+                    </button>
                   </div>
                 )}
               </div>
@@ -511,6 +510,45 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       }}
       onCancel={() => setConfirmLeaveEventId(null)}
     />
+    <ConfirmDialog
+      isOpen={!!confirmDeleteEventId}
+      title="Delete Event"
+      message="Delete this event? This cannot be undone."
+      confirmLabel="Delete"
+      cancelLabel="Cancel"
+      onConfirm={async () => {
+        if (!token || !confirmDeleteEventId) return;
+        const headers = { Authorization: `Bearer ${token}` };
+        await axios.delete(`${API_URL}/events/${confirmDeleteEventId}`, { headers });
+        const ce = await axios.get(`${API_URL}/events/my/created?includeArchived=${includeArchived}`, { headers });
+        setCreatedEvents(ce.data.events || []);
+        onToast && onToast('Event deleted.', 'success');
+        setConfirmDeleteEventId(null);
+      }}
+      onCancel={() => setConfirmDeleteEventId(null)}
+    />
+    <ConfirmDialog
+      isOpen={!!confirmDeleteVenueId}
+      title="Delete Venue"
+      message="Delete this venue? This cannot be undone."
+      confirmLabel="Delete"
+      cancelLabel="Cancel"
+      onConfirm={async () => {
+        if (!token || !confirmDeleteVenueId) return;
+        try {
+          const headers = { Authorization: `Bearer ${token}` };
+          await axios.delete(`${API_URL}/venues/${confirmDeleteVenueId}`, { headers });
+          const vr = await axios.get(`${API_URL}/venues/my`, { headers });
+          setMyVenues(vr.data.venues || []);
+          onToast && onToast('Venue deleted.', 'success');
+        } catch (e: any) {
+          onToast && onToast(e.response?.data?.error || 'Failed to delete venue', 'error');
+        } finally {
+          setConfirmDeleteVenueId(null);
+        }
+      }}
+      onCancel={() => setConfirmDeleteVenueId(null)}
+    />
     {showCreateEvent && (
       <CreateEventModal
         isOpen={showCreateEvent}
@@ -535,6 +573,14 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         }}
       />
     )}
+    <EventDetailModal
+      event={selectedEvent}
+      onClose={() => setSelectedEvent(null)}
+      onJoin={(id: string) => joinEvent(id)}
+      onLeave={(id: string) => setConfirmLeaveEventId(id)}
+      onMessage={(organizerId: string) => startConversationWithUser(organizerId)}
+      currentUserId={me?._id}
+    />
     </>
   );
 }
