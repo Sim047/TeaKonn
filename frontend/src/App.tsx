@@ -25,6 +25,8 @@ import SportsEvents from './pages/SportsEvents';
 import Dashboard from './pages/Dashboard';
 import MyEvents from './pages/MyEvents';
 import MyActivities from './pages/MyActivities';
+import MyServices from './pages/MyServices';
+import MyProducts from './pages/MyProducts';
 import PastEvents from './pages/PastEvents';
 import OtherEvents from './pages/OtherEvents';
 import Posts from './pages/Posts';
@@ -198,6 +200,10 @@ export default function App() {
     | 'group-chats'
     | 'user-content'
     | 'past-events'
+    | 'my-activities'
+    | 'my-events'
+    | 'my-services'
+    | 'my-products'
   >(() => {
     // Restore previous view from localStorage
     const saved = localStorage.getItem('auralink-current-view');
@@ -1826,10 +1832,22 @@ export default function App() {
 
         {/* MY ACTIVITIES PAGE */}
         {view === 'my-activities' && (
-          <MyActivities token={token} onOpenConversation={openConversation} />
+          <MyActivities token={token} onOpenConversation={openConversation} onNavigate={(newView: string) => setView(newView as any)} />
         )}
         {view === 'my-events' && (
           <MyEvents
+            token={token as any}
+            onNavigate={(newView: string) => setView(newView as any)}
+          />
+        )}
+        {view === 'my-services' && (
+          <MyServices
+            token={token as any}
+            onNavigate={(newView: string) => setView(newView as any)}
+          />
+        )}
+        {view === 'my-products' && (
+          <MyProducts
             token={token as any}
             onNavigate={(newView: string) => setView(newView as any)}
           />
