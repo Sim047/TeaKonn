@@ -168,6 +168,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
   const [error, setError] = useState('');
   const [bookingTokenCode, setBookingTokenCode] = useState<string>(initialToken || '');
   const [tokenStatus, setTokenStatus] = useState<{ valid: boolean; message?: string } | null>(null);
+  const [noTokenMode, setNoTokenMode] = useState<boolean>(false);
 
   // Load editing data when modal opens
   useEffect(() => {
@@ -251,11 +252,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
     setLoading(true);
 
     try {
-      if (!bookingTokenCode) {
-        setError('Booking token is required');
-        setLoading(false);
-        return;
-      }
+      // Token is optional: if provided, backend uses venue token flow; otherwise general event
       const eventData: any = {
         title: formData.title,
         description: formData.description,
@@ -284,6 +281,14 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
       // Allow non-sport events by omitting sport when "Other / Non-sport" is selected
       if (formData.sport === 'Other / Non-sport') {
         delete eventData.sport;
+      }
+      // In no-token mode, include user-provided location fields
+      if (!bookingTokenCode || noTokenMode) {
+        eventData.locationName = formData.locationName || undefined;
+        eventData.address = formData.address || undefined;
+        eventData.city = formData.city || undefined;
+        eventData.state = formData.state || undefined;
+        eventData.country = formData.country || undefined;
       }
 
       if (editingEvent) {
@@ -519,7 +524,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    required
+                    required={!noTokenMode}
                     value={bookingTokenCode}
                     onChange={(e) => setBookingTokenCode(e.target.value.trim())}
                     className="flex-1 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
@@ -536,6 +541,10 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                     {tokenStatus.valid ? 'Token valid. Venue details loaded.' : tokenStatus.message}
                   </p>
                 )}
+                <div className="mt-3 flex items-center gap-2">
+                  <input id="noTokenMode" type="checkbox" checked={noTokenMode} onChange={(e) => setNoTokenMode(e.target.checked)} />
+                  <label htmlFor="noTokenMode" className="text-sm text-gray-700 dark:text-gray-300">I don't have a venue token (create a general event)</label>
+                </div>
               </div>
 
               <div>
@@ -543,7 +552,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                 <input
                   type="text"
                   value={formData.locationName}
-                  disabled
+                  disabled={!noTokenMode}
                   className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
@@ -553,7 +562,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                 <input
                   type="text"
                   value={formData.address}
-                  disabled
+                  disabled={!noTokenMode}
                   className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
@@ -563,7 +572,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                 <input
                   type="text"
                   value={formData.city}
-                  disabled
+                  disabled={!noTokenMode}
                   className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
@@ -573,7 +582,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                 <input
                   type="text"
                   value={formData.state}
-                  disabled
+                  disabled={!noTokenMode}
                   className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
@@ -583,7 +592,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                 <input
                   type="text"
                   value={formData.country}
-                  disabled
+                  disabled={!noTokenMode}
                   className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
