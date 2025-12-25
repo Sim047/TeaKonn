@@ -152,11 +152,13 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
       setLoadingSearch(true);
       const headers = { Authorization: `Bearer ${token}` };
       try {
-        const res = await axios.get(`${API_URL}/venues/search`, { params: { q, page, limit }, headers });
+        const res = await axios.get(`${API_URL}/venues/search`, { params: { name: q, page, limit }, headers });
         const items = (res.data?.venues || res.data?.results || res.data || []) as any[];
         setAllVenues(page === 1 ? items : [...allVenues, ...items]);
         setAllVenuesPage(page);
-        const hasMore = (res.data?.hasMore !== undefined) ? !!res.data.hasMore : (items.length >= limit);
+        const hasMore = (res.data?.totalPages !== undefined && res.data?.page !== undefined)
+          ? (res.data.page < res.data.totalPages)
+          : (items.length >= limit);
         setAllVenuesHasMore(hasMore);
       } catch (e) {
         // Graceful fallback: no global search endpoint — clear results
