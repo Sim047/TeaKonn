@@ -550,7 +550,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                 </div>
                 <span className={`badge ${r.status === 'pending' ? 'badge-amber' : r.status === 'approved' ? 'badge-accent' : 'badge-violet'}`}>{r.status}</span>
               </div>
-              {me?.role === 'venue_owner' && (
+              {(me && String(r.owner?._id || r.owner) === String(me?._id)) && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => openRequestChat(r._id)}>Open Chat</button>
                   <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
