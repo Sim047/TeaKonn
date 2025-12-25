@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../config/api';
 import CreateVenueModal from '../components/CreateVenueModal';
+import CreateEventModal from '../components/CreateEventModal';
 
 export default function MyActivities({ token }: { token: string | null }) {
   const [myVenues, setMyVenues] = useState<any[]>([]);
@@ -11,6 +12,10 @@ export default function MyActivities({ token }: { token: string | null }) {
   const [receivedTokens, setReceivedTokens] = useState<any[]>([]);
   const [me, setMe] = useState<any | null>(null);
   const [showCreateVenue, setShowCreateVenue] = useState(false);
+  const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [initialEventToken, setInitialEventToken] = useState<string>('');
+  const [createdEvents, setCreatedEvents] = useState<any[]>([]);
+  const [joinedEvents, setJoinedEvents] = useState<any[]>([]);
 
   useEffect(() => {
     if (!token) return;
@@ -19,18 +24,22 @@ export default function MyActivities({ token }: { token: string | null }) {
       try {
         const meRes = await axios.get(`${API_URL}/users/me`, { headers });
         setMe(meRes.data || null);
-        const [v, s, r, g, t] = await Promise.all([
+        const [v, s, r, g, t, ce, je] = await Promise.all([
           axios.get(`${API_URL}/venues/my`, { headers }),
           axios.get(`${API_URL}/booking-requests/my/sent`, { headers }),
           axios.get(`${API_URL}/booking-requests/my/received`, { headers }),
           axios.get(`${API_URL}/tokens/my/generated`, { headers }),
           axios.get(`${API_URL}/tokens/my/received`, { headers }),
+          axios.get(`${API_URL}/events/my/created`, { headers }),
+          axios.get(`${API_URL}/events/my/joined`, { headers }),
         ]);
         setMyVenues(v.data.venues || []);
         setSentRequests(s.data.requests || []);
         setReceivedRequests(r.data.requests || []);
         setGeneratedTokens(g.data.tokens || []);
         setReceivedTokens(t.data.tokens || []);
+        setCreatedEvents(ce.data.events || []);
+        setJoinedEvents(je.data.events || []);
       } catch (e) {
         // swallow errors in dashboard
       }
@@ -90,11 +99,20 @@ export default function MyActivities({ token }: { token: string | null }) {
     <div className="p-4 space-y-6">
       <h2 className="text-2xl font-bold">My Activities</h2>
 
+      <div className="flex gap-2">
+        <button
+          className="px-3 py-2 rounded bg-teal-600 text-white"
+          onClick={() => { setInitialEventToken(''); setShowCreateEvent(true); }}
+        >
+          Create Event
+        </button>
+        {me?.role === 'venue_owner' && (
+          <button className="px-3 py-2 rounded bg-indigo-600 text-white" onClick={() => setShowCreateVenue(true)}>Create Venue</button>
+        )}
+      </div>
+
       <section>
         <h3 className="text-xl font-semibold mb-2">My Venues</h3>
-        {me?.role === 'venue_owner' && (
-          <button className="mb-2 px-3 py-2 rounded bg-teal-600 text-white" onClick={() => setShowCreateVenue(true)}>Create Venue</button>
-        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {myVenues.map((v) => (
             <div key={v._id} className="rounded border p-3">
@@ -104,6 +122,41 @@ export default function MyActivities({ token }: { token: string | null }) {
             </div>
           ))}
           {myVenues.length === 0 && <p className="text-sm text-gray-500">No venues yet.</p>}
+        </div>
+      </section>
+
+      <section>
+        <h3 className="text-xl font-semibold mb-2">Events I Created</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {createdEvents.map((e) => (
+            <div key={e._id} className="rounded border p-3">
+              <div className="flex justify-between">
+                <span className="font-medium">{e.title}</span>
+                <span className="text-xs">{e.sport || 'Other'}</span>
+              </div>
+              <div className="text-sm text-gray-600">{e.location?.city || e.location?.name}</div>
+              <div className="text-sm">Starts: {new Date(e.startDate).toLocaleString()}</div>
+              <div className="text-sm">Participants: {(e.participants?.length || 0)}/{e.capacity?.max || 0}</div>
+            </div>
+          ))}
+          {createdEvents.length === 0 && <p className="text-sm text-gray-500">No created events yet.</p>}
+        </div>
+      </section>
+
+      <section>
+        <h3 className="text-xl font-semibold mb-2">Events I Joined</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {joinedEvents.map((e) => (
+            <div key={e._id} className="rounded border p-3">
+              <div className="flex justify-between">
+                <span className="font-medium">{e.title}</span>
+                <span className="text-xs">Organized by {e.organizer?.username}</span>
+              </div>
+              <div className="text-sm text-gray-600">{e.location?.city || e.location?.name}</div>
+              <div className="text-sm">Starts: {new Date(e.startDate).toLocaleString()}</div>
+            </div>
+          ))}
+          {joinedEvents.length === 0 && <p className="text-sm text-gray-500">No joined events yet.</p>}
         </div>
       </section>
 
@@ -167,6 +220,16 @@ export default function MyActivities({ token }: { token: string | null }) {
               <div className="font-medium">{t.code}</div>
               <div className="text-sm">Venue: {t.venue?.name}</div>
               <div className="text-sm">Status: {t.status} | Expires: {new Date(t.expiresAt).toLocaleString()}</div>
+              {t.status === 'active' && (
+                <div className="mt-2">
+                  <button
+                    className="px-3 py-2 rounded bg-teal-600 text-white"
+                    onClick={() => { setInitialEventToken(t.code); setShowCreateEvent(true); }}
+                  >
+                    Use Token to Create Event
+                  </button>
+                </div>
+              )}
             </div>
           ))}
           {receivedTokens.length === 0 && <p className="text-sm text-gray-500">No received tokens.</p>}
@@ -181,6 +244,27 @@ export default function MyActivities({ token }: { token: string | null }) {
           setMyVenues(v.data.venues || []);
         } catch {}
       }} />
+    )}
+    {showCreateEvent && (
+      <CreateEventModal
+        isOpen={showCreateEvent}
+        onClose={() => { setShowCreateEvent(false); setInitialEventToken(''); }}
+        token={token}
+        initialToken={initialEventToken}
+        onSuccess={async () => {
+          try {
+            const headers = { Authorization: `Bearer ${token}` };
+            const [ce, je] = await Promise.all([
+              axios.get(`${API_URL}/events/my/created`, { headers }),
+              axios.get(`${API_URL}/events/my/joined`, { headers }),
+            ]);
+            setCreatedEvents(ce.data.events || []);
+            setJoinedEvents(je.data.events || []);
+          } catch {}
+          setShowCreateEvent(false);
+          setInitialEventToken('');
+        }}
+      />
     )}
     </>
   );

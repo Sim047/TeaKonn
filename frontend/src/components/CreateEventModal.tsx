@@ -9,6 +9,7 @@ const API = API_URL.replace(/\/api$/, '');
 
 // Comprehensive Sports List (matching Dashboard)
 const SPORTS = [
+  'Other / Non-sport',
   'Football/Soccer',
   'Basketball',
   'Volleyball',
@@ -104,7 +105,7 @@ const SPORTS = [
   'Bowling',
   'Billiards/Pool',
   'Snooker',
-].sort();
+];
 
 const CURRENCIES = [
   { code: 'USD', symbol: '$', name: 'US Dollar' },
@@ -140,7 +141,7 @@ const SKILL_LEVELS = [
   { value: 'advanced', label: 'Advanced' },
 ];
 
-export default function CreateEventModal({ isOpen, onClose, token, onSuccess, editingEvent }: any) {
+export default function CreateEventModal({ isOpen, onClose, token, onSuccess, editingEvent, initialToken }: any) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -165,7 +166,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
   const [images, setImages] = useState<string[]>(editingEvent?.image ? [editingEvent.image] : []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [bookingTokenCode, setBookingTokenCode] = useState<string>('');
+  const [bookingTokenCode, setBookingTokenCode] = useState<string>(initialToken || '');
   const [tokenStatus, setTokenStatus] = useState<{ valid: boolean; message?: string } | null>(null);
 
   // Load editing data when modal opens
@@ -255,7 +256,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
         setLoading(false);
         return;
       }
-      const eventData = {
+      const eventData: any = {
         title: formData.title,
         description: formData.description,
         sport: formData.sport,
@@ -280,6 +281,10 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
         image: images.length > 0 ? images[0] : undefined,
         status: 'published',
       };
+      // Allow non-sport events by omitting sport when "Other / Non-sport" is selected
+      if (formData.sport === 'Other / Non-sport') {
+        delete eventData.sport;
+      }
 
       if (editingEvent) {
         // Update existing event
