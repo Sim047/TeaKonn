@@ -418,9 +418,15 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       )}
 
 
-      {activeTab === 'events' && includeArchived && (
+      {activeTab === 'events' && showPast && (
         <section>
-          <h3 className="text-xl font-semibold mb-2">Past Events</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xl font-semibold">Past Events</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-theme-secondary">Show</span>
+              <button className={`chip ${showPast ? 'chip-active' : ''}`} onClick={() => setShowPast(s => !s)} aria-pressed={showPast}>{showPast ? 'On' : 'Off'}</button>
+            </div>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {archivedEvents.filter((e) => {
               const q = eventsQuery.toLowerCase();
@@ -510,15 +516,8 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       message="Are you sure you want to leave this event?"
       confirmLabel="Leave"
       cancelLabel="Stay"
-      {activeTab === 'events' && showPast && (
-        <section>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-semibold">Past Events</h3>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-theme-secondary">Show</span>
-              <button className={`chip ${showPast ? 'chip-active' : ''}`} onClick={() => setShowPast(s => !s)} aria-pressed={showPast}>{showPast ? 'On' : 'Off'}</button>
-            </div>
-          </div>
+      onConfirm={async () => {
+        if (confirmLeaveEventId) await leaveEvent(confirmLeaveEventId);
         setConfirmLeaveEventId(null);
       }}
       onCancel={() => setConfirmLeaveEventId(null)}
