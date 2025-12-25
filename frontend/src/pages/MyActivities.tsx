@@ -4,7 +4,7 @@ import { API_URL } from '../config/api';
 import CreateVenueModal from '../components/CreateVenueModal';
 import CreateEventModal from '../components/CreateEventModal';
 
-export default function MyActivities({ token, onOpenConversation, onNavigate }: { token: string | null, onOpenConversation?: (conv: any) => void, onNavigate?: (view: string) => void }) {
+export default function MyActivities({ token, onOpenConversation, onNavigate, onToast }: { token: string | null, onOpenConversation?: (conv: any) => void, onNavigate?: (view: string) => void, onToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void }) {
   const [myVenues, setMyVenues] = useState<any[]>([]);
   const [sentRequests, setSentRequests] = useState<any[]>([]);
   const [receivedRequests, setReceivedRequests] = useState<any[]>([]);
@@ -260,6 +260,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate }: 
                     await axios.put(`${API_URL}/events/${e._id}`, { archivedAt }, { headers });
                     const ce = await axios.get(`${API_URL}/events/my/created?includeArchived=${includeArchived}`, { headers });
                     setCreatedEvents(ce.data.events || []);
+                    onToast && onToast(e.archivedAt ? 'Event restored.' : 'Event archived.', 'success');
                   }}
                 >
                   {e.archivedAt ? 'Restore' : 'Archive'}
@@ -273,6 +274,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate }: 
                     await axios.delete(`${API_URL}/events/${e._id}`, { headers });
                     const ce = await axios.get(`${API_URL}/events/my/created?includeArchived=${includeArchived}`, { headers });
                     setCreatedEvents(ce.data.events || []);
+                    onToast && onToast('Event deleted.', 'success');
                   }}
                 >
                   Delete
@@ -467,6 +469,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate }: 
           setShowCreateEvent(false);
           setInitialEventToken('');
           setEditingEvent(null);
+          onToast && onToast(editingEvent ? 'Event updated.' : 'Event created.', 'success');
         }}
       />
     )}

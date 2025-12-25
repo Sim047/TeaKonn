@@ -6,9 +6,10 @@ import CreateProductModal from '../components/CreateProductModal';
 interface MyProductsProps {
   token: string | null;
   onNavigate?: (view: string) => void;
+  onToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
 }
 
-export default function MyProducts({ token, onNavigate }: MyProductsProps) {
+export default function MyProducts({ token, onNavigate, onToast }: MyProductsProps) {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
@@ -83,8 +84,9 @@ export default function MyProducts({ token, onNavigate }: MyProductsProps) {
                       const headers = { Authorization: `Bearer ${token}` };
                       await axios.delete(`${API}/api/marketplace/${p._id}`, { headers });
                       refresh();
+                      onToast && onToast('Product deleted.', 'success');
                     } catch (e: any) {
-                      alert(e.response?.data?.error || 'Failed to delete product');
+                      onToast && onToast(e.response?.data?.error || 'Failed to delete product', 'error');
                     }
                   }}>Delete</button>
                 </div>
@@ -99,7 +101,7 @@ export default function MyProducts({ token, onNavigate }: MyProductsProps) {
           isOpen={openCreate}
           onClose={() => { setEditingProduct(null); setOpenCreate(false); }}
           token={token || ''}
-          onProductCreated={() => { setEditingProduct(null); refresh(); }}
+          onProductCreated={() => { setEditingProduct(null); refresh(); onToast && onToast(editingProduct ? 'Product updated.' : 'Product created.', 'success'); }}
           editProduct={editingProduct}
         />
       )}

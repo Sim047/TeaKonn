@@ -1832,7 +1832,12 @@ export default function App() {
 
         {/* MY ACTIVITIES PAGE */}
         {view === 'my-activities' && (
-          <MyActivities token={token} onOpenConversation={openConversation} onNavigate={(newView: string) => setView(newView as any)} />
+          <MyActivities
+            token={token}
+            onOpenConversation={openConversation}
+            onNavigate={(newView: string) => setView(newView as any)}
+            onToast={(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => setToast({ message, type })}
+          />
         )}
         {view === 'my-events' && (
           <MyEvents
@@ -1844,12 +1849,14 @@ export default function App() {
           <MyServices
             token={token as any}
             onNavigate={(newView: string) => setView(newView as any)}
+            onToast={(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => setToast({ message, type })}
           />
         )}
         {view === 'my-products' && (
           <MyProducts
             token={token as any}
             onNavigate={(newView: string) => setView(newView as any)}
+            onToast={(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => setToast({ message, type })}
           />
         )}
 
