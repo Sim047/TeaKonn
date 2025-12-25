@@ -13,6 +13,7 @@ export default function MyServices({ token, onNavigate }: MyServicesProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [openCreate, setOpenCreate] = useState<boolean>(false);
+  const [editingService, setEditingService] = useState<any | null>(null);
 
   async function refresh() {
     if (!token) return;
@@ -63,7 +64,19 @@ export default function MyServices({ token, onNavigate }: MyServicesProps) {
                 </div>
                 <div className="mt-2 text-sm">Price: {s.pricing?.amount ? `${s.pricing?.currency || 'USD'} ${s.pricing?.amount}` : 'Free'}</div>
                 <div className="mt-3 flex gap-2">
+                  <button className="px-3 py-2 rounded-md bg-indigo-600 text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400" onClick={() => { setEditingService(s); setOpenCreate(true); }}>Edit</button>
                   <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => onNavigate && onNavigate('my-activities')}>Back</button>
+                  <button className="px-3 py-2 rounded-md border border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 focus:outline-none focus:ring-2 focus:ring-red-300" onClick={async () => {
+                    if (!token) return;
+                    if (!confirm('Delete this service? This cannot be undone.')) return;
+                    try {
+                      const headers = { Authorization: `Bearer ${token}` };
+                      await axios.delete(`${API_URL}/services/${s._id}`, { headers });
+                      refresh();
+                    } catch (e: any) {
+                      alert(e.response?.data?.error || 'Failed to delete service');
+                    }
+                  }}>Delete</button>
                 </div>
               </div>
             ))}
@@ -76,7 +89,8 @@ export default function MyServices({ token, onNavigate }: MyServicesProps) {
           isOpen={openCreate}
           onClose={() => setOpenCreate(false)}
           token={token || ''}
-          onServiceCreated={refresh}
+          onServiceCreated={() => { setEditingService(null); refresh(); }}
+          editService={editingService}
         />
       )}
     </div>

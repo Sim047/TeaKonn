@@ -161,7 +161,7 @@ router.put("/:id", auth, async (req, res) => {
     const allowed = [
       "title","description","sport","startDate","time","location",
       "requiresApproval","status","image","skillLevel",
-      "capacity","pricing"
+      "capacity","pricing","archivedAt"
     ];
 
     for (const key of allowed) {
@@ -176,6 +176,13 @@ router.put("/:id", auth, async (req, res) => {
           if (req.body.pricing.amount !== undefined) event.pricing.amount = req.body.pricing.amount;
           if (req.body.pricing.currency !== undefined) event.pricing.currency = req.body.pricing.currency;
           if (req.body.pricing.paymentInstructions !== undefined) event.pricing.paymentInstructions = req.body.pricing.paymentInstructions;
+        } else if (key === 'archivedAt') {
+          // Allow archiving/restoring events
+          if (req.body.archivedAt === null) {
+            event.archivedAt = null;
+          } else if (req.body.archivedAt) {
+            event.archivedAt = new Date(req.body.archivedAt);
+          }
         } else {
           event[key] = req.body[key];
         }
@@ -689,3 +696,22 @@ router.post("/:id/remove-participant/:userId", auth, async (req, res) => {
 });
 
 export default router;
+
+// DELETE /api/events/:id - delete event (organizer only)
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ error: "Event not found" });
+    if (String(event.organizer) !== String(req.user.id)) {
+      return res.status(403).json({ error: "Only organizer can delete event" });
+    }
+
+    await Event.deleteOne({ _id: event._id });
+    const io = req.app.get("io");
+    if (io) io.emit("event_deleted", { eventId: String(event._id) });
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("Delete event error:", err);
+    return res.status(500).json({ error: "Failed to delete event" });
+  }
+});

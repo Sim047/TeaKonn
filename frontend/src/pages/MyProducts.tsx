@@ -14,6 +14,7 @@ export default function MyProducts({ token, onNavigate }: MyProductsProps) {
   const [error, setError] = useState<string>('');
   const [openCreate, setOpenCreate] = useState<boolean>(false);
   const [me, setMe] = useState<any | null>(null);
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
 
   async function refresh() {
     if (!token) return;
@@ -72,7 +73,20 @@ export default function MyProducts({ token, onNavigate }: MyProductsProps) {
                 </div>
                 <div className="mt-2 text-sm">Price: {p.price !== undefined ? p.price : 'N/A'}</div>
                 <div className="mt-3 flex gap-2">
+                  <button className="px-3 py-2 rounded-md bg-indigo-600 text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400" onClick={() => { setEditingProduct(p); setOpenCreate(true); }}>Edit</button>
                   <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => onNavigate && onNavigate('my-activities')}>Back</button>
+                  <button className="px-3 py-2 rounded-md border border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 focus:outline-none focus:ring-2 focus:ring-red-300" onClick={async () => {
+                    if (!token) return;
+                    if (!confirm('Delete this product? This cannot be undone.')) return;
+                    try {
+                      const API = API_URL.replace(/\/api$/, '');
+                      const headers = { Authorization: `Bearer ${token}` };
+                      await axios.delete(`${API}/api/marketplace/${p._id}`, { headers });
+                      refresh();
+                    } catch (e: any) {
+                      alert(e.response?.data?.error || 'Failed to delete product');
+                    }
+                  }}>Delete</button>
                 </div>
               </div>
             ))}
@@ -83,9 +97,10 @@ export default function MyProducts({ token, onNavigate }: MyProductsProps) {
       {openCreate && (
         <CreateProductModal
           isOpen={openCreate}
-          onClose={() => setOpenCreate(false)}
+          onClose={() => { setEditingProduct(null); setOpenCreate(false); }}
           token={token || ''}
-          onProductCreated={refresh}
+          onProductCreated={() => { setEditingProduct(null); refresh(); }}
+          editProduct={editingProduct}
         />
       )}
     </div>
