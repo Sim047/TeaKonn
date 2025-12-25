@@ -3,7 +3,7 @@ import axios from 'axios';
 import { API_URL } from '../config/api';
 import CreateServiceModal from '../components/CreateServiceModal';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { MapPin, BadgeCheck, ClipboardList, DollarSign } from 'lucide-react';
+import { MapPin, BadgeCheck, ClipboardList, DollarSign, Tag } from 'lucide-react';
 
 interface MyServicesProps {
   token: string | null;
@@ -38,6 +38,23 @@ export default function MyServices({ token, onNavigate, onToast, onUpdated }: My
 
   useEffect(() => { refresh(); }, [token]);
 
+  const categoryBadge = (raw?: string) => {
+    const c = (raw || '').toLowerCase();
+    const map: Record<string, string> = {
+      'personal-training': 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
+      'group-classes': 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
+      'nutrition': 'bg-lime-100 text-lime-700 dark:bg-lime-900/30 dark:text-lime-300',
+      'physiotherapy': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+      'sports-massage': 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
+      'mental-coaching': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+      'technique-analysis': 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
+      'custom-program': 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/30 dark:text-fuchsia-300',
+      'online-coaching': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+      'other': 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+    };
+    return map[c] || map['other'];
+  };
+
   return (
     <div className="min-h-full bg-transparent">
       <div className="max-w-4xl mx-auto p-4 sm:p-6">
@@ -64,13 +81,25 @@ export default function MyServices({ token, onNavigate, onToast, onUpdated }: My
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {services.map((s) => (
               <div key={s._id} className="group rounded-2xl border p-4 shadow-sm hover:shadow-lg transition-all bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-indigo-400/50 hover:ring-2 hover:ring-indigo-300/40">
-                <div className="h-1 w-full rounded-full bg-gradient-to-r from-indigo-500/30 to-emerald-500/30 mb-3 opacity-80 group-hover:opacity-100" />
+                <div className="relative mb-3">
+                  {s.images?.[0] ? (
+                    <img src={s.images[0]} alt={s.name || s.title} className="w-full h-32 rounded-md object-cover" />
+                  ) : (
+                    <div className="w-full h-32 rounded-md bg-gradient-to-r from-indigo-500/20 to-emerald-500/20" />
+                  )}
+                  <div className="absolute inset-x-0 bottom-0 h-1 rounded-full bg-gradient-to-r from-indigo-500/40 to-emerald-500/40" />
+                </div>
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{s.name || s.title}</div>
                     <div className="mt-1 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
                       <MapPin className="w-4 h-4 text-indigo-500" />
                       <span>{s.location?.city || s.location?.name || 'Location TBA'}</span>
+                    </div>
+                    <div className="mt-1 flex items-center gap-2 text-xs">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full ${categoryBadge(s.category)}`}>
+                        <Tag className="w-3 h-3 mr-1" /> {s.category}
+                      </span>
                     </div>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-full ${s.active ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'}`}>{s.active ? 'Active' : 'Inactive'}</span>

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { API_URL } from '../config/api';
 import CreateProductModal from '../components/CreateProductModal';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { MapPin, Package, DollarSign } from 'lucide-react';
+import { MapPin, Package, DollarSign, Tag } from 'lucide-react';
 
 interface MyProductsProps {
   token: string | null;
@@ -47,6 +47,33 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
 
   useEffect(() => { refresh(); }, [token]);
 
+  const statusBadge = (status?: string) => {
+    const s = (status || '').toLowerCase();
+    if (s === 'active') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300';
+    if (s === 'sold') return 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300';
+    if (s === 'reserved') return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300';
+    return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+  };
+
+  const categoryBadge = (category?: string) => {
+    const c = (category || '').toLowerCase();
+    const map: Record<string, string> = {
+      'sports equipment': 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
+      'apparel & clothing': 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
+      'footwear': 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/30 dark:text-fuchsia-300',
+      'accessories': 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
+      'supplements & nutrition': 'bg-lime-100 text-lime-700 dark:bg-lime-900/30 dark:text-lime-300',
+      'fitness tech & wearables': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+      'training gear': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+      'recovery & wellness': 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
+      'team sports gear': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+      'individual sports gear': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+      'outdoor & adventure': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+      'other': 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+    };
+    return map[c] || map['other'];
+  };
+
   return (
     <div className="min-h-full bg-transparent">
       <div className="max-w-4xl mx-auto p-4 sm:p-6">
@@ -73,7 +100,14 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {items.map((p) => (
               <div key={p._id} className="group rounded-2xl border p-4 shadow-sm hover:shadow-lg transition-all bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-indigo-400/50 hover:ring-2 hover:ring-indigo-300/40">
-                <div className="h-1 w-full rounded-full bg-gradient-to-r from-violet-500/30 to-pink-500/30 mb-3 opacity-80 group-hover:opacity-100" />
+                <div className="relative mb-3">
+                  {p.images?.[0] ? (
+                    <img src={p.images[0]} alt={p.title} className="w-full h-32 rounded-md object-cover" />
+                  ) : (
+                    <div className="w-full h-32 rounded-md bg-gradient-to-r from-violet-500/20 to-pink-500/20" />
+                  )}
+                  <div className="absolute inset-x-0 bottom-0 h-1 rounded-full bg-gradient-to-r from-violet-500/40 to-pink-500/40" />
+                </div>
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{p.title}</div>
@@ -81,12 +115,17 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
                       <MapPin className="w-4 h-4 text-indigo-500" />
                       <span>{p.location || 'Location TBA'}</span>
                     </div>
+                    <div className="mt-1 flex items-center gap-2 text-xs">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full ${categoryBadge(p.category)}`}>
+                        <Tag className="w-3 h-3 mr-1" /> {p.category}
+                      </span>
+                    </div>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${p.status === 'available' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'}`}>{p.status}</span>
+                  <span className={`text-xs px-2 py-1 rounded-full ${statusBadge(p.status)}`}>{p.status}</span>
                 </div>
                 <div className="mt-2 flex items-center gap-2 text-sm">
                   <DollarSign className="w-4 h-4 text-emerald-500" />
-                  <span>{p.price !== undefined ? p.price : 'N/A'}</span>
+                  <span>{p.price !== undefined ? `${p.currency || 'USD'} ${p.price}` : 'N/A'}</span>
                 </div>
                 <div className="mt-3 flex gap-2">
                   <button className="inline-flex items-center px-3 py-2 rounded-md bg-indigo-600 text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400" onClick={() => { setEditingProduct(p); setOpenCreate(true); }}>
