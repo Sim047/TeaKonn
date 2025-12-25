@@ -243,18 +243,18 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
   return (
     <>
     <div className="min-h-screen themed-page">
-      <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="max-w-4xl mx-auto p-3 sm:p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">My Activities</h2>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap sm:flex-nowrap gap-2 sm:justify-end w-full sm:w-auto">
             <button
-              className={btn('success')}
+              className={`${btn('success')} w-full sm:w-auto`}
               onClick={() => { setInitialEventToken(''); setShowCreateEvent(true); }}
             >
               + Create Event
             </button>
             <button
-              className={btn('primary')}
+              className={`${btn('primary')} w-full sm:w-auto`}
               onClick={() => setShowCreateVenue(true)}
             >
               + Create Venue
@@ -264,7 +264,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
 
       <div className="flex flex-wrap gap-3 items-center mt-3" role="tablist" aria-label="My Activities Tabs">
         <button
-          className={`text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'events' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+          className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'events' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
           onClick={() => setActiveTab('events')}
           role="tab"
           aria-selected={activeTab === 'events'}
@@ -272,7 +272,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           My Events ({createdEvents.length})
         </button>
         <button
-          className={`text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'services' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+          className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'services' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
           onClick={() => setActiveTab('services')}
           role="tab"
           aria-selected={activeTab === 'services'}
@@ -280,7 +280,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           My Services ({servicesCount})
         </button>
         <button
-          className={`text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'products' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+          className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'products' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
           onClick={() => setActiveTab('products')}
           role="tab"
           aria-selected={activeTab === 'products'}
@@ -289,18 +289,18 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-2 items-center">
-        <button className={btn('outline')} onClick={refreshAll}>Refresh</button>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+        <button className={`${btn('outline')} w-full sm:w-auto`} onClick={refreshAll}>Refresh</button>
         {activeTab === 'events' && (
           <input
             value={eventsQuery}
             onChange={(e) => setEventsQuery(e.target.value)}
             placeholder="Search events, venues, requests, tokens"
-            className="input w-full sm:w-80 ml-auto"
+            className="input w-full sm:w-80 sm:ml-auto"
             aria-label="Search events"
           />
         )}
-        <div className="ml-auto flex items-center gap-2">
+        <div className="sm:ml-auto flex items-center gap-2">
           <span className="text-sm text-theme-secondary">Show past</span>
           <button
             onClick={() => setIncludeArchived(a => !a)}
@@ -329,9 +329,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               (v.status || '').toLowerCase().includes(q)
             );
           }).map((v) => (
-            <div key={v._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
+            <div key={v._id} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
               <div className="h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80 group-hover:opacity-100" />
-              <div className="flex justify-between items-start">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                 <div>
                   <div className="text-lg font-semibold text-heading">{v.name}</div>
                   <div className="mt-1 flex items-center gap-2 text-sm text-theme-secondary">
@@ -345,9 +345,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                 <Users className="w-4 h-4 text-[var(--accent-amber)]" />
                 <span>Capacity: {v.capacity?.max ?? '—'}</span>
               </div>
-              <div className="mt-3 flex gap-2">
-                <button className="btn" onClick={() => { setEditingVenue(v); setShowCreateVenue(true); }}>Edit</button>
-                <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400" onClick={() => setConfirmDeleteVenueId(v._id)}>Delete</button>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button className="btn w-full sm:w-auto" onClick={() => { setEditingVenue(v); setShowCreateVenue(true); }}>Edit</button>
+                <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400 w-full sm:w-auto" onClick={() => setConfirmDeleteVenueId(v._id)}>Delete</button>
               </div>
             </div>
           ))}
@@ -369,9 +369,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               (e.location?.city || e.location?.name || '').toLowerCase().includes(q)
             );
           }).map((e) => (
-            <div key={e._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
+            <div key={e._id} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
               <div className={`h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80 group-hover:opacity-100`} />
-              <div className="flex justify-between items-start">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                 <div>
                   <div className="text-lg font-semibold text-heading line-clamp-2">{e.title}</div>
                   <div className="mt-1 flex items-center gap-2 text-sm text-theme-secondary">
@@ -383,7 +383,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                   <Trophy className="w-3 h-3" /> {e.sport || 'Other'}
                 </span>
               </div>
-              <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-theme-secondary">
+              <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-theme-secondary">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-[var(--accent-violet)]" />
                   <span>Starts: {new Date(e.startDate).toLocaleString()}</span>
@@ -395,24 +395,24 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {e.organizer && (
-                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => startConversationWithUser(e.organizer?._id)}>
+                  <button className="flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto whitespace-normal break-words text-left" onClick={() => startConversationWithUser(e.organizer?._id)}>
                     Message Participants (DM organizer)
                   </button>
                 )}
                 <button
-                  className="btn"
+                  className="btn w-full sm:w-auto"
                   onClick={() => { setEditingEvent(e); setShowCreateEvent(true); }}
                 >
                   Edit
                 </button>
                 <button
-                  className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40"
+                  className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto"
                   onClick={() => setSelectedEvent(e)}
                 >
                   View
                 </button>
                 <button
-                  className={`inline-flex items-center px-3 py-2 rounded-md ${e.archivedAt ? 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-400' : 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-400'} text-white focus:outline-none focus:ring-2`}
+                  className={`inline-flex items-center px-3 py-2 rounded-md ${e.archivedAt ? 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-400' : 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-400'} text-white focus:outline-none focus:ring-2 w-full sm:w-auto`}
                   onClick={async () => {
                     if (!token) return;
                     const headers = { Authorization: `Bearer ${token}` };
@@ -426,7 +426,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                   {e.archivedAt ? 'Restore' : 'Archive'}
                 </button>
                 <button
-                  className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400"
+                  className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400 w-full sm:w-auto"
                   onClick={() => setConfirmDeleteEventId(e._id)}
                 >
                   Delete
@@ -452,9 +452,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               (e.location?.city || e.location?.name || '').toLowerCase().includes(q)
             );
           }).map((e) => (
-            <div key={e._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
+            <div key={e._id} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
               <div className={`h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80 group-hover:opacity-100`} />
-              <div className="flex justify-between items-start">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                 <div>
                   <div className="text-lg font-semibold text-heading line-clamp-2">{e.title}</div>
                   <div className="mt-1 flex items-center gap-2 text-sm text-theme-secondary">
@@ -470,18 +470,18 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {e.organizer?._id && (
-                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => startConversationWithUser(e.organizer._id)}>
+                  <button className="flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto whitespace-normal break-words text-left" onClick={() => startConversationWithUser(e.organizer._id)}>
                     Message Organizer
                   </button>
                 )}
                 <button
-                  className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40"
+                  className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto"
                   onClick={() => setSelectedEvent(e)}
                 >
                   View
                 </button>
                 <button
-                  className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400"
+                  className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400 w-full sm:w-auto"
                   disabled={busy === e._id}
                   onClick={() => setConfirmLeaveEventId(e._id)}
                 >
@@ -507,9 +507,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               (r.status || '').toLowerCase().includes(q)
             );
           }).map((r) => (
-            <div key={r._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all">
+            <div key={r._id} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all">
               <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
-              <div className="flex justify-between items-start">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                 <div>
                   <div className="text-lg font-semibold text-heading">{r.venue?.name}</div>
                   <div className="text-sm text-theme-secondary">Status: {r.status}</div>
@@ -517,8 +517,8 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                 <span className={`badge ${r.status === 'pending' ? 'badge-amber' : r.status === 'approved' ? 'badge-accent' : 'badge-violet'}`}>{r.status}</span>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => openRequestChat(r._id)}>Open Chat</button>
-                <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => startConversationWithUser(r.owner?._id)}>Message Owner</button>
+                <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => openRequestChat(r._id)}>Open Chat</button>
+                <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => startConversationWithUser(r.owner?._id)}>Message Owner</button>
               </div>
             </div>
           ))}
@@ -540,9 +540,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               (r.status || '').toLowerCase().includes(q)
             );
           }).map((r) => (
-            <div key={r._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all">
+            <div key={r._id} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all">
               <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
-              <div className="flex justify-between items-start">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                 <div>
                   <div className="text-lg font-semibold text-heading">{r.venue?.name}</div>
                   <div className="text-sm text-theme-secondary">Requester: {r.requester?.username}</div>
@@ -552,10 +552,10 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               </div>
               {(me && String(r.owner?._id || r.owner) === String(me?._id)) && (
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => openRequestChat(r._id)}>Open Chat</button>
-                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
+                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => openRequestChat(r._id)}>Open Chat</button>
+                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
                   {r.status === 'pending' && (
-                    <button className="btn" onClick={() => setConfirmGenerateReq(r)}>Generate Token (after payment)</button>
+                    <button className="btn w-full sm:w-auto" onClick={() => setConfirmGenerateReq(r)}>Generate Token (after payment)</button>
                   )}
                 </div>
               )}
@@ -579,18 +579,18 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               (t.status || '').toLowerCase().includes(q)
             );
           }).map((t) => (
-            <div key={t._id} className="themed-card rounded-2xl p-4 shadow-sm">
+            <div key={t._id} className="themed-card rounded-2xl p-3 sm:p-4 shadow-sm">
               <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                 <div className="font-medium text-heading">{t.code}</div>
                 <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
               </div>
               <div className="text-sm text-theme-secondary">Venue: {t.venue?.name}</div>
               <div className="text-sm text-theme-secondary">Expires: {new Date(t.expiresAt).toLocaleString()}</div>
               {me?.role === 'venue_owner' && t.status === 'active' && (
-                <div className="mt-2 flex gap-2">
-                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => extendToken(t.code, 24)}>Extend 24h</button>
-                  <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400" onClick={() => revokeToken(t.code)}>Revoke</button>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => extendToken(t.code, 24)}>Extend 24h</button>
+                  <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400 w-full sm:w-auto" onClick={() => revokeToken(t.code)}>Revoke</button>
                 </div>
               )}
             </div>
@@ -613,9 +613,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               (t.status || '').toLowerCase().includes(q)
             );
           }).map((t) => (
-            <div key={t._id} className="themed-card rounded-2xl p-4 shadow-sm">
+            <div key={t._id} className="themed-card rounded-2xl p-3 sm:p-4 shadow-sm">
               <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                 <div className="font-medium text-heading">{t.code}</div>
                 <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
               </div>
@@ -623,7 +623,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               <div className="text-sm text-theme-secondary">Expires: {new Date(t.expiresAt).toLocaleString()}</div>
               {t.status === 'active' && (
                 <div className="mt-2">
-                  <button className="btn" onClick={() => { setInitialEventToken(t.code); setShowCreateEvent(true); }}>
+                  <button className="btn w-full sm:w-auto" onClick={() => { setInitialEventToken(t.code); setShowCreateEvent(true); }}>
                     Use Token to Create Event
                   </button>
                 </div>
@@ -647,9 +647,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                 (e.location?.city || e.location?.name || '').toLowerCase().includes(q)
               );
             }).map((e) => (
-              <div key={e._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
+              <div key={e._id} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
                 <div className={`h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-70`} />
-                <div className="flex justify-between items-start">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                   <div>
                     <div className="text-lg font-semibold text-heading line-clamp-2">{e.title}</div>
                     <div className="mt-1 flex items-center gap-2 text-sm text-theme-secondary">
@@ -659,7 +659,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                   </div>
                   <span className="badge badge-amber">Ended</span>
                 </div>
-                <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-theme-secondary">
+                <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-theme-secondary">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-[var(--accent-violet)]" />
                     <span>Started: {new Date(e.startDate).toLocaleString()}</span>
@@ -671,10 +671,10 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                 </div>
                 {e.organizer?._id && (
                   <div className="mt-3">
-                    <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => startConversationWithUser(e.organizer._id)}>
+                    <button className="flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto whitespace-normal break-words text-left" onClick={() => startConversationWithUser(e.organizer._id)}>
                       Message Organizer
                     </button>
-                    <button className="ml-2 inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => setSelectedEvent(e)}>
+                    <button className="mt-2 sm:mt-0 sm:ml-2 inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => setSelectedEvent(e)}>
                       View
                     </button>
                   </div>
