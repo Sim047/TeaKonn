@@ -43,10 +43,18 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
   const [confirmGenerateReq, setConfirmGenerateReq] = useState<any | null>(null);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [initialEventToken, setInitialEventToken] = useState<string>('');
-  const [showSent, setShowSent] = useState<boolean>(true);
-  const [showReceived, setShowReceived] = useState<boolean>(true);
-  const [showGenTokens, setShowGenTokens] = useState<boolean>(true);
-  const [showRecvTokens, setShowRecvTokens] = useState<boolean>(true);
+  const [showSent, setShowSent] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.showSent') || 'true'); } catch { return true; }
+  });
+  const [showReceived, setShowReceived] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.showReceived') || 'true'); } catch { return true; }
+  });
+  const [showGenTokens, setShowGenTokens] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.showGenTokens') || 'true'); } catch { return true; }
+  });
+  const [showRecvTokens, setShowRecvTokens] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.showRecvTokens') || 'true'); } catch { return true; }
+  });
 
   async function refreshVenues() {
     if (!token) return;
@@ -138,6 +146,11 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
   }
 
   useEffect(() => { refreshVenues(); }, [token]);
+
+  useEffect(() => { localStorage.setItem('myvenues.showSent', JSON.stringify(showSent)); }, [showSent]);
+  useEffect(() => { localStorage.setItem('myvenues.showReceived', JSON.stringify(showReceived)); }, [showReceived]);
+  useEffect(() => { localStorage.setItem('myvenues.showGenTokens', JSON.stringify(showGenTokens)); }, [showGenTokens]);
+  useEffect(() => { localStorage.setItem('myvenues.showRecvTokens', JSON.stringify(showRecvTokens)); }, [showRecvTokens]);
 
   return (
     <div className="min-h-screen themed-page">

@@ -21,7 +21,9 @@ export default function MyServices({ token, onNavigate, onToast, onUpdated }: My
   const [confirmDeleteServiceId, setConfirmDeleteServiceId] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<any | null>(null);
   const [query, setQuery] = useState<string>('');
-  const [showServices, setShowServices] = useState<boolean>(true);
+  const [showServices, setShowServices] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myservices.show') || 'true'); } catch { return true; }
+  });
 
   async function refresh() {
     if (!token) return;
@@ -39,6 +41,7 @@ export default function MyServices({ token, onNavigate, onToast, onUpdated }: My
   }
 
   useEffect(() => { refresh(); }, [token]);
+  useEffect(() => { localStorage.setItem('myservices.show', JSON.stringify(showServices)); }, [showServices]);
 
   const categoryBadge = (raw?: string) => {
     const c = (raw || '').toLowerCase();

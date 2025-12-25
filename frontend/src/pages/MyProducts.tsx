@@ -22,7 +22,9 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
   const [confirmDeleteProductId, setConfirmDeleteProductId] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [query, setQuery] = useState<string>('');
-  const [showProducts, setShowProducts] = useState<boolean>(true);
+  const [showProducts, setShowProducts] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myproducts.show') || 'true'); } catch { return true; }
+  });
 
   async function refresh() {
     if (!token) return;
@@ -48,6 +50,7 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
   }
 
   useEffect(() => { refresh(); }, [token]);
+  useEffect(() => { localStorage.setItem('myproducts.show', JSON.stringify(showProducts)); }, [showProducts]);
 
   const statusBadge = (status?: string) => {
     const s = (status || '').toLowerCase();
