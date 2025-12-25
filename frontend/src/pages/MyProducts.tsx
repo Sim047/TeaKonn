@@ -22,6 +22,7 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
   const [confirmDeleteProductId, setConfirmDeleteProductId] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [query, setQuery] = useState<string>('');
+  const [showProducts, setShowProducts] = useState<boolean>(true);
 
   async function refresh() {
     if (!token) return;
@@ -98,65 +99,77 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
 
         {error && <div className="rounded-xl border p-3 text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-300 mb-4">{error}</div>}
 
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-semibold">Products</h3>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-theme-secondary">Show</span>
+            <button className={`chip ${showProducts ? 'chip-active' : ''}`} onClick={() => setShowProducts(s => !s)} aria-pressed={showProducts}>{showProducts ? 'On' : 'Off'}</button>
+          </div>
+        </div>
+
         {loading ? (
           <div className="text-sm text-gray-700 dark:text-gray-200">Loading...</div>
-        ) : items.length === 0 ? (
-          <div className="rounded-xl border p-4 bg-white dark:bg-gray-900">
-            <p className="text-sm text-gray-700 dark:text-gray-200">No products yet.</p>
-          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {items.filter((p) => {
-              const q = query.toLowerCase();
-              if (!q) return true;
-              return (
-                (p.title || '').toLowerCase().includes(q) ||
-                (p.category || '').toLowerCase().includes(q) ||
-                (p.location || '').toLowerCase().includes(q)
-              );
-            }).map((p) => (
-              <div key={p._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
-                <div className="relative mb-3">
-                  {p.images?.[0] ? (
-                    <img src={p.images[0]} alt={p.title} className="w-full h-32 rounded-md object-cover" />
-                  ) : (
-                    <div className="w-full h-32 rounded-md bg-gradient-to-r from-violet-500/20 to-pink-500/20" />
-                  )}
-                  <div className="absolute inset-x-0 bottom-0 h-1 rounded-full bg-gradient-to-r from-violet-500/40 to-pink-500/40" />
-                </div>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{p.title}</div>
-                    <div className="mt-1 flex items-center gap-2 text-sm text-theme-secondary">
-                      <MapPin className="w-4 h-4 text-[var(--accent-cyan)]" />
-                      <span>{p.location || 'Location TBA'}</span>
+          showProducts ? (
+            items.length === 0 ? (
+              <div className="rounded-xl border p-4 bg-white dark:bg-gray-900">
+                <p className="text-sm text-gray-700 dark:text-gray-200">No products yet.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {items.filter((p) => {
+                  const q = query.toLowerCase();
+                  if (!q) return true;
+                  return (
+                    (p.title || '').toLowerCase().includes(q) ||
+                    (p.category || '').toLowerCase().includes(q) ||
+                    (p.location || '').toLowerCase().includes(q)
+                  );
+                }).map((p) => (
+                  <div key={p._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
+                    <div className="relative mb-3">
+                      {p.images?.[0] ? (
+                        <img src={p.images[0]} alt={p.title} className="w-full h-32 rounded-md object-cover" />
+                      ) : (
+                        <div className="w-full h-32 rounded-md bg-gradient-to-r from-violet-500/20 to-pink-500/20" />
+                      )}
+                      <div className="absolute inset-x-0 bottom-0 h-1 rounded-full bg-gradient-to-r from-violet-500/40 to-pink-500/40" />
                     </div>
-                    <div className="mt-1 flex items-center gap-2 text-xs">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full ${categoryBadge(p.category)}`}>
-                        <Tag className="w-3 h-3 mr-1" /> {p.category}
-                      </span>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{p.title}</div>
+                        <div className="mt-1 flex items-center gap-2 text-sm text-theme-secondary">
+                          <MapPin className="w-4 h-4 text-[var(--accent-cyan)]" />
+                          <span>{p.location || 'Location TBA'}</span>
+                        </div>
+                        <div className="mt-1 flex items-center gap-2 text-xs">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full ${categoryBadge(p.category)}`}>
+                            <Tag className="w-3 h-3 mr-1" /> {p.category}
+                          </span>
+                        </div>
+                      </div>
+                      <span className={`badge ${statusBadge(p.status)}`}>{p.status}</span>
+                    </div>
+                    <div className="mt-2 flex items-center gap-2 text-sm text-theme-secondary">
+                      <DollarSign className="w-4 h-4 text-[var(--accent-amber)]" />
+                      <span>{p.price !== undefined ? `${p.currency || 'USD'} ${p.price}` : 'N/A'}</span>
+                    </div>
+                    <div className="mt-3 flex gap-2">
+                      <button className="btn inline-flex items-center px-3 py-2" onClick={() => { setEditingProduct(p); setOpenCreate(true); }}>
+                        <Package className="w-4 h-4 mr-2" /> Edit
+                      </button>
+                      <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => setSelectedProduct(p)}>
+                        View
+                      </button>
+                      <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400" onClick={() => setConfirmDeleteProductId(p._id)}>
+                        Delete
+                      </button>
                     </div>
                   </div>
-                  <span className={`badge ${statusBadge(p.status)}`}>{p.status}</span>
-                </div>
-                <div className="mt-2 flex items-center gap-2 text-sm text-theme-secondary">
-                  <DollarSign className="w-4 h-4 text-[var(--accent-amber)]" />
-                  <span>{p.price !== undefined ? `${p.currency || 'USD'} ${p.price}` : 'N/A'}</span>
-                </div>
-                <div className="mt-3 flex gap-2">
-                  <button className="btn inline-flex items-center px-3 py-2" onClick={() => { setEditingProduct(p); setOpenCreate(true); }}>
-                    <Package className="w-4 h-4 mr-2" /> Edit
-                  </button>
-                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => setSelectedProduct(p)}>
-                    View
-                  </button>
-                  <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400" onClick={() => setConfirmDeleteProductId(p._id)}>
-                    Delete
-                  </button>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )
+          ) : null
         )}
       </div>
 
