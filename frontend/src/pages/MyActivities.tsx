@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../config/api';
-import CreateVenueModal from '../components/CreateVenueModal';
+// Venue functionality moved to MyVenues page
 import CreateEventModal from '../components/CreateEventModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import EventDetailModal from '../components/EventDetailModal';
 import MyServices from './MyServices';
 import MyProducts from './MyProducts';
+import MyVenues from './MyVenues';
 import { Calendar, MapPin, Users, Trophy } from 'lucide-react';
 
 export default function MyActivities({ token, onOpenConversation, onNavigate, onToast }: { token: string | null, onOpenConversation?: (conv: any) => void, onNavigate?: (view: string) => void, onToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void }) {
@@ -63,17 +64,17 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
     };
     return `${base} ${sizing} ${variants[variant]}`;
   };
-  const [myVenues, setMyVenues] = useState<any[]>([]);
+  // Venues moved to MyVenues page
   const [sentRequests, setSentRequests] = useState<any[]>([]);
   const [receivedRequests, setReceivedRequests] = useState<any[]>([]);
   const [generatedTokens, setGeneratedTokens] = useState<any[]>([]);
   const [receivedTokens, setReceivedTokens] = useState<any[]>([]);
   const [me, setMe] = useState<any | null>(null);
-  const [showCreateVenue, setShowCreateVenue] = useState(false);
+  // const [showCreateVenue, setShowCreateVenue] = useState(false);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [initialEventToken, setInitialEventToken] = useState<string>('');
   const [editingEvent, setEditingEvent] = useState<any | null>(null);
-  const [editingVenue, setEditingVenue] = useState<any | null>(null);
+  // const [editingVenue, setEditingVenue] = useState<any | null>(null);
   const [confirmLeaveEventId, setConfirmLeaveEventId] = useState<string | null>(null);
   const [createdEvents, setCreatedEvents] = useState<any[]>([]);
   const [joinedEvents, setJoinedEvents] = useState<any[]>([]);
@@ -84,10 +85,11 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
   const [servicesCount, setServicesCount] = useState<number>(0);
   const [productsCount, setProductsCount] = useState<number>(0);
   const [confirmDeleteEventId, setConfirmDeleteEventId] = useState<string | null>(null);
-  const [confirmDeleteVenueId, setConfirmDeleteVenueId] = useState<string | null>(null);
+  // const [confirmDeleteVenueId, setConfirmDeleteVenueId] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
-  const [activeTab, setActiveTab] = useState<'events' | 'services' | 'products'>('events');
+  const [activeTab, setActiveTab] = useState<'events' | 'services' | 'products' | 'venues'>('events');
   const [eventsQuery, setEventsQuery] = useState<string>('');
+  const [venuesCount, setVenuesCount] = useState<number>(0);
 
   async function refreshAll() {
     if (!token) return;
@@ -95,8 +97,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
     try {
       const meRes = await axios.get(`${API_URL}/users/me`, { headers });
       setMe(meRes.data || null);
-      const [v, s, r, g, t, ce, je, ae] = await Promise.all([
-        axios.get(`${API_URL}/venues/my`, { headers }),
+      const [s, r, g, t, ce, je, ae] = await Promise.all([
         axios.get(`${API_URL}/booking-requests/my/sent`, { headers }),
         axios.get(`${API_URL}/booking-requests/my/received`, { headers }),
         axios.get(`${API_URL}/tokens/my/generated`, { headers }),
@@ -106,7 +107,6 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         axios.get(`${API_URL}/events/my/joined?includeArchived=false`, { headers }),
         includeArchived ? axios.get(`${API_URL}/events/my/archived`, { headers }) : Promise.resolve({ data: { events: [] } }),
       ]);
-      setMyVenues(v.data.venues || []);
       setSentRequests(s.data.requests || []);
       setReceivedRequests(r.data.requests || []);
       setGeneratedTokens(g.data.tokens || []);
@@ -253,12 +253,6 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
             >
               + Create Event
             </button>
-            <button
-              className={`${btn('primary')} w-full sm:w-auto`}
-              onClick={() => setShowCreateVenue(true)}
-            >
-              + Create Venue
-            </button>
           </div>
         </div>
 
@@ -270,6 +264,14 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           aria-selected={activeTab === 'events'}
         >
           My Events ({createdEvents.length})
+        </button>
+        <button
+          className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'venues' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+          onClick={() => setActiveTab('venues')}
+          role="tab"
+          aria-selected={activeTab === 'venues'}
+        >
+          My Venues {venuesCount ? `(${venuesCount})` : ''}
         </button>
         <button
           className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'services' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
@@ -315,46 +317,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       {/* helper to filter by query */}
       {/**/}
 
-      {activeTab === 'events' && (
-      <section>
-        <h3 className="text-xl font-semibold mb-2">My Venues</h3>
-        {/* Venue owner CTA removed per request */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {myVenues.filter((v) => {
-            const q = eventsQuery.toLowerCase();
-            if (!q) return true;
-            return (
-              (v.name || '').toLowerCase().includes(q) ||
-              (v.location?.city || '').toLowerCase().includes(q) ||
-              (v.status || '').toLowerCase().includes(q)
-            );
-          }).map((v) => (
-            <div key={v._id} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
-              <div className="h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80 group-hover:opacity-100" />
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                <div>
-                  <div className="text-lg font-semibold text-heading">{v.name}</div>
-                  <div className="mt-1 flex items-center gap-2 text-sm text-theme-secondary">
-                    <MapPin className="w-4 h-4 text-[var(--accent-cyan)]" />
-                    <span>{v.location?.city || 'Location TBA'}</span>
-                  </div>
-                </div>
-                <span className={`badge ${venueStatusStyle(v.status)}`}>{v.status}</span>
-              </div>
-              <div className="mt-2 flex items-center gap-2 text-sm text-theme-secondary">
-                <Users className="w-4 h-4 text-[var(--accent-amber)]" />
-                <span>Capacity: {v.capacity?.max ?? '—'}</span>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button className="btn w-full sm:w-auto" onClick={() => { setEditingVenue(v); setShowCreateVenue(true); }}>Edit</button>
-                <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400 w-full sm:w-auto" onClick={() => setConfirmDeleteVenueId(v._id)}>Delete</button>
-              </div>
-            </div>
-          ))}
-          {myVenues.length === 0 && <p className="text-sm text-gray-500">No venues yet.</p>}
-        </div>
-      </section>
-      )}
+      {/* Venues moved to dedicated tab */}
 
       {activeTab === 'events' && (
       <section>
@@ -706,33 +669,20 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           />
         </div>
       )}
+      {activeTab === 'venues' && (
+        <div className="mt-4">
+          <MyVenues
+            token={token}
+            onNavigate={() => setActiveTab('events')}
+            onToast={onToast}
+            onCountChange={(n) => setVenuesCount(n)}
+            onUpdated={() => refreshAll()}
+          />
+        </div>
+      )}
 
       </div>
     </div>
-    {showCreateVenue && (
-      <CreateVenueModal
-        isOpen={showCreateVenue}
-        onClose={() => { setEditingVenue(null); setShowCreateVenue(false); }}
-        token={token}
-        editVenue={editingVenue}
-        onCreated={async () => {
-          try {
-            const headers = { Authorization: `Bearer ${token}` };
-            const v = await axios.get(`${API_URL}/venues/my`, { headers });
-            setMyVenues(v.data.venues || []);
-            onToast && onToast('Venue created.', 'success');
-          } catch {}
-        }}
-        onSaved={async () => {
-          try {
-            const headers = { Authorization: `Bearer ${token}` };
-            const v = await axios.get(`${API_URL}/venues/my`, { headers });
-            setMyVenues(v.data.venues || []);
-            onToast && onToast('Venue updated.', 'success');
-          } catch {}
-        }}
-      />
-    )}
     <ConfirmDialog
       isOpen={!!confirmGenerateReq}
       title="Generate Booking Token"
@@ -770,28 +720,6 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         setConfirmDeleteEventId(null);
       }}
       onCancel={() => setConfirmDeleteEventId(null)}
-    />
-    <ConfirmDialog
-      isOpen={!!confirmDeleteVenueId}
-      title="Delete Venue"
-      message="Delete this venue? This cannot be undone."
-      confirmLabel="Delete"
-      cancelLabel="Cancel"
-      onConfirm={async () => {
-        if (!token || !confirmDeleteVenueId) return;
-        try {
-          const headers = { Authorization: `Bearer ${token}` };
-          await axios.delete(`${API_URL}/venues/${confirmDeleteVenueId}`, { headers });
-          const vr = await axios.get(`${API_URL}/venues/my`, { headers });
-          setMyVenues(vr.data.venues || []);
-          onToast && onToast('Venue deleted.', 'success');
-        } catch (e: any) {
-          onToast && onToast(e.response?.data?.error || 'Failed to delete venue', 'error');
-        } finally {
-          setConfirmDeleteVenueId(null);
-        }
-      }}
-      onCancel={() => setConfirmDeleteVenueId(null)}
     />
     {showCreateEvent && (
       <CreateEventModal
