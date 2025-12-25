@@ -83,8 +83,8 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
             <p className="text-sm text-gray-700 dark:text-gray-200">Manage items in your marketplace</p>
           </div>
           <div className="flex gap-2">
-            <button className="inline-flex items-center px-4 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => onNavigate && onNavigate('my-activities')}>Back</button>
-            <button className="inline-flex items-center px-4 py-2 rounded-md bg-emerald-600 text-white shadow hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400" onClick={() => setOpenCreate(true)}>Create Product</button>
+            <button className="inline-flex items-center px-4 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => onNavigate && onNavigate('my-activities')}>Back</button>
+            <button className="btn" onClick={() => setOpenCreate(true)}>Create Product</button>
           </div>
         </div>
 
@@ -99,7 +99,7 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {items.map((p) => (
-              <div key={p._id} className="group rounded-2xl border p-4 shadow-sm hover:shadow-lg transition-all bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-indigo-400/50 hover:ring-2 hover:ring-indigo-300/40">
+              <div key={p._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
                 <div className="relative mb-3">
                   {p.images?.[0] ? (
                     <img src={p.images[0]} alt={p.title} className="w-full h-32 rounded-md object-cover" />
@@ -111,8 +111,8 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{p.title}</div>
-                    <div className="mt-1 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
-                      <MapPin className="w-4 h-4 text-indigo-500" />
+                    <div className="mt-1 flex items-center gap-2 text-sm text-theme-secondary">
+                      <MapPin className="w-4 h-4 text-[var(--accent-cyan)]" />
                       <span>{p.location || 'Location TBA'}</span>
                     </div>
                     <div className="mt-1 flex items-center gap-2 text-xs">
@@ -121,17 +121,17 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
                       </span>
                     </div>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${statusBadge(p.status)}`}>{p.status}</span>
+                  <span className={`badge ${statusBadge(p.status)}`}>{p.status}</span>
                 </div>
-                <div className="mt-2 flex items-center gap-2 text-sm">
-                  <DollarSign className="w-4 h-4 text-emerald-500" />
+                <div className="mt-2 flex items-center gap-2 text-sm text-theme-secondary">
+                  <DollarSign className="w-4 h-4 text-[var(--accent-amber)]" />
                   <span>{p.price !== undefined ? `${p.currency || 'USD'} ${p.price}` : 'N/A'}</span>
                 </div>
                 <div className="mt-3 flex gap-2">
-                  <button className="inline-flex items-center px-3 py-2 rounded-md bg-indigo-600 text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400" onClick={() => { setEditingProduct(p); setOpenCreate(true); }}>
+                  <button className="btn inline-flex items-center px-3 py-2" onClick={() => { setEditingProduct(p); setOpenCreate(true); }}>
                     <Package className="w-4 h-4 mr-2" /> Edit
                   </button>
-                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => setSelectedProduct(p)}>
+                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => setSelectedProduct(p)}>
                     View
                   </button>
                   <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400" onClick={() => setConfirmDeleteProductId(p._id)}>
