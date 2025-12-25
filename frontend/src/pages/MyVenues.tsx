@@ -4,7 +4,7 @@ import { API_URL } from '../config/api';
 import CreateVenueModal from '../components/CreateVenueModal';
 import CreateEventModal from '../components/CreateEventModal';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { MapPin, Users } from 'lucide-react';
+import { MapPin, Users, Search as SearchIcon } from 'lucide-react';
 
 export default function MyVenues({ token, onToast, onNavigate, onCountChange, onUpdated, onOpenConversation }: { token: string | null, onToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void, onNavigate?: (view: string) => void, onCountChange?: (count: number) => void, onUpdated?: () => void, onOpenConversation?: (conv: any) => void }) {
   const btn = (variant: 'primary' | 'success' | 'danger' | 'outline' | 'warning' | 'ghost', size: 'sm' | 'md' = 'md') => {
@@ -35,6 +35,14 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
   const [editingVenue, setEditingVenue] = useState<any | null>(null);
   const [confirmDeleteVenueId, setConfirmDeleteVenueId] = useState<string | null>(null);
   const [query, setQuery] = useState<string>('');
+  const [searchScope, setSearchScope] = useState<'mine' | 'all'>(() => {
+    const saved = localStorage.getItem('myvenues.scope');
+    return saved === 'all' ? 'all' : 'mine';
+  });
+  const [allVenues, setAllVenues] = useState<any[]>([]);
+  const [allVenuesPage, setAllVenuesPage] = useState<number>(1);
+  const [allVenuesHasMore, setAllVenuesHasMore] = useState<boolean>(false);
+  const [loadingSearch, setLoadingSearch] = useState<boolean>(false);
   const [me, setMe] = useState<any | null>(null);
   const [sentRequests, setSentRequests] = useState<any[]>([]);
   const [receivedRequests, setReceivedRequests] = useState<any[]>([]);
@@ -138,6 +146,35 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
   }
 
   useEffect(() => { refreshVenues(); }, [token]);
+  useEffect(() => { localStorage.setItem('myvenues.scope', searchScope); }, [searchScope]);
+    async function searchAllVenues(q: string, page = 1, limit = 50) {
+      if (!token) return;
+      setLoadingSearch(true);
+      const headers = { Authorization: `Bearer ${token}` };
+      try {
+        const res = await axios.get(`${API_URL}/venues/search`, { params: { q, page, limit }, headers });
+        const items = (res.data?.venues || res.data?.results || res.data || []) as any[];
+        setAllVenues(page === 1 ? items : [...allVenues, ...items]);
+        setAllVenuesPage(page);
+        const hasMore = (res.data?.hasMore !== undefined) ? !!res.data.hasMore : (items.length >= limit);
+        setAllVenuesHasMore(hasMore);
+      } catch (e) {
+        // Graceful fallback: no global search endpoint — clear results
+        setAllVenues(page === 1 ? [] : allVenues);
+        setAllVenuesHasMore(false);
+      } finally {
+        setLoadingSearch(false);
+      }
+    }
+
+    useEffect(() => {
+      if (searchScope !== 'all') return;
+      const q = query.trim();
+      if (q.length < 2) { setAllVenues([]); setAllVenuesHasMore(false); return; }
+      const t = setTimeout(() => { searchAllVenues(q, 1); }, 300);
+      return () => clearTimeout(t);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [query, searchScope]);
   useEffect(() => { localStorage.setItem('myvenues.tab', venuesSubTab); }, [venuesSubTab]);
 
   return (
@@ -186,16 +223,38 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search venues, requests, tokens"
-            className="input w-full sm:w-80"
-            aria-label="Search venues"
-          />
+        <div className="flex flex-col gap-3">
+          <div className="relative w-full sm:w-96">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search venues, requests, tokens"
+              aria-label="Search venues"
+              className="pl-9 pr-3 py-2 w-full rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Search Scope">
+            <button
+              className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${searchScope === 'mine' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+              onClick={() => setSearchScope('mine')}
+              role="tab"
+              aria-selected={searchScope === 'mine'}
+            >
+              My Venues ({myVenues.length})
+            </button>
+            <button
+              className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${searchScope === 'all' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+              onClick={() => setSearchScope('all')}
+              role="tab"
+              aria-selected={searchScope === 'all'}
+            >
+              All Venues
+            </button>
+          </div>
         </div>
 
+        {searchScope === 'mine' && (
         <section>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {myVenues.filter((v) => {
@@ -232,6 +291,56 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             {myVenues.length === 0 && <p className="text-sm text-gray-500">No venues yet.</p>}
           </div>
         </section>
+        )}
+
+        {searchScope === 'all' && (
+        <section>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xl font-semibold">All Venues Search</h3>
+            {loadingSearch && <span className="text-sm text-theme-secondary">Loading…</span>}
+          </div>
+          {query.trim().length < 2 && (
+            <p className="text-sm text-gray-500">Type at least 2 characters to search all venues.</p>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {allVenues.map((v: any) => (
+              <div key={v._id || `${v.name}-${v.location?.city}`} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all">
+                <div className="h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80" />
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                  <div>
+                    <div className="text-lg font-semibold text-heading">{v.name}</div>
+                    <div className="mt-1 flex items-center gap-2 text-sm text-theme-secondary">
+                      <MapPin className="w-4 h-4 text-[var(--accent-cyan)]" />
+                      <span>{v.location?.city || 'Location TBA'}</span>
+                    </div>
+                  </div>
+                  {v.status && <span className={`badge ${venueStatusStyle(v.status)}`}>{v.status}</span>}
+                </div>
+                {v.capacity?.max && (
+                  <div className="mt-2 flex items-center gap-2 text-sm text-theme-secondary">
+                    <Users className="w-4 h-4 text-[var(--accent-amber)]" />
+                    <span>Capacity: {v.capacity?.max}</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          {query.trim().length >= 2 && (
+            <div className="mt-3">
+              <button
+                className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40"
+                onClick={() => searchAllVenues(query.trim(), allVenuesPage + 1)}
+                disabled={!allVenuesHasMore || loadingSearch}
+              >
+                {loadingSearch ? 'Loading…' : allVenuesHasMore ? 'Load more' : 'No more results'}
+              </button>
+            </div>
+          )}
+          {query.trim().length >= 2 && !loadingSearch && allVenues.length === 0 && (
+            <p className="text-sm text-gray-500">No venues found.</p>
+          )}
+        </section>
+        )}
 
         {venuesSubTab === 'sent' && (
         <section>
