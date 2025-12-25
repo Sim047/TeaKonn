@@ -109,3 +109,41 @@ router.get('/my/received', auth, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch tokens' });
   }
 });
+
+// POST /api/tokens/revoke { code }
+router.post('/revoke', auth, async (req, res) => {
+  try {
+    const { code } = req.body || {};
+    if (!code) return res.status(400).json({ error: 'code required' });
+    const token = await BookingToken.findOne({ code });
+    if (!token) return res.status(404).json({ error: 'Token not found' });
+    if (String(token.owner) !== String(req.user.id)) return res.status(403).json({ error: 'Not authorized' });
+    if (token.status !== 'active') return res.status(400).json({ error: 'Only active tokens can be revoked' });
+    token.status = 'expired';
+    token.expiresAt = new Date();
+    await token.save();
+    res.json({ success: true, token });
+  } catch (err) {
+    console.error('Revoke token error:', err);
+    res.status(500).json({ error: 'Failed to revoke token' });
+  }
+});
+
+// POST /api/tokens/extend { code, hours }
+router.post('/extend', auth, async (req, res) => {
+  try {
+    const { code, hours = 24 } = req.body || {};
+    if (!code) return res.status(400).json({ error: 'code required' });
+    const token = await BookingToken.findOne({ code });
+    if (!token) return res.status(404).json({ error: 'Token not found' });
+    if (String(token.owner) !== String(req.user.id)) return res.status(403).json({ error: 'Not authorized' });
+    if (token.status !== 'active') return res.status(400).json({ error: 'Only active tokens can be extended' });
+    const addMs = Number(hours) * 60 * 60 * 1000;
+    token.expiresAt = new Date(token.expiresAt.getTime() + addMs);
+    await token.save();
+    res.json({ success: true, token });
+  } catch (err) {
+    console.error('Extend token error:', err);
+    res.status(500).json({ error: 'Failed to extend token' });
+  }
+});

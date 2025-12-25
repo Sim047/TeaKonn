@@ -61,6 +61,30 @@ export default function MyActivities({ token }: { token: string | null }) {
     }
   }
 
+  async function revokeToken(code: string) {
+    if (!token) return;
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      await axios.post(`${API_URL}/tokens/revoke`, { code }, { headers });
+      const g = await axios.get(`${API_URL}/tokens/my/generated`, { headers });
+      setGeneratedTokens(g.data.tokens || []);
+    } catch (e: any) {
+      alert(e.response?.data?.error || 'Failed to revoke token');
+    }
+  }
+
+  async function extendToken(code: string, hours = 24) {
+    if (!token) return;
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      await axios.post(`${API_URL}/tokens/extend`, { code, hours }, { headers });
+      const g = await axios.get(`${API_URL}/tokens/my/generated`, { headers });
+      setGeneratedTokens(g.data.tokens || []);
+    } catch (e: any) {
+      alert(e.response?.data?.error || 'Failed to extend token');
+    }
+  }
+
   return (
     <div className="p-4 space-y-6">
       <h2 className="text-2xl font-bold">My Activities</h2>
@@ -122,6 +146,12 @@ export default function MyActivities({ token }: { token: string | null }) {
               <div className="font-medium">{t.code}</div>
               <div className="text-sm">Venue: {t.venue?.name}</div>
               <div className="text-sm">Status: {t.status} | Expires: {new Date(t.expiresAt).toLocaleString()}</div>
+              {me?.role === 'venue_owner' && t.status === 'active' && (
+                <div className="mt-2 flex gap-2">
+                  <button className="px-3 py-2 rounded border" onClick={() => extendToken(t.code, 24)}>Extend 24h</button>
+                  <button className="px-3 py-2 rounded border border-red-500 text-red-600" onClick={() => revokeToken(t.code)}>Revoke</button>
+                </div>
+              )}
             </div>
           ))}
           {generatedTokens.length === 0 && <p className="text-sm text-gray-500">No generated tokens.</p>}

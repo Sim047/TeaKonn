@@ -32,6 +32,8 @@ Venue Booking System:
 - POST  /api/payments/callback       (M-PESA webhook stub) { externalRef?, status, idempotencyKey? }
 - POST  /api/tokens/generate         (auth venue_owner) { bookingRequestId, expiresInHours? } → sends token in chat
 - POST  /api/tokens/verify           (auth) { code } → validates token for requester
+- POST  /api/tokens/revoke           (auth venue_owner) { code } → revoke active token
+- POST  /api/tokens/extend           (auth venue_owner) { code, hours } → extend active token expiry
 - POST  /api/events                  (auth) { bookingTokenCode, ... } → creates event; auto-populates venue/location and consumes token
 
 Notes:
