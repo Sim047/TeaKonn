@@ -89,6 +89,15 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
   const [activeTab, setActiveTab] = useState<'events' | 'services' | 'products' | 'venues'>('events');
   const [eventsQuery, setEventsQuery] = useState<string>('');
   const [venuesCount, setVenuesCount] = useState<number>(0);
+  const [showCreated, setShowCreated] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myactivities.showCreated') || 'true'); } catch { return true; }
+  });
+  const [showJoined, setShowJoined] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myactivities.showJoined') || 'true'); } catch { return true; }
+  });
+  const [showPast, setShowPast] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myactivities.showPast') || 'true'); } catch { return true; }
+  });
 
   async function refreshAll() {
     if (!token) return;
@@ -132,6 +141,10 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
   }
 
   useEffect(() => { refreshAll(); }, [token, includeArchived]);
+  useEffect(() => { localStorage.setItem('myactivities.showCreated', JSON.stringify(showCreated)); }, [showCreated]);
+  useEffect(() => { localStorage.setItem('myactivities.showJoined', JSON.stringify(showJoined)); }, [showJoined]);
+  useEffect(() => { localStorage.setItem('myactivities.showPast', JSON.stringify(showPast)); }, [showPast]);
+  useEffect(() => { setIncludeArchived(showPast); }, [showPast]);
 
 
   async function startConversationWithUser(userId: string) {
@@ -242,16 +255,6 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
             aria-label="Search events"
           />
         )}
-        <div className="sm:ml-auto flex items-center gap-2">
-          <span className="text-sm text-theme-secondary">Show past</span>
-          <button
-            onClick={() => setIncludeArchived(a => !a)}
-            className={`chip ${includeArchived ? 'chip-active' : ''}`}
-            aria-pressed={includeArchived}
-          >
-            {includeArchived ? 'On' : 'Off'}
-          </button>
-        </div>
       </div>
 
       {/* helper to filter by query */}
@@ -261,7 +264,14 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
 
       {activeTab === 'events' && (
       <section>
-        <h3 className="text-xl font-semibold mb-2">Events I Created <span className="text-sm font-normal text-gray-500">({createdEvents.length})</span></h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xl font-semibold">Events I Created <span className="text-sm font-normal text-gray-500">({createdEvents.length})</span></h3>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-theme-secondary">Show</span>
+            <button className={`chip ${showCreated ? 'chip-active' : ''}`} onClick={() => setShowCreated(s => !s)} aria-pressed={showCreated}>{showCreated ? 'On' : 'Off'}</button>
+          </div>
+        </div>
+        {showCreated && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {createdEvents.filter((e) => {
             const q = eventsQuery.toLowerCase();
@@ -339,12 +349,20 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           ))}
           {createdEvents.length === 0 && <p className="text-sm text-gray-500">No created events yet.</p>}
         </div>
+        )}
       </section>
       )}
 
       {activeTab === 'events' && (
       <section>
-        <h3 className="text-xl font-semibold mb-2">Events I Joined <span className="text-sm font-normal text-gray-500">({joinedEvents.length})</span></h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xl font-semibold">Events I Joined <span className="text-sm font-normal text-gray-500">({joinedEvents.length})</span></h3>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-theme-secondary">Show</span>
+            <button className={`chip ${showJoined ? 'chip-active' : ''}`} onClick={() => setShowJoined(s => !s)} aria-pressed={showJoined}>{showJoined ? 'On' : 'Off'}</button>
+          </div>
+        </div>
+        {showJoined && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {joinedEvents.filter((e) => {
             const q = eventsQuery.toLowerCase();
@@ -395,6 +413,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           ))}
           {joinedEvents.length === 0 && <p className="text-sm text-gray-500">No joined events yet.</p>}
         </div>
+        )}
       </section>
       )}
 
@@ -491,8 +510,15 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       message="Are you sure you want to leave this event?"
       confirmLabel="Leave"
       cancelLabel="Stay"
-      onConfirm={() => {
-        if (confirmLeaveEventId) leaveEvent(confirmLeaveEventId);
+      {activeTab === 'events' && showPast && (
+        <section>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xl font-semibold">Past Events</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-theme-secondary">Show</span>
+              <button className={`chip ${showPast ? 'chip-active' : ''}`} onClick={() => setShowPast(s => !s)} aria-pressed={showPast}>{showPast ? 'On' : 'Off'}</button>
+            </div>
+          </div>
         setConfirmLeaveEventId(null);
       }}
       onCancel={() => setConfirmLeaveEventId(null)}
