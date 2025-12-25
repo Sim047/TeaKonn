@@ -147,17 +147,9 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
 
   useEffect(() => { refreshVenues(); }, [token]);
   useEffect(() => { localStorage.setItem('myvenues.scope', searchScope); }, [searchScope]);
-  // If scope is 'all' but there's no query and user has venues, default to 'mine'
-  useEffect(() => {
-    const q = query.trim();
-    if (searchScope === 'all' && q.length < 2 && myVenues.length > 0) {
-      setSearchScope('mine');
-    }
-  }, [searchScope, query, myVenues.length]);
     async function searchAllVenues(q: string, page = 1, limit = 50) {
-      if (!token) return;
       setLoadingSearch(true);
-      const headers = { Authorization: `Bearer ${token}` };
+      const headers = token ? { Authorization: `Bearer ${token}` } : undefined as any;
       try {
         const res = await axios.get(`${API_URL}/venues/search`, { params: { name: q, page, limit }, headers });
         const items = (res.data?.venues || res.data?.results || res.data || []) as any[];
@@ -179,7 +171,6 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
     useEffect(() => {
       if (searchScope !== 'all') return;
       const q = query.trim();
-      if (q.length < 2) { setAllVenues([]); setAllVenuesHasMore(false); return; }
       const t = setTimeout(() => { searchAllVenues(q, 1); }, 300);
       return () => clearTimeout(t);
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -305,12 +296,12 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
         {searchScope === 'all' && (
         <section>
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-semibold">All Venues Search</h3>
+            <h3 className="text-xl font-semibold">All Venues</h3>
             {loadingSearch && <span className="text-sm text-theme-secondary">Loading…</span>}
           </div>
           {query.trim().length < 2 && (
             <div className="text-sm text-gray-500">
-              <p>Type at least 2 characters to search all venues.</p>
+              <p>Browse all available venues or refine with search.</p>
               {myVenues.length > 0 && (
                 <button
                   className="mt-2 inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40"
