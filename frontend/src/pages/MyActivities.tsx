@@ -86,6 +86,7 @@ export default function MyActivities({ token }: { token: string | null }) {
   }
 
   return (
+    <>
     <div className="p-4 space-y-6">
       <h2 className="text-2xl font-bold">My Activities</h2>
 
@@ -181,5 +182,6 @@ export default function MyActivities({ token }: { token: string | null }) {
         } catch {}
       }} />
     )}
+    </>
   );
 }
