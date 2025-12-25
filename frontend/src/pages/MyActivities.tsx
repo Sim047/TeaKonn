@@ -79,6 +79,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
   const [joinedEvents, setJoinedEvents] = useState<any[]>([]);
   const [archivedEvents, setArchivedEvents] = useState<any[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
+  const [confirmGenerateReq, setConfirmGenerateReq] = useState<any | null>(null);
   const [includeArchived, setIncludeArchived] = useState<boolean>(true);
   const [servicesCount, setServicesCount] = useState<number>(0);
   const [productsCount, setProductsCount] = useState<number>(0);
@@ -144,7 +145,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       await axios.post(`${API_URL}/payments/callback`, { status: 'success', idempotencyKey });
       // Generate token
       await axios.post(`${API_URL}/tokens/generate`, { bookingRequestId: reqItem._id, expiresInHours: 72 }, { headers });
-      alert('Token generated and sent in chat.');
+      onToast && onToast('Token generated and sent to requester in chat.', 'success');
       // Refresh lists
       const [g, t] = await Promise.all([
         axios.get(`${API_URL}/tokens/my/generated`, { headers }),
@@ -153,7 +154,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       setGeneratedTokens(g.data.tokens || []);
       setReceivedTokens(t.data.tokens || []);
     } catch (e: any) {
-      alert(e.response?.data?.error || 'Failed to generate token');
+      onToast && onToast(e.response?.data?.error || 'Failed to generate token', 'error');
     }
   }
 
@@ -554,7 +555,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                   <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => openRequestChat(r._id)}>Open Chat</button>
                   <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
                   {r.status === 'pending' && (
-                    <button className="btn" onClick={() => generateTokenForRequest(r)}>Generate Token (after payment)</button>
+                    <button className="btn" onClick={() => setConfirmGenerateReq(r)}>Generate Token (after payment)</button>
                   )}
                 </div>
               )}
@@ -732,6 +733,15 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         }}
       />
     )}
+    <ConfirmDialog
+      isOpen={!!confirmGenerateReq}
+      title="Generate Booking Token"
+      message="This will record a payment, create a booking token, and send it to the requester in the booking chat. Proceed?"
+      confirmLabel="Generate Token"
+      cancelLabel="Cancel"
+      onConfirm={() => { if (confirmGenerateReq) generateTokenForRequest(confirmGenerateReq); setConfirmGenerateReq(null); }}
+      onCancel={() => setConfirmGenerateReq(null)}
+    />
     <ConfirmDialog
       isOpen={!!confirmLeaveEventId}
       title="Leave Event"
