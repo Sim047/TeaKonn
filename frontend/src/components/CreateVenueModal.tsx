@@ -1,8 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../config/api';
 
-export default function CreateVenueModal({ isOpen, onClose, token, onCreated }: { isOpen: boolean; onClose: () => void; token: string | null; onCreated?: () => void; }) {
+interface CreateVenueModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  token: string | null;
+  onCreated?: () => void;
+  editVenue?: any;
+  onSaved?: () => void;
+}
+
+export default function CreateVenueModal({ isOpen, onClose, token, onCreated, editVenue, onSaved }: CreateVenueModalProps) {
   const [form, setForm] = useState({
     name: '',
     locationName: '',
@@ -15,6 +24,23 @@ export default function CreateVenueModal({ isOpen, onClose, token, onCreated }: 
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (editVenue && isOpen) {
+      setForm({
+        name: editVenue.name || '',
+        locationName: editVenue.location?.name || '',
+        address: editVenue.location?.address || '',
+        city: editVenue.location?.city || '',
+        state: editVenue.location?.state || '',
+        country: editVenue.location?.country || '',
+        capacity: editVenue.capacity?.max || 50,
+        description: editVenue.description || '',
+      });
+    } else if (isOpen && !editVenue) {
+      setForm({ name: '', locationName: '', address: '', city: '', state: '', country: '', capacity: 50, description: '' });
+    }
+  }, [editVenue, isOpen]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,10 +60,13 @@ export default function CreateVenueModal({ isOpen, onClose, token, onCreated }: 
         capacity: { max: Number(form.capacity) },
         description: form.description,
       };
-      await axios.post(`${API_URL}/venues/create`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      onCreated && onCreated();
+      if (editVenue?._id) {
+        await axios.put(`${API_URL}/venues/${editVenue._id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+        onSaved && onSaved();
+      } else {
+        await axios.post(`${API_URL}/venues/create`, payload, { headers: { Authorization: `Bearer ${token}` } });
+        onCreated && onCreated();
+      }
       onClose();
       setForm({ name: '', locationName: '', address: '', city: '', state: '', country: '', capacity: 50, description: '' });
     } catch (e: any) {
@@ -52,7 +81,7 @@ export default function CreateVenueModal({ isOpen, onClose, token, onCreated }: 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
       <div className="bg-white dark:bg-slate-900 rounded-xl p-6 w-full max-w-xl shadow-xl">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Create Venue</h3>
+          <h3 className="text-lg font-semibold">{editVenue ? 'Edit Venue' : 'Create Venue'}</h3>
           <button className="px-3 py-1 rounded border" onClick={onClose}>Close</button>
         </div>
         {error && <p className="text-red-600 mb-2">{error}</p>}
@@ -69,7 +98,7 @@ export default function CreateVenueModal({ isOpen, onClose, token, onCreated }: 
           <textarea className="w-full px-3 py-2 rounded border" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           <div className="flex gap-2 justify-end">
             <button type="button" className="px-4 py-2 rounded border" onClick={onClose}>Cancel</button>
-            <button type="submit" className="px-4 py-2 rounded bg-teal-600 text-white" disabled={loading}>{loading ? 'Creating...' : 'Create Venue'}</button>
+            <button type="submit" className="px-4 py-2 rounded bg-teal-600 text-white" disabled={loading}>{loading ? (editVenue ? 'Saving...' : 'Creating...') : (editVenue ? 'Save Changes' : 'Create Venue')}</button>
           </div>
         </form>
       </div>

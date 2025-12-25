@@ -15,6 +15,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [initialEventToken, setInitialEventToken] = useState<string>('');
   const [editingEvent, setEditingEvent] = useState<any | null>(null);
+  const [editingVenue, setEditingVenue] = useState<any | null>(null);
   const [createdEvents, setCreatedEvents] = useState<any[]>([]);
   const [joinedEvents, setJoinedEvents] = useState<any[]>([]);
   const [archivedEvents, setArchivedEvents] = useState<any[]>([]);
@@ -219,6 +220,22 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                 <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">{v.status}</span>
               </div>
               <div className="mt-2 text-sm">Capacity: {v.capacity?.max}</div>
+              <div className="mt-3 flex gap-2">
+                <button className="px-3 py-2 rounded-md bg-indigo-600 text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400" onClick={() => { setEditingVenue(v); setShowCreateVenue(true); }}>Edit</button>
+                <button className="px-3 py-2 rounded-md border border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 focus:outline-none focus:ring-2 focus:ring-red-300" onClick={async () => {
+                  if (!token) return;
+                  if (!confirm('Delete this venue? This cannot be undone.')) return;
+                  try {
+                    const headers = { Authorization: `Bearer ${token}` };
+                    await axios.delete(`${API_URL}/venues/${v._id}`, { headers });
+                    const vr = await axios.get(`${API_URL}/venues/my`, { headers });
+                    setMyVenues(vr.data.venues || []);
+                    onToast && onToast('Venue deleted.', 'success');
+                  } catch (e: any) {
+                    onToast && onToast(e.response?.data?.error || 'Failed to delete venue', 'error');
+                  }
+                }}>Delete</button>
+              </div>
             </div>
           ))}
           {myVenues.length === 0 && <p className="text-sm text-gray-500">No venues yet.</p>}
@@ -441,13 +458,28 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       </div>
     </div>
     {showCreateVenue && (
-      <CreateVenueModal isOpen={showCreateVenue} onClose={() => setShowCreateVenue(false)} token={token} onCreated={async () => {
-        try {
-          const headers = { Authorization: `Bearer ${token}` };
-          const v = await axios.get(`${API_URL}/venues/my`, { headers });
-          setMyVenues(v.data.venues || []);
-        } catch {}
-      }} />
+      <CreateVenueModal
+        isOpen={showCreateVenue}
+        onClose={() => { setEditingVenue(null); setShowCreateVenue(false); }}
+        token={token}
+        editVenue={editingVenue}
+        onCreated={async () => {
+          try {
+            const headers = { Authorization: `Bearer ${token}` };
+            const v = await axios.get(`${API_URL}/venues/my`, { headers });
+            setMyVenues(v.data.venues || []);
+            onToast && onToast('Venue created.', 'success');
+          } catch {}
+        }}
+        onSaved={async () => {
+          try {
+            const headers = { Authorization: `Bearer ${token}` };
+            const v = await axios.get(`${API_URL}/venues/my`, { headers });
+            setMyVenues(v.data.venues || []);
+            onToast && onToast('Venue updated.', 'success');
+          } catch {}
+        }}
+      />
     )}
     {showCreateEvent && (
       <CreateEventModal

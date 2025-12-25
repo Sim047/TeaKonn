@@ -81,3 +81,62 @@ router.get('/my', auth, ensureVenueOwner, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch my venues' });
   }
 });
+
+// PUT /api/venues/:id - update venue (owner only)
+router.put('/:id', auth, ensureVenueOwner, async (req, res) => {
+  try {
+    const venue = await Venue.findById(req.params.id);
+    if (!venue) return res.status(404).json({ error: 'Venue not found' });
+    if (String(venue.owner) !== String(req.user.id)) {
+      return res.status(403).json({ error: 'Only owner can update venue' });
+    }
+
+    const allowed = ['name','location','capacity','description','images','status','available'];
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) {
+        if (key === 'location' && typeof req.body.location === 'object') {
+          venue.location = venue.location || {};
+          const loc = req.body.location;
+          if (loc.name !== undefined) venue.location.name = loc.name;
+          if (loc.address !== undefined) venue.location.address = loc.address;
+          if (loc.city !== undefined) venue.location.city = loc.city;
+          if (loc.state !== undefined) venue.location.state = loc.state;
+          if (loc.country !== undefined) venue.location.country = loc.country;
+          if (loc.coordinates && typeof loc.coordinates === 'object') {
+            venue.location.coordinates = venue.location.coordinates || {};
+            if (loc.coordinates.lat !== undefined) venue.location.coordinates.lat = Number(loc.coordinates.lat);
+            if (loc.coordinates.lng !== undefined) venue.location.coordinates.lng = Number(loc.coordinates.lng);
+          }
+        } else if (key === 'capacity' && typeof req.body.capacity === 'object') {
+          venue.capacity = venue.capacity || {};
+          if (req.body.capacity.max !== undefined) venue.capacity.max = Number(req.body.capacity.max);
+        } else {
+          venue[key] = req.body[key];
+        }
+      }
+    }
+
+    await venue.save();
+    res.json(venue);
+  } catch (err) {
+    console.error('Update venue error:', err);
+    res.status(500).json({ error: 'Failed to update venue' });
+  }
+});
+
+// DELETE /api/venues/:id - delete venue (owner only)
+router.delete('/:id', auth, ensureVenueOwner, async (req, res) => {
+  try {
+    const venue = await Venue.findById(req.params.id);
+    if (!venue) return res.status(404).json({ error: 'Venue not found' });
+    if (String(venue.owner) !== String(req.user.id)) {
+      return res.status(403).json({ error: 'Only owner can delete venue' });
+    }
+
+    await Venue.deleteOne({ _id: venue._id });
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('Delete venue error:', err);
+    res.status(500).json({ error: 'Failed to delete venue' });
+  }
+});
