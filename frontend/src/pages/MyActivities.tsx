@@ -19,6 +19,7 @@ export default function MyActivities({ token, onOpenConversation }: { token: str
   const [archivedEvents, setArchivedEvents] = useState<any[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [includeArchived, setIncludeArchived] = useState<boolean>(true);
+  const [roleChanging, setRoleChanging] = useState<boolean>(false);
 
   async function refreshAll() {
     if (!token) return;
@@ -101,6 +102,23 @@ export default function MyActivities({ token, onOpenConversation }: { token: str
     }
   }
 
+  async function becomeVenueOwner() {
+    if (!token) return;
+    setRoleChanging(true);
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      const base = API_URL.replace(/\/api$/, '');
+      const res = await axios.post(`${base}/api/users/role`, { role: 'venue_owner' }, { headers });
+      const updated = res.data?.user;
+      if (updated) setMe(updated);
+      alert('Role updated to Venue Owner. You can now create venues.');
+    } catch (e: any) {
+      alert(e.response?.data?.message || 'Failed to update role');
+    } finally {
+      setRoleChanging(false);
+    }
+  }
+
   async function joinEvent(eventId: string) {
     if (!token) return;
     setBusy(eventId);
@@ -153,8 +171,21 @@ export default function MyActivities({ token, onOpenConversation }: { token: str
         >
           Create Event
         </button>
-        {me?.role === 'venue_owner' && (
-          <button className="px-3 py-2 rounded bg-indigo-600 text-white" onClick={() => setShowCreateVenue(true)}>Create Venue</button>
+        <button
+          className={`px-3 py-2 rounded ${me?.role === 'venue_owner' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600 cursor-not-allowed'}`}
+          disabled={me?.role !== 'venue_owner'}
+          onClick={() => setShowCreateVenue(true)}
+        >
+          Create Venue
+        </button>
+        {me && me.role !== 'venue_owner' && (
+          <button
+            className="px-3 py-2 rounded border hover:bg-gray-50 dark:hover:bg-gray-800"
+            disabled={roleChanging}
+            onClick={becomeVenueOwner}
+          >
+            {roleChanging ? 'Updating…' : 'Become Venue Owner'}
+          </button>
         )}
         <button
           className="px-3 py-2 rounded border hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -176,6 +207,22 @@ export default function MyActivities({ token, onOpenConversation }: { token: str
 
       <section>
         <h3 className="text-xl font-semibold mb-2">My Venues</h3>
+        {me && me.role !== 'venue_owner' && (
+          <div className="mb-3 rounded-xl border p-4 bg-white dark:bg-gray-900">
+            <div className="text-sm text-gray-700 dark:text-gray-300">
+              You don’t have the Venue Owner role yet. Update your role to list venues and manage bookings.
+            </div>
+            <div className="mt-2">
+              <button
+                className="px-3 py-2 rounded bg-indigo-600 text-white disabled:opacity-50"
+                disabled={roleChanging}
+                onClick={becomeVenueOwner}
+              >
+                {roleChanging ? 'Updating…' : 'Become Venue Owner'}
+              </button>
+            </div>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {myVenues.map((v) => (
             <div key={v._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900">
