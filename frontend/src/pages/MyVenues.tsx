@@ -147,6 +147,13 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
 
   useEffect(() => { refreshVenues(); }, [token]);
   useEffect(() => { localStorage.setItem('myvenues.scope', searchScope); }, [searchScope]);
+  // If scope is 'all' but there's no query and user has venues, default to 'mine'
+  useEffect(() => {
+    const q = query.trim();
+    if (searchScope === 'all' && q.length < 2 && myVenues.length > 0) {
+      setSearchScope('mine');
+    }
+  }, [searchScope, query, myVenues.length]);
     async function searchAllVenues(q: string, page = 1, limit = 50) {
       if (!token) return;
       setLoadingSearch(true);
@@ -302,7 +309,17 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             {loadingSearch && <span className="text-sm text-theme-secondary">Loading…</span>}
           </div>
           {query.trim().length < 2 && (
-            <p className="text-sm text-gray-500">Type at least 2 characters to search all venues.</p>
+            <div className="text-sm text-gray-500">
+              <p>Type at least 2 characters to search all venues.</p>
+              {myVenues.length > 0 && (
+                <button
+                  className="mt-2 inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40"
+                  onClick={() => setSearchScope('mine')}
+                >
+                  View My Venues ({myVenues.length})
+                </button>
+              )}
+            </div>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {allVenues.map((v: any) => (
