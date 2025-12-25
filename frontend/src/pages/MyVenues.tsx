@@ -43,17 +43,9 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
   const [confirmGenerateReq, setConfirmGenerateReq] = useState<any | null>(null);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [initialEventToken, setInitialEventToken] = useState<string>('');
-  const [showSent, setShowSent] = useState<boolean>(() => {
-    try { return JSON.parse(localStorage.getItem('myvenues.showSent') || 'true'); } catch { return true; }
-  });
-  const [showReceived, setShowReceived] = useState<boolean>(() => {
-    try { return JSON.parse(localStorage.getItem('myvenues.showReceived') || 'true'); } catch { return true; }
-  });
-  const [showGenTokens, setShowGenTokens] = useState<boolean>(() => {
-    try { return JSON.parse(localStorage.getItem('myvenues.showGenTokens') || 'true'); } catch { return true; }
-  });
-  const [showRecvTokens, setShowRecvTokens] = useState<boolean>(() => {
-    try { return JSON.parse(localStorage.getItem('myvenues.showRecvTokens') || 'true'); } catch { return true; }
+  const [venuesSubTab, setVenuesSubTab] = useState<'sent' | 'received' | 'generated' | 'receivedTokens'>(() => {
+    const saved = localStorage.getItem('myvenues.tab');
+    return (saved === 'received' || saved === 'generated' || saved === 'receivedTokens') ? (saved as any) : 'sent';
   });
 
   async function refreshVenues() {
@@ -146,11 +138,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
   }
 
   useEffect(() => { refreshVenues(); }, [token]);
-
-  useEffect(() => { localStorage.setItem('myvenues.showSent', JSON.stringify(showSent)); }, [showSent]);
-  useEffect(() => { localStorage.setItem('myvenues.showReceived', JSON.stringify(showReceived)); }, [showReceived]);
-  useEffect(() => { localStorage.setItem('myvenues.showGenTokens', JSON.stringify(showGenTokens)); }, [showGenTokens]);
-  useEffect(() => { localStorage.setItem('myvenues.showRecvTokens', JSON.stringify(showRecvTokens)); }, [showRecvTokens]);
+  useEffect(() => { localStorage.setItem('myvenues.tab', venuesSubTab); }, [venuesSubTab]);
 
   return (
     <div className="min-h-screen themed-page">
@@ -161,6 +149,41 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             <button className={`${btn('primary')} w-full sm:w-auto`} onClick={() => setShowCreateVenue(true)}>+ Create Venue</button>
             <button className={`${btn('outline')} w-full sm:w-auto`} onClick={refreshVenues}>Refresh</button>
           </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mt-4" role="tablist" aria-label="Venues Subtabs">
+          <button
+            className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${venuesSubTab === 'sent' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+            onClick={() => setVenuesSubTab('sent')}
+            role="tab"
+            aria-selected={venuesSubTab === 'sent'}
+          >
+            Sent Requests ({sentRequests.length})
+          </button>
+          <button
+            className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${venuesSubTab === 'received' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+            onClick={() => setVenuesSubTab('received')}
+            role="tab"
+            aria-selected={venuesSubTab === 'received'}
+          >
+            Received Requests ({receivedRequests.length})
+          </button>
+          <button
+            className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${venuesSubTab === 'generated' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+            onClick={() => setVenuesSubTab('generated')}
+            role="tab"
+            aria-selected={venuesSubTab === 'generated'}
+          >
+            Generated Tokens ({generatedTokens.length})
+          </button>
+          <button
+            className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${venuesSubTab === 'receivedTokens' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+            onClick={() => setVenuesSubTab('receivedTokens')}
+            role="tab"
+            aria-selected={venuesSubTab === 'receivedTokens'}
+          >
+            Received Tokens ({receivedTokens.length})
+          </button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -210,15 +233,11 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
           </div>
         </section>
 
+        {venuesSubTab === 'sent' && (
         <section>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xl font-semibold">Booking Requests (Sent)</h3>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-theme-secondary">Show</span>
-              <button className={`chip ${showSent ? 'chip-active' : ''}`} onClick={() => setShowSent(s => !s)} aria-pressed={showSent}>{showSent ? 'On' : 'Off'}</button>
-            </div>
           </div>
-          {showSent && (
           <div className="space-y-2">
             {sentRequests.filter((r) => {
               const q = query.toLowerCase();
@@ -245,18 +264,14 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             ))}
             {sentRequests.length === 0 && <p className="text-sm text-gray-500">No sent requests.</p>}
           </div>
-          )}
         </section>
+        )}
 
+        {venuesSubTab === 'received' && (
         <section>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xl font-semibold">Booking Requests (Received)</h3>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-theme-secondary">Show</span>
-              <button className={`chip ${showReceived ? 'chip-active' : ''}`} onClick={() => setShowReceived(s => !s)} aria-pressed={showReceived}>{showReceived ? 'On' : 'Off'}</button>
-            </div>
           </div>
-          {showReceived && (
           <div className="space-y-2">
             {receivedRequests.filter((r) => {
               const q = query.toLowerCase();
@@ -290,18 +305,14 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             ))}
             {receivedRequests.length === 0 && <p className="text-sm text-gray-500">No received requests.</p>}
           </div>
-          )}
         </section>
+        )}
 
+        {venuesSubTab === 'generated' && (
         <section>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xl font-semibold">Generated Tokens</h3>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-theme-secondary">Show</span>
-              <button className={`chip ${showGenTokens ? 'chip-active' : ''}`} onClick={() => setShowGenTokens(s => !s)} aria-pressed={showGenTokens}>{showGenTokens ? 'On' : 'Off'}</button>
-            </div>
           </div>
-          {showGenTokens && (
           <div className="space-y-2">
             {generatedTokens.filter((t) => {
               const q = query.toLowerCase();
@@ -330,18 +341,14 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             ))}
             {generatedTokens.length === 0 && <p className="text-sm text-gray-500">No generated tokens.</p>}
           </div>
-          )}
         </section>
+        )}
 
+        {venuesSubTab === 'receivedTokens' && (
         <section>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xl font-semibold">Received Tokens</h3>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-theme-secondary">Show</span>
-              <button className={`chip ${showRecvTokens ? 'chip-active' : ''}`} onClick={() => setShowRecvTokens(s => !s)} aria-pressed={showRecvTokens}>{showRecvTokens ? 'On' : 'Off'}</button>
-            </div>
           </div>
-          {showRecvTokens && (
           <div className="space-y-2">
             {receivedTokens.filter((t) => {
               const q = query.toLowerCase();
@@ -371,8 +378,8 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             ))}
             {receivedTokens.length === 0 && <p className="text-sm text-gray-500">No received tokens.</p>}
           </div>
-          )}
         </section>
+        )}
       </div>
 
       {showCreateVenue && (

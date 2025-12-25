@@ -89,14 +89,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
   const [activeTab, setActiveTab] = useState<'events' | 'services' | 'products' | 'venues'>('events');
   const [eventsQuery, setEventsQuery] = useState<string>('');
   const [venuesCount, setVenuesCount] = useState<number>(0);
-  const [showCreated, setShowCreated] = useState<boolean>(() => {
-    try { return JSON.parse(localStorage.getItem('myactivities.showCreated') || 'true'); } catch { return true; }
-  });
-  const [showJoined, setShowJoined] = useState<boolean>(() => {
-    try { return JSON.parse(localStorage.getItem('myactivities.showJoined') || 'true'); } catch { return true; }
-  });
-  const [showPast, setShowPast] = useState<boolean>(() => {
-    try { return JSON.parse(localStorage.getItem('myactivities.showPast') || 'true'); } catch { return true; }
+  const [eventsSubTab, setEventsSubTab] = useState<'created' | 'joined' | 'past'>(() => {
+    const saved = localStorage.getItem('myactivities.events.tab');
+    return (saved === 'joined' || saved === 'past') ? (saved as any) : 'created';
   });
 
   async function refreshAll() {
@@ -141,10 +136,8 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
   }
 
   useEffect(() => { refreshAll(); }, [token, includeArchived]);
-  useEffect(() => { localStorage.setItem('myactivities.showCreated', JSON.stringify(showCreated)); }, [showCreated]);
-  useEffect(() => { localStorage.setItem('myactivities.showJoined', JSON.stringify(showJoined)); }, [showJoined]);
-  useEffect(() => { localStorage.setItem('myactivities.showPast', JSON.stringify(showPast)); }, [showPast]);
-  useEffect(() => { setIncludeArchived(showPast); }, [showPast]);
+  useEffect(() => { localStorage.setItem('myactivities.events.tab', eventsSubTab); }, [eventsSubTab]);
+  useEffect(() => { setIncludeArchived(eventsSubTab === 'past'); }, [eventsSubTab]);
 
 
   async function startConversationWithUser(userId: string) {
@@ -205,16 +198,40 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               onClick={() => { setInitialEventToken(''); setShowCreateEvent(true); }}
             >
               + Create Event
-            </button>
+            {activeTab === 'events' && (
+              <div className="flex flex-wrap gap-2 mt-3" role="tablist" aria-label="Events Subtabs">
+                <button
+                  className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${eventsSubTab === 'created' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+                  onClick={() => setEventsSubTab('created')}
+                  role="tab"
+                  aria-selected={eventsSubTab === 'created'}
+                >
+                  Created ({createdEvents.length})
+                </button>
+                <button
+                  className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${eventsSubTab === 'joined' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+                  onClick={() => setEventsSubTab('joined')}
+                  role="tab"
+                  aria-selected={eventsSubTab === 'joined'}
+                >
+                  Joined ({joinedEvents.length})
+                </button>
+                <button
+                  className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${eventsSubTab === 'past' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+                  onClick={() => setEventsSubTab('past')}
+                  role="tab"
+                  aria-selected={eventsSubTab === 'past'}
+                >
+                  Past ({archivedEvents.length})
+                </button>
+              </div>
+            )}
+
+            {activeTab === 'events' && eventsSubTab === 'created' && (
           </div>
         </div>
 
-      <div className="flex flex-wrap gap-3 items-center mt-3" role="tablist" aria-label="My Activities Tabs">
-        <button
-          className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'events' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
-          onClick={() => setActiveTab('events')}
           role="tab"
-          aria-selected={activeTab === 'events'}
         >
           My Events ({createdEvents.length})
         </button>
@@ -262,107 +279,13 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
 
       {/* Venues moved to dedicated tab */}
 
-      {activeTab === 'events' && (
-      <section>
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xl font-semibold">Events I Created <span className="text-sm font-normal text-gray-500">({createdEvents.length})</span></h3>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-theme-secondary">Show</span>
-            <button className={`chip ${showCreated ? 'chip-active' : ''}`} onClick={() => setShowCreated(s => !s)} aria-pressed={showCreated}>{showCreated ? 'On' : 'Off'}</button>
-          </div>
-        </div>
-        {showCreated && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {createdEvents.filter((e) => {
-            const q = eventsQuery.toLowerCase();
-            if (!q) return true;
-            return (
-              (e.title || '').toLowerCase().includes(q) ||
-              (e.sport || '').toLowerCase().includes(q) ||
-              (e.location?.city || e.location?.name || '').toLowerCase().includes(q)
-            );
-          }).map((e) => (
-            <div key={e._id} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
-              <div className={`h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80 group-hover:opacity-100`} />
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                <div>
-                  <div className="text-lg font-semibold text-heading line-clamp-2">{e.title}</div>
-                  <div className="mt-1 flex items-center gap-2 text-sm text-theme-secondary">
-                    <MapPin className="w-4 h-4 text-[var(--accent-cyan)]" />
-                    <span>{e.location?.city || e.location?.name || 'Location TBA'}</span>
-                  </div>
-                </div>
-                <span className={`badge badge-violet flex items-center gap-1`}>
-                  <Trophy className="w-3 h-3" /> {e.sport || 'Other'}
-                </span>
-              </div>
-              <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-theme-secondary">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-[var(--accent-violet)]" />
-                  <span>Starts: {new Date(e.startDate).toLocaleString()}</span>
-                </div>
-                <div className="flex items-center gap-2 justify-end">
-                  <Users className="w-4 h-4 text-[var(--accent-amber)]" />
-                  <span>{(e.participants?.length || 0)}/{e.capacity?.max || 0}</span>
-                </div>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {e.organizer && (
-                  <button className="flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto whitespace-normal break-words text-left" onClick={() => startConversationWithUser(e.organizer?._id)}>
-                    Message Participants (DM organizer)
-                  </button>
-                )}
-                <button
-                  className="btn w-full sm:w-auto"
-                  onClick={() => { setEditingEvent(e); setShowCreateEvent(true); }}
-                >
-                  Edit
-                </button>
-                <button
-                  className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto"
-                  onClick={() => setSelectedEvent(e)}
-                >
-                  View
-                </button>
-                <button
-                  className={`inline-flex items-center px-3 py-2 rounded-md ${e.archivedAt ? 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-400' : 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-400'} text-white focus:outline-none focus:ring-2 w-full sm:w-auto`}
-                  onClick={async () => {
-                    if (!token) return;
-                    const headers = { Authorization: `Bearer ${token}` };
-                    const archivedAt = e.archivedAt ? null : new Date().toISOString();
-                    await axios.put(`${API_URL}/events/${e._id}`, { archivedAt }, { headers });
-                    const ce = await axios.get(`${API_URL}/events/my/created?includeArchived=${includeArchived}`, { headers });
-                    setCreatedEvents(ce.data.events || []);
-                    onToast && onToast(e.archivedAt ? 'Event restored.' : 'Event archived.', 'success');
-                  }}
-                >
-                  {e.archivedAt ? 'Restore' : 'Archive'}
-                </button>
-                <button
-                  className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400 w-full sm:w-auto"
-                  onClick={() => setConfirmDeleteEventId(e._id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
-          {createdEvents.length === 0 && <p className="text-sm text-gray-500">No created events yet.</p>}
-        </div>
-        )}
-      </section>
-      )}
+      
 
-      {activeTab === 'events' && (
+      {activeTab === 'events' && eventsSubTab === 'joined' && (
       <section>
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xl font-semibold">Events I Joined <span className="text-sm font-normal text-gray-500">({joinedEvents.length})</span></h3>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-theme-secondary">Show</span>
-            <button className={`chip ${showJoined ? 'chip-active' : ''}`} onClick={() => setShowJoined(s => !s)} aria-pressed={showJoined}>{showJoined ? 'On' : 'Off'}</button>
-          </div>
         </div>
-        {showJoined && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {joinedEvents.filter((e) => {
             const q = eventsQuery.toLowerCase();
@@ -413,20 +336,13 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           ))}
           {joinedEvents.length === 0 && <p className="text-sm text-gray-500">No joined events yet.</p>}
         </div>
-        )}
       </section>
       )}
 
 
-      {activeTab === 'events' && showPast && (
+      {activeTab === 'events' && eventsSubTab === 'past' && (
         <section>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-semibold">Past Events</h3>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-theme-secondary">Show</span>
-              <button className={`chip ${showPast ? 'chip-active' : ''}`} onClick={() => setShowPast(s => !s)} aria-pressed={showPast}>{showPast ? 'On' : 'Off'}</button>
-            </div>
-          </div>
+          <h3 className="text-xl font-semibold mb-2">Past Events</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {archivedEvents.filter((e) => {
               const q = eventsQuery.toLowerCase();
