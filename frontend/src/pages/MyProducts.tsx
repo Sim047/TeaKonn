@@ -47,7 +47,7 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
   useEffect(() => { refresh(); }, [token]);
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-white to-gray-50 dark:from-black dark:to-gray-900">
+    <div className="min-h-full bg-transparent">
       <div className="max-w-4xl mx-auto p-4 sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
