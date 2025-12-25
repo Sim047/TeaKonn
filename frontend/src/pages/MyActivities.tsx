@@ -290,10 +290,10 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       <div className="flex flex-wrap gap-2 items-center">
         <button className={btn('outline')} onClick={refreshAll}>Refresh</button>
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-sm">Show past</span>
+          <span className="text-sm text-theme-secondary">Show past</span>
           <button
             onClick={() => setIncludeArchived(a => !a)}
-            className={`text-sm px-3 py-1 rounded-full border shadow-sm transition-colors ${includeArchived ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-black' : 'bg-white dark:bg-gray-800 text-gray-700'}`}
+            className={`chip ${includeArchived ? 'chip-active' : ''}`}
             aria-pressed={includeArchived}
           >
             {includeArchived ? 'On' : 'Off'}
@@ -462,16 +462,18 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         <h3 className="text-xl font-semibold mb-2">Booking Requests (Sent)</h3>
         <div className="space-y-2">
           {sentRequests.map((r) => (
-            <div key={r._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900 hover:ring-1 hover:ring-gray-300">
+            <div key={r._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all">
+              <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
               <div className="flex justify-between items-start">
                 <div>
-                  <div className="text-lg font-semibold text-gray-900 dark:text-white">{r.venue?.name}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300">Status: {r.status}</div>
+                  <div className="text-lg font-semibold text-heading">{r.venue?.name}</div>
+                  <div className="text-sm text-theme-secondary">Status: {r.status}</div>
                 </div>
+                <span className={`badge ${r.status === 'pending' ? 'badge-amber' : r.status === 'approved' ? 'badge-accent' : 'badge-violet'}`}>{r.status}</span>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                <button className={btn('outline')} onClick={() => openRequestChat(r._id)}>Open Chat</button>
-                <button className={btn('outline')} onClick={() => startConversationWithUser(r.owner?._id)}>Message Owner</button>
+                <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => openRequestChat(r._id)}>Open Chat</button>
+                <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => startConversationWithUser(r.owner?._id)}>Message Owner</button>
               </div>
             </div>
           ))}
@@ -485,19 +487,23 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         <h3 className="text-xl font-semibold mb-2">Booking Requests (Received)</h3>
         <div className="space-y-2">
           {receivedRequests.map((r) => (
-            <div key={r._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900 hover:ring-1 hover:ring-gray-300">
+            <div key={r._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all">
+              <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
               <div className="flex justify-between items-start">
                 <div>
-                  <div className="text-lg font-semibold text-gray-900 dark:text-white">{r.venue?.name}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300">Requester: {r.requester?.username}</div>
-                  <div className="text-sm">Status: {r.status}</div>
+                  <div className="text-lg font-semibold text-heading">{r.venue?.name}</div>
+                  <div className="text-sm text-theme-secondary">Requester: {r.requester?.username}</div>
+                  <div className="text-sm text-theme-secondary">Status: {r.status}</div>
                 </div>
+                <span className={`badge ${r.status === 'pending' ? 'badge-amber' : r.status === 'approved' ? 'badge-accent' : 'badge-violet'}`}>{r.status}</span>
               </div>
-              {me?.role === 'venue_owner' && r.status === 'pending' && (
+              {me?.role === 'venue_owner' && (
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <button className={btn('outline')} onClick={() => openRequestChat(r._id)}>Open Chat</button>
-                  <button className={btn('outline')} onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
-                  <button className={btn('success')} onClick={() => generateTokenForRequest(r)}>Generate Token (after payment)</button>
+                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => openRequestChat(r._id)}>Open Chat</button>
+                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
+                  {r.status === 'pending' && (
+                    <button className="btn" onClick={() => generateTokenForRequest(r)}>Generate Token (after payment)</button>
+                  )}
                 </div>
               )}
             </div>
@@ -512,14 +518,18 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         <h3 className="text-xl font-semibold mb-2">Generated Tokens</h3>
         <div className="space-y-2">
           {generatedTokens.map((t) => (
-            <div key={t._id} className="rounded-xl border p-4 shadow-sm bg-white dark:bg-gray-900">
-              <div className="font-medium">{t.code}</div>
-              <div className="text-sm">Venue: {t.venue?.name}</div>
-              <div className="text-sm">Status: {t.status} | Expires: {new Date(t.expiresAt).toLocaleString()}</div>
+            <div key={t._id} className="themed-card rounded-2xl p-4 shadow-sm">
+              <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
+              <div className="flex justify-between items-center">
+                <div className="font-medium text-heading">{t.code}</div>
+                <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
+              </div>
+              <div className="text-sm text-theme-secondary">Venue: {t.venue?.name}</div>
+              <div className="text-sm text-theme-secondary">Expires: {new Date(t.expiresAt).toLocaleString()}</div>
               {me?.role === 'venue_owner' && t.status === 'active' && (
                 <div className="mt-2 flex gap-2">
-                  <button className={btn('outline')} onClick={() => extendToken(t.code, 24)}>Extend 24h</button>
-                  <button className={btn('danger')} onClick={() => revokeToken(t.code)}>Revoke</button>
+                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => extendToken(t.code, 24)}>Extend 24h</button>
+                  <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400" onClick={() => revokeToken(t.code)}>Revoke</button>
                 </div>
               )}
             </div>
@@ -534,13 +544,17 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         <h3 className="text-xl font-semibold mb-2">Received Tokens</h3>
         <div className="space-y-2">
           {receivedTokens.map((t) => (
-            <div key={t._id} className="rounded-xl border p-4 shadow-sm bg-white dark:bg-gray-900">
-              <div className="font-medium">{t.code}</div>
-              <div className="text-sm">Venue: {t.venue?.name}</div>
-              <div className="text-sm">Status: {t.status} | Expires: {new Date(t.expiresAt).toLocaleString()}</div>
+            <div key={t._id} className="themed-card rounded-2xl p-4 shadow-sm">
+              <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
+              <div className="flex justify-between items-center">
+                <div className="font-medium text-heading">{t.code}</div>
+                <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
+              </div>
+              <div className="text-sm text-theme-secondary">Venue: {t.venue?.name}</div>
+              <div className="text-sm text-theme-secondary">Expires: {new Date(t.expiresAt).toLocaleString()}</div>
               {t.status === 'active' && (
                 <div className="mt-2">
-                  <button className={btn('success')} onClick={() => { setInitialEventToken(t.code); setShowCreateEvent(true); }}>
+                  <button className="btn" onClick={() => { setInitialEventToken(t.code); setShowCreateEvent(true); }}>
                     Use Token to Create Event
                   </button>
                 </div>

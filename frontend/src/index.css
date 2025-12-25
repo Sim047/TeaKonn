@@ -69,7 +69,8 @@
   /* Increase contrast for cards and borders in dark theme */
   --card: #253549;
   --card-solid: #253549;
-  --border: rgba(148, 163, 184, 0.28);
+  /* Slightly soften borders in dark for less stark contrast */
+  --border: rgba(148, 163, 184, 0.18);
 
   --bubble-mine: rgba(34, 211, 238, 0.15);
   --bubble-other: rgba(255, 255, 255, 0.05);
@@ -412,10 +413,16 @@ textarea,
   font-weight: 500;
 }
 
+.chip:hover {
+  background: var(--accent-cyan-muted);
+  border-color: rgba(34, 211, 238, 0.35);
+}
+
 .chip-active {
   background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
   color: var(--btn-text);
   border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.25);
 }
 
 .themed-menu {
