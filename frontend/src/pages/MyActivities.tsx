@@ -5,6 +5,8 @@ import CreateVenueModal from '../components/CreateVenueModal';
 import CreateEventModal from '../components/CreateEventModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import EventDetailModal from '../components/EventDetailModal';
+import MyServices from './MyServices';
+import MyProducts from './MyProducts';
 
 export default function MyActivities({ token, onOpenConversation, onNavigate, onToast }: { token: string | null, onOpenConversation?: (conv: any) => void, onNavigate?: (view: string) => void, onToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void }) {
   const [myVenues, setMyVenues] = useState<any[]>([]);
@@ -29,6 +31,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
   const [confirmDeleteEventId, setConfirmDeleteEventId] = useState<string | null>(null);
   const [confirmDeleteVenueId, setConfirmDeleteVenueId] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
+  const [activeTab, setActiveTab] = useState<'events' | 'services' | 'products'>('events');
 
   async function refreshAll() {
     if (!token) return;
@@ -204,9 +207,24 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         </div>
 
       <div className="flex flex-wrap gap-3 items-center mt-3">
-        <button className="text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700" onClick={() => onNavigate && onNavigate('my-events')}>My Events ({createdEvents.length})</button>
-        <button className="text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700" onClick={() => onNavigate && onNavigate('my-services')}>My Services ({servicesCount})</button>
-        <button className="text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700" onClick={() => onNavigate && onNavigate('my-products')}>My Products ({productsCount})</button>
+        <button
+          className={`text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 ${activeTab === 'events' ? 'ring-2 ring-indigo-400' : ''}`}
+          onClick={() => setActiveTab('events')}
+        >
+          My Events ({createdEvents.length})
+        </button>
+        <button
+          className={`text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 ${activeTab === 'services' ? 'ring-2 ring-indigo-400' : ''}`}
+          onClick={() => setActiveTab('services')}
+        >
+          My Services ({servicesCount})
+        </button>
+        <button
+          className={`text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 ${activeTab === 'products' ? 'ring-2 ring-indigo-400' : ''}`}
+          onClick={() => setActiveTab('products')}
+        >
+          My Products ({productsCount})
+        </button>
       </div>
 
       <div className="flex flex-wrap gap-2 items-center">
@@ -228,6 +246,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         </div>
       </div>
 
+      {activeTab === 'events' && (
       <section>
         <h3 className="text-xl font-semibold mb-2">My Venues</h3>
         {/* Venue owner CTA removed per request */}
@@ -251,7 +270,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           {myVenues.length === 0 && <p className="text-sm text-gray-500">No venues yet.</p>}
         </div>
       </section>
+      )}
 
+      {activeTab === 'events' && (
       <section>
         <h3 className="text-xl font-semibold mb-2">Events I Created <span className="text-sm font-normal text-gray-500">({createdEvents.length})</span></h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -310,7 +331,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           {createdEvents.length === 0 && <p className="text-sm text-gray-500">No created events yet.</p>}
         </div>
       </section>
+      )}
 
+      {activeTab === 'events' && (
       <section>
         <h3 className="text-xl font-semibold mb-2">Events I Joined <span className="text-sm font-normal text-gray-500">({joinedEvents.length})</span></h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -349,7 +372,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           {joinedEvents.length === 0 && <p className="text-sm text-gray-500">No joined events yet.</p>}
         </div>
       </section>
+      )}
 
+      {activeTab === 'events' && (
       <section>
         <h3 className="text-xl font-semibold mb-2">Booking Requests (Sent)</h3>
         <div className="space-y-2">
@@ -370,7 +395,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           {sentRequests.length === 0 && <p className="text-sm text-gray-500">No sent requests.</p>}
         </div>
       </section>
+      )}
 
+      {activeTab === 'events' && (
       <section>
         <h3 className="text-xl font-semibold mb-2">Booking Requests (Received)</h3>
         <div className="space-y-2">
@@ -395,7 +422,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           {receivedRequests.length === 0 && <p className="text-sm text-gray-500">No received requests.</p>}
         </div>
       </section>
+      )}
 
+      {activeTab === 'events' && (
       <section>
         <h3 className="text-xl font-semibold mb-2">Generated Tokens</h3>
         <div className="space-y-2">
@@ -415,7 +444,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           {generatedTokens.length === 0 && <p className="text-sm text-gray-500">No generated tokens.</p>}
         </div>
       </section>
+      )}
 
+      {activeTab === 'events' && (
       <section>
         <h3 className="text-xl font-semibold mb-2">Received Tokens</h3>
         <div className="space-y-2">
@@ -439,8 +470,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           {receivedTokens.length === 0 && <p className="text-sm text-gray-500">No received tokens.</p>}
         </div>
       </section>
+      )}
 
-      {includeArchived && (
+      {activeTab === 'events' && includeArchived && (
         <section>
           <h3 className="text-xl font-semibold mb-2">Past Events</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -470,6 +502,25 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
             {archivedEvents.length === 0 && <p className="text-sm text-gray-500">No past events.</p>}
           </div>
         </section>
+      )}
+
+      {activeTab === 'services' && (
+        <div className="mt-4">
+          <MyServices
+            token={token}
+            onNavigate={() => setActiveTab('events')}
+            onToast={onToast}
+          />
+        </div>
+      )}
+      {activeTab === 'products' && (
+        <div className="mt-4">
+          <MyProducts
+            token={token}
+            onNavigate={() => setActiveTab('events')}
+            onToast={onToast}
+          />
+        </div>
       )}
 
       </div>
