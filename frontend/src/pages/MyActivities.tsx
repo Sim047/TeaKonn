@@ -3,6 +3,7 @@ import axios from 'axios';
 import { API_URL } from '../config/api';
 import CreateVenueModal from '../components/CreateVenueModal';
 import CreateEventModal from '../components/CreateEventModal';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function MyActivities({ token, onOpenConversation, onNavigate, onToast }: { token: string | null, onOpenConversation?: (conv: any) => void, onNavigate?: (view: string) => void, onToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void }) {
   const [myVenues, setMyVenues] = useState<any[]>([]);
@@ -16,6 +17,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
   const [initialEventToken, setInitialEventToken] = useState<string>('');
   const [editingEvent, setEditingEvent] = useState<any | null>(null);
   const [editingVenue, setEditingVenue] = useState<any | null>(null);
+  const [confirmLeaveEventId, setConfirmLeaveEventId] = useState<string | null>(null);
   const [createdEvents, setCreatedEvents] = useState<any[]>([]);
   const [joinedEvents, setJoinedEvents] = useState<any[]>([]);
   const [archivedEvents, setArchivedEvents] = useState<any[]>([]);
@@ -341,7 +343,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                 <button
                   className="px-3 py-2 rounded-md bg-red-600 text-white disabled:opacity-50 shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
                   disabled={busy === e._id}
-                  onClick={() => leaveEvent(e._id)}
+                  onClick={() => setConfirmLeaveEventId(e._id)}
                 >
                   {busy === e._id ? 'Leaving…' : 'Leave Event'}
                 </button>
@@ -497,6 +499,18 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         }}
       />
     )}
+    <ConfirmDialog
+      isOpen={!!confirmLeaveEventId}
+      title="Leave Event"
+      message="Are you sure you want to leave this event?"
+      confirmLabel="Leave"
+      cancelLabel="Stay"
+      onConfirm={() => {
+        if (confirmLeaveEventId) leaveEvent(confirmLeaveEventId);
+        setConfirmLeaveEventId(null);
+      }}
+      onCancel={() => setConfirmLeaveEventId(null)}
+    />
     {showCreateEvent && (
       <CreateEventModal
         isOpen={showCreateEvent}
