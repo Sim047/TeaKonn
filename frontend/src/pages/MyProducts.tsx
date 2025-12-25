@@ -8,9 +8,10 @@ interface MyProductsProps {
   token: string | null;
   onNavigate?: (view: string) => void;
   onToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
+  onUpdated?: () => void;
 }
 
-export default function MyProducts({ token, onNavigate, onToast }: MyProductsProps) {
+export default function MyProducts({ token, onNavigate, onToast, onUpdated }: MyProductsProps) {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
@@ -95,7 +96,7 @@ export default function MyProducts({ token, onNavigate, onToast }: MyProductsPro
           isOpen={openCreate}
           onClose={() => { setEditingProduct(null); setOpenCreate(false); }}
           token={token || ''}
-          onProductCreated={() => { setEditingProduct(null); refresh(); onToast && onToast(editingProduct ? 'Product updated.' : 'Product created.', 'success'); }}
+          onProductCreated={() => { setEditingProduct(null); refresh(); onUpdated && onUpdated(); onToast && onToast(editingProduct ? 'Product updated.' : 'Product created.', 'success'); }}
           editProduct={editingProduct}
         />
       )}
@@ -133,6 +134,7 @@ export default function MyProducts({ token, onNavigate, onToast }: MyProductsPro
             const headers = { Authorization: `Bearer ${token}` };
             await axios.delete(`${API}/api/marketplace/${confirmDeleteProductId}`, { headers });
             await refresh();
+            onUpdated && onUpdated();
             onToast && onToast('Product deleted.', 'success');
           } catch (e: any) {
             onToast && onToast(e.response?.data?.error || 'Failed to delete product', 'error');

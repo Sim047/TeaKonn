@@ -8,9 +8,10 @@ interface MyServicesProps {
   token: string | null;
   onNavigate?: (view: string) => void;
   onToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
+  onUpdated?: () => void;
 }
 
-export default function MyServices({ token, onNavigate, onToast }: MyServicesProps) {
+export default function MyServices({ token, onNavigate, onToast, onUpdated }: MyServicesProps) {
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
@@ -86,7 +87,7 @@ export default function MyServices({ token, onNavigate, onToast }: MyServicesPro
           isOpen={openCreate}
           onClose={() => setOpenCreate(false)}
           token={token || ''}
-          onServiceCreated={() => { setEditingService(null); refresh(); onToast && onToast(editingService ? 'Service updated.' : 'Service created.', 'success'); }}
+          onServiceCreated={() => { setEditingService(null); refresh(); onUpdated && onUpdated(); onToast && onToast(editingService ? 'Service updated.' : 'Service created.', 'success'); }}
           editService={editingService}
         />
       )}
@@ -123,6 +124,7 @@ export default function MyServices({ token, onNavigate, onToast }: MyServicesPro
             const headers = { Authorization: `Bearer ${token}` };
             await axios.delete(`${API_URL}/services/${confirmDeleteServiceId}`, { headers });
             await refresh();
+            onUpdated && onUpdated();
             onToast && onToast('Service deleted.', 'success');
           } catch (e: any) {
             onToast && onToast(e.response?.data?.error || 'Failed to delete service', 'error');

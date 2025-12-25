@@ -186,7 +186,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
 
   return (
     <>
-    <div className="min-h-full bg-gradient-to-b from-white to-gray-50 dark:from-black dark:to-gray-900 text-gray-900 dark:text-gray-100">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
       <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">My Activities</h2>
@@ -206,22 +206,28 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           </div>
         </div>
 
-      <div className="flex flex-wrap gap-3 items-center mt-3">
+      <div className="flex flex-wrap gap-3 items-center mt-3" role="tablist" aria-label="My Activities Tabs">
         <button
-          className={`text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 ${activeTab === 'events' ? 'ring-2 ring-indigo-400' : ''}`}
+          className={`text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'events' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
           onClick={() => setActiveTab('events')}
+          role="tab"
+          aria-selected={activeTab === 'events'}
         >
           My Events ({createdEvents.length})
         </button>
         <button
-          className={`text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 ${activeTab === 'services' ? 'ring-2 ring-indigo-400' : ''}`}
+          className={`text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'services' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
           onClick={() => setActiveTab('services')}
+          role="tab"
+          aria-selected={activeTab === 'services'}
         >
           My Services ({servicesCount})
         </button>
         <button
-          className={`text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 ${activeTab === 'products' ? 'ring-2 ring-indigo-400' : ''}`}
+          className={`text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'products' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
           onClick={() => setActiveTab('products')}
+          role="tab"
+          aria-selected={activeTab === 'products'}
         >
           My Products ({productsCount})
         </button>
@@ -252,7 +258,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         {/* Venue owner CTA removed per request */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {myVenues.map((v) => (
-            <div key={v._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-800 hover:ring-1 hover:ring-gray-300">
+            <div key={v._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900 hover:ring-1 hover:ring-gray-300">
               <div className="flex justify-between items-start">
                 <div>
                   <div className="text-lg font-semibold text-gray-900 dark:text-white">{v.name}</div>
@@ -277,7 +283,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         <h3 className="text-xl font-semibold mb-2">Events I Created <span className="text-sm font-normal text-gray-500">({createdEvents.length})</span></h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {createdEvents.map((e) => (
-            <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-800 hover:ring-1 hover:ring-gray-300">
+            <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900 hover:ring-1 hover:ring-gray-300">
               <div className="flex justify-between items-start">
                 <div>
                   <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{e.title}</div>
@@ -338,7 +344,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         <h3 className="text-xl font-semibold mb-2">Events I Joined <span className="text-sm font-normal text-gray-500">({joinedEvents.length})</span></h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {joinedEvents.map((e) => (
-            <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-800 hover:ring-1 hover:ring-gray-300">
+            <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900 hover:ring-1 hover:ring-gray-300">
               <div className="flex justify-between items-start">
                 <div>
                   <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{e.title}</div>
@@ -477,7 +483,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           <h3 className="text-xl font-semibold mb-2">Past Events</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {archivedEvents.map((e) => (
-              <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-800 hover:ring-1 hover:ring-gray-300">
+              <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900 hover:ring-1 hover:ring-gray-300">
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{e.title}</div>
@@ -510,6 +516,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
             token={token}
             onNavigate={() => setActiveTab('events')}
             onToast={onToast}
+            onUpdated={() => refreshAll()}
           />
         </div>
       )}
@@ -519,6 +526,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
             token={token}
             onNavigate={() => setActiveTab('events')}
             onToast={onToast}
+            onUpdated={() => refreshAll()}
           />
         </div>
       )}
