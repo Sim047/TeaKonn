@@ -1826,7 +1826,7 @@ export default function App() {
 
         {/* MY ACTIVITIES PAGE */}
         {view === 'my-activities' && (
-          <MyActivities token={token} />
+          <MyActivities token={token} onOpenConversation={openConversation} />
         )}
         {view === 'my-events' && (
           <MyEvents

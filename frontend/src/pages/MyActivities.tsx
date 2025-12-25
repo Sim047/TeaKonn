@@ -4,7 +4,7 @@ import { API_URL } from '../config/api';
 import CreateVenueModal from '../components/CreateVenueModal';
 import CreateEventModal from '../components/CreateEventModal';
 
-export default function MyActivities({ token }: { token: string | null }) {
+export default function MyActivities({ token, onOpenConversation }: { token: string | null, onOpenConversation?: (conv: any) => void }) {
   const [myVenues, setMyVenues] = useState<any[]>([]);
   const [sentRequests, setSentRequests] = useState<any[]>([]);
   const [receivedRequests, setReceivedRequests] = useState<any[]>([]);
@@ -16,6 +16,7 @@ export default function MyActivities({ token }: { token: string | null }) {
   const [initialEventToken, setInitialEventToken] = useState<string>('');
   const [createdEvents, setCreatedEvents] = useState<any[]>([]);
   const [joinedEvents, setJoinedEvents] = useState<any[]>([]);
+  const [busy, setBusy] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) return;
@@ -70,6 +71,47 @@ export default function MyActivities({ token }: { token: string | null }) {
     }
   }
 
+  async function openRequestChat(reqId: string) {
+    if (!token || !onOpenConversation) return;
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      const res = await axios.get(`${API_URL}/booking-requests/${reqId}`, { headers });
+      const conv = res.data?.conversation;
+      if (conv) onOpenConversation(conv);
+      else alert('No conversation found for this request');
+    } catch (e: any) {
+      console.error('Open request chat error', e);
+      alert(e.response?.data?.error || 'Failed to open chat');
+    }
+  }
+
+  async function startConversationWithUser(userId: string) {
+    if (!token || !onOpenConversation) return;
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      const res = await axios.post(`${API_URL.replace(/\/api$/, '')}/api/users/conversations/start`, { partnerId: userId }, { headers });
+      if (res.data) onOpenConversation(res.data);
+    } catch (e: any) {
+      console.error('Start conversation error', e);
+      alert(e.response?.data?.error || 'Could not start conversation');
+    }
+  }
+
+  async function joinEvent(eventId: string) {
+    if (!token) return;
+    setBusy(eventId);
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      await axios.post(`${API_URL}/events/${eventId}/join`, {}, { headers });
+      const je = await axios.get(`${API_URL}/events/my/joined`, { headers });
+      setJoinedEvents(je.data.events || []);
+    } catch (e: any) {
+      alert(e.response?.data?.error || 'Failed to join event');
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function revokeToken(code: string) {
     if (!token) return;
     const headers = { Authorization: `Bearer ${token}` };
@@ -115,10 +157,15 @@ export default function MyActivities({ token }: { token: string | null }) {
         <h3 className="text-xl font-semibold mb-2">My Venues</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {myVenues.map((v) => (
-            <div key={v._id} className="rounded border p-3">
-              <div className="flex justify-between"><span className="font-medium">{v.name}</span><span className="text-xs">{v.status}</span></div>
-              <div className="text-sm text-gray-600">{v.location?.city}</div>
-              <div className="text-sm">Capacity: {v.capacity?.max}</div>
+            <div key={v._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="text-lg font-semibold text-gray-900 dark:text-white">{v.name}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">{v.location?.city}</div>
+                </div>
+                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">{v.status}</span>
+              </div>
+              <div className="mt-2 text-sm">Capacity: {v.capacity?.max}</div>
             </div>
           ))}
           {myVenues.length === 0 && <p className="text-sm text-gray-500">No venues yet.</p>}
@@ -129,14 +176,23 @@ export default function MyActivities({ token }: { token: string | null }) {
         <h3 className="text-xl font-semibold mb-2">Events I Created</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {createdEvents.map((e) => (
-            <div key={e._id} className="rounded border p-3">
-              <div className="flex justify-between">
-                <span className="font-medium">{e.title}</span>
-                <span className="text-xs">{e.sport || 'Other'}</span>
+            <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{e.title}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">{e.location?.city || e.location?.name}</div>
+                </div>
+                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">{e.sport || 'Other'}</span>
               </div>
-              <div className="text-sm text-gray-600">{e.location?.city || e.location?.name}</div>
-              <div className="text-sm">Starts: {new Date(e.startDate).toLocaleString()}</div>
+              <div className="mt-2 text-sm">Starts: {new Date(e.startDate).toLocaleString()}</div>
               <div className="text-sm">Participants: {(e.participants?.length || 0)}/{e.capacity?.max || 0}</div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {e.organizer && (
+                  <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => startConversationWithUser(e.organizer?._id)}>
+                    Message Participants (DM organizer)
+                  </button>
+                )}
+              </div>
             </div>
           ))}
           {createdEvents.length === 0 && <p className="text-sm text-gray-500">No created events yet.</p>}
@@ -147,13 +203,29 @@ export default function MyActivities({ token }: { token: string | null }) {
         <h3 className="text-xl font-semibold mb-2">Events I Joined</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {joinedEvents.map((e) => (
-            <div key={e._id} className="rounded border p-3">
-              <div className="flex justify-between">
-                <span className="font-medium">{e.title}</span>
-                <span className="text-xs">Organized by {e.organizer?.username}</span>
+            <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{e.title}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">{e.location?.city || e.location?.name}</div>
+                </div>
+                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">Organized by {e.organizer?.username}</span>
               </div>
-              <div className="text-sm text-gray-600">{e.location?.city || e.location?.name}</div>
-              <div className="text-sm">Starts: {new Date(e.startDate).toLocaleString()}</div>
+              <div className="mt-2 text-sm">Starts: {new Date(e.startDate).toLocaleString()}</div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {e.organizer?._id && (
+                  <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => startConversationWithUser(e.organizer._id)}>
+                    Message Organizer
+                  </button>
+                )}
+                <button
+                  className="px-3 py-2 rounded-md bg-teal-600 text-white disabled:opacity-50"
+                  disabled={busy === e._id}
+                  onClick={() => joinEvent(e._id)}
+                >
+                  {busy === e._id ? 'Joining…' : 'Join Again'}
+                </button>
+              </div>
             </div>
           ))}
           {joinedEvents.length === 0 && <p className="text-sm text-gray-500">No joined events yet.</p>}
@@ -164,9 +236,17 @@ export default function MyActivities({ token }: { token: string | null }) {
         <h3 className="text-xl font-semibold mb-2">Booking Requests (Sent)</h3>
         <div className="space-y-2">
           {sentRequests.map((r) => (
-            <div key={r._id} className="rounded border p-3">
-              <div className="font-medium">{r.venue?.name}</div>
-              <div className="text-sm">Status: {r.status}</div>
+            <div key={r._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="text-lg font-semibold text-gray-900 dark:text-white">{r.venue?.name}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Status: {r.status}</div>
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => openRequestChat(r._id)}>Open Chat</button>
+                <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => startConversationWithUser(r.owner?._id)}>Message Owner</button>
+              </div>
             </div>
           ))}
           {sentRequests.length === 0 && <p className="text-sm text-gray-500">No sent requests.</p>}
@@ -177,12 +257,18 @@ export default function MyActivities({ token }: { token: string | null }) {
         <h3 className="text-xl font-semibold mb-2">Booking Requests (Received)</h3>
         <div className="space-y-2">
           {receivedRequests.map((r) => (
-            <div key={r._id} className="rounded border p-3">
-              <div className="font-medium">{r.venue?.name}</div>
-              <div className="text-sm">Requester: {r.requester?.username}</div>
-              <div className="text-sm">Status: {r.status}</div>
+            <div key={r._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="text-lg font-semibold text-gray-900 dark:text-white">{r.venue?.name}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Requester: {r.requester?.username}</div>
+                  <div className="text-sm">Status: {r.status}</div>
+                </div>
+              </div>
               {me?.role === 'venue_owner' && r.status === 'pending' && (
-                <div className="mt-2">
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => openRequestChat(r._id)}>Open Chat</button>
+                  <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
                   <button className="px-3 py-2 rounded bg-cyan-600 text-white" onClick={() => generateTokenForRequest(r)}>Generate Token (after payment)</button>
                 </div>
               )}
