@@ -293,9 +293,52 @@ router.get("/:id", async (req, res) => {
 // POST /api/events - create
 router.post("/", auth, async (req, res) => {
   try {
+    const { bookingTokenCode } = req.body || {};
+    if (!bookingTokenCode) {
+      return res.status(400).json({ error: "bookingTokenCode is required to create an event" });
+    }
+
+    // Verify token and populate venue
+    const { default: BookingToken } = await import("../models/BookingToken.js");
+    const { default: Venue } = await import("../models/Venue.js");
+
+    const token = await BookingToken.findOne({ code: bookingTokenCode }).populate("venue");
+    if (!token) return res.status(404).json({ error: "Invalid booking token" });
+    if (token.status !== "active") return res.status(400).json({ error: "Token is not active" });
+    if (new Date() > token.expiresAt) return res.status(400).json({ error: "Token has expired" });
+    if (String(token.requester) !== String(req.user.id)) return res.status(403).json({ error: "Token not issued to this user" });
+
+    const venue = token.venue;
+    if (!venue) return res.status(400).json({ error: "Token missing venue" });
+
+    // Build event payload: location auto-populated and locked
     const data = { ...req.body, organizer: req.user.id };
+    data.venue = venue._id;
+    data.location = {
+      name: venue.location?.name || venue.name,
+      address: venue.location?.address,
+      city: venue.location?.city,
+      state: venue.location?.state,
+      country: venue.location?.country,
+    };
+    data.bookingTokenCode = bookingTokenCode;
+
+    // Remove client-provided free-text venue fields to prevent override
+    delete data.locationName;
+    delete data.address;
+    delete data.city;
+    delete data.state;
+    delete data.country;
+
     const event = await Event.create(data);
     await event.populate("organizer", "username avatar");
+
+    // Consume token and mark venue booked
+    token.status = "used";
+    token.consumedAt = new Date();
+    await token.save();
+    await Venue.findByIdAndUpdate(venue._id, { status: "booked", available: false });
+
     res.status(201).json(event);
   } catch (err) {
     console.error("Create event error:", err);

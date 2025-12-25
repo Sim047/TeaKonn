@@ -405,6 +405,15 @@ export default function Sidebar({
           }}
         />
         <NavButton
+          icon={Search}
+          label="Venue Booking"
+          isCollapsed={isCollapsed}
+          onClick={() => {
+            onNavigate?.('discover-venues');
+            setIsMobileOpen(false);
+          }}
+        />
+        <NavButton
           icon={CalendarDays}
           label="My Activities"
           isCollapsed={isCollapsed}

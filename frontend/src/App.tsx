@@ -20,9 +20,11 @@ import AllUsers from './pages/AllUsersModern';
 import FollowersList from './pages/FollowersList';
 import FollowingList from './pages/FollowingList';
 import Discover from './pages/Discover';
+import DiscoverVenues from './pages/DiscoverVenues';
 import SportsEvents from './pages/SportsEvents';
 import Dashboard from './pages/Dashboard';
 import MyEvents from './pages/MyEvents';
+import MyActivities from './pages/MyActivities';
 import PastEvents from './pages/PastEvents';
 import OtherEvents from './pages/OtherEvents';
 import Posts from './pages/Posts';
@@ -1823,7 +1825,10 @@ export default function App() {
         )}
 
         {/* MY ACTIVITIES PAGE */}
-        {(view === 'my-activities' || view === 'my-events') && (
+        {view === 'my-activities' && (
+          <MyActivities token={token} />
+        )}
+        {view === 'my-events' && (
           <MyEvents
             token={token as any}
             onNavigate={(newView: string) => setView(newView as any)}
@@ -1837,6 +1842,9 @@ export default function App() {
             onViewProfile={showProfile}
             onStartConversation={startConversationWithUser}
           />
+        )}
+        {view === 'discover-venues' && (
+          <DiscoverVenues token={token} />
         )}
 
         {/* PAST EVENTS PAGE */}

@@ -8,6 +8,8 @@ const EventSchema = new Schema(
     title: { type: String, required: true, trim: true },
     description: { type: String, default: "" },
     organizer: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    // Optional linked venue (requires valid booking token)
+    venue: { type: Schema.Types.ObjectId, ref: "Venue" },
     // Optional sport type: when present, treated as a sports event
     sport: { type: String, default: undefined },
     startDate: { type: Date, required: true },
@@ -18,6 +20,8 @@ const EventSchema = new Schema(
       name: String,
       address: String,
       city: String,
+      state: String,
+      country: String,
     },
     capacity: {
       max: { type: Number, default: 100 },
@@ -41,6 +45,8 @@ const EventSchema = new Schema(
       },
     ],
     status: { type: String, enum: ["draft", "published", "cancelled"], default: "published" },
+    // If created via booking token, store token code for auditing
+    bookingTokenCode: { type: String },
     // Auto-archiving marker; when set the event should be hidden from "upcoming" lists
     archivedAt: { type: Date },
   },
@@ -50,5 +56,6 @@ const EventSchema = new Schema(
 EventSchema.index({ startDate: 1 });
 EventSchema.index({ endsAt: 1 });
 EventSchema.index({ archivedAt: 1 });
+EventSchema.index({ venue: 1 });
 
 export default mongoose.model("Event", EventSchema);

@@ -340,3 +340,22 @@ router.get("/favorite-sports/list", auth, async (req, res) => {
 
 export default router;
 
+/* ---------------------------------------------
+   ROLE MANAGEMENT (TESTING/DEV)
+   Allows a user to set their own role to 'event_creator' or 'venue_owner'.
+--------------------------------------------- */
+router.post('/role', auth, async (req, res) => {
+  try {
+    const { role } = req.body || {};
+    const allowed = ['event_creator', 'venue_owner', 'user'];
+    if (!allowed.includes(role)) return res.status(400).json({ message: 'Invalid role' });
+    const me = await User.findByIdAndUpdate(req.user.id, { role }, { new: true })
+      .select('_id username email avatar role');
+    // Emit presence update or notify as needed (optional)
+    return res.json({ success: true, user: me });
+  } catch (err) {
+    console.error('POST /api/users/role error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+

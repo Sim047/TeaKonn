@@ -46,6 +46,12 @@ const UserSchema = new mongoose.Schema(
         type: String,
       },
     ],
+
+    role: {
+      type: String,
+      enum: ["user", "event_creator", "venue_owner"],
+      default: "user",
+    },
   },
   { timestamps: true }
 );

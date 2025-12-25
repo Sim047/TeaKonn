@@ -13,8 +13,8 @@ router.post('/register', async (req,res)=>{
     if (exists) return res.status(400).json({ message: 'User exists' });
     const hash = await bcrypt.hash(password, 10);
     const user = await User.create({ username, email, password: hash });
-    const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET);
-    res.json({ user: { _id: user._id, username: user.username, email: user.email, avatar: user.avatar }, token });
+    const token = jwt.sign({ id: user._id, username: user.username, role: user.role }, process.env.JWT_SECRET);
+    res.json({ user: { _id: user._id, username: user.username, email: user.email, avatar: user.avatar, role: user.role }, token });
   }catch(err){
     console.error('[auth/register] ', err);
     res.status(500).json({ message: 'Server error' });
@@ -29,8 +29,8 @@ router.post('/login', async (req,res)=>{
     if (!user) return res.status(400).json({ message: 'Invalid credentials' });
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return res.status(400).json({ message: 'Invalid credentials' });
-    const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET);
-    res.json({ user: { _id: user._id, username: user.username, email: user.email, avatar: user.avatar }, token });
+    const token = jwt.sign({ id: user._id, username: user.username, role: user.role }, process.env.JWT_SECRET);
+    res.json({ user: { _id: user._id, username: user.username, email: user.email, avatar: user.avatar, role: user.role }, token });
   }catch(err){
     console.error('[auth/login] ', err);
     res.status(500).json({ message: 'Server error' });
@@ -96,8 +96,8 @@ router.post('/google', async (req, res) => {
       await user.save();
     }
 
-    const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET);
-    return res.json({ user: { _id: user._id, username: user.username, email: user.email, avatar: user.avatar }, token });
+    const token = jwt.sign({ id: user._id, username: user.username, role: user.role }, process.env.JWT_SECRET);
+    return res.json({ user: { _id: user._id, username: user.username, email: user.email, avatar: user.avatar, role: user.role }, token });
   } catch (err) {
     console.error('[auth/google] ', err);
     return res.status(500).json({ message: 'Server error' });

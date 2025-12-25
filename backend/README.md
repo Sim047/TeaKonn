@@ -20,10 +20,25 @@ Endpoints:
 - GET   /api/messages/:room  (auth) -> messages
 - POST  /api/files/upload    (form-data file 'file') -> { url: '/uploads/...' }
 
+Venue Booking System:
+- POST  /api/venues/create           (auth venue_owner) { name, location, capacity.max, description?, images? }
+- GET   /api/venues/search           (query: name, city, capacityMin, capacityMax, page, limit)
+- GET   /api/venues/my               (auth venue_owner) → list my venues
+- POST  /api/booking-requests/create (auth) { venueId } → creates negotiation conversation
+- GET   /api/booking-requests/:id    (auth) → requester/owner can view
+- GET   /api/booking-requests/my/sent     (auth)
+- GET   /api/booking-requests/my/received (auth)
+- POST  /api/payments/initiate       (auth venue_owner) { bookingRequestId, amount, currency?, idempotencyKey? }
+- POST  /api/payments/callback       (M-PESA webhook stub) { externalRef?, status, idempotencyKey? }
+- POST  /api/tokens/generate         (auth venue_owner) { bookingRequestId, expiresInHours? } → sends token in chat
+- POST  /api/tokens/verify           (auth) { code } → validates token for requester
+- POST  /api/events                  (auth) { bookingTokenCode, ... } → creates event; auto-populates venue/location and consumes token
+
 Notes:
 - Uploads stored in uploads/ (make sure Render persistent disk set)
 - Serve uploads: /uploads/*
 - Socket.IO integrated in server.js (events: join_room, send_message, react, edit_message, delete_message, delivered, read, typing)
+- Booking tokens are one-time use, tied to requester, venue, and booking request; tokens auto-expire and cannot be reused. Venue is marked booked on consumption.
 
 Health check:
 - The backend exposes a lightweight GET / that returns { ok: true } — useful for Render health checks and uptime probes.

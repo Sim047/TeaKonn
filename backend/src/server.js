@@ -26,6 +26,10 @@ import postsRoutes from "./routes/posts.js";
 import marketplaceRoutes from "./routes/marketplace.js";
 import aiRoutes from "./routes/ai.js";
 import Event from "./models/Event.js";
+import venuesRoutes from "./routes/venues.js";
+import bookingRequestsRoutes from "./routes/booking-requests.js";
+import tokensRoutes from "./routes/tokens.js";
+import paymentsRoutes from "./routes/payments.js";
 
 // MODELS
 import Message from "./models/Message.js";
@@ -216,6 +220,9 @@ const aiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+const bookingReqLimiter = rateLimit({ windowMs: 5 * 60 * 1000, max: 60, standardHeaders: true, legacyHeaders: false });
+const tokensLimiter = rateLimit({ windowMs: 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false });
+const paymentsLimiter = rateLimit({ windowMs: 5 * 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false });
 app.use("/api/auth", authLimiter);
 if (AI_ENABLED) {
   app.use("/api/ai", aiLimiter);
@@ -241,6 +248,11 @@ app.use("/api/marketplace", marketplaceRoutes);
 if (AI_ENABLED) {
   app.use("/api/ai", aiRoutes);
 }
+// Venue booking system
+app.use("/api/venues", venuesRoutes);
+app.use("/api/booking-requests", bookingReqLimiter, bookingRequestsRoutes);
+app.use("/api/tokens", tokensLimiter, tokensRoutes);
+app.use("/api/payments", paymentsLimiter, paymentsRoutes);
 
 // lightweight health check (useful for probes / verify deployment)
 app.get('/', (req, res) => res.json({ ok: true, service: 'teakonn-backend' }));

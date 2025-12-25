@@ -149,6 +149,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
     startDate: '',
     endDate: '',
     time: '',
+    // Location fields are populated via booking token validation
     locationName: '',
     address: '',
     city: '',
@@ -164,6 +165,8 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
   const [images, setImages] = useState<string[]>(editingEvent?.image ? [editingEvent.image] : []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [bookingTokenCode, setBookingTokenCode] = useState<string>('');
+  const [tokenStatus, setTokenStatus] = useState<{ valid: boolean; message?: string } | null>(null);
 
   // Load editing data when modal opens
   useEffect(() => {
@@ -213,12 +216,45 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
     }
   }, [editingEvent, isOpen]);
 
+  async function verifyToken() {
+    setTokenStatus(null);
+    if (!bookingTokenCode) {
+      setTokenStatus({ valid: false, message: 'Booking token is required' });
+      return;
+    }
+    try {
+      const API = API_URL.replace(/\/api$/, '');
+      const res = await axios.post(`${API}/api/tokens/verify`, { code: bookingTokenCode }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const { venue } = res.data;
+      // Populate locked venue/location fields
+      setFormData((prev) => ({
+        ...prev,
+        locationName: venue.location?.name || venue.name,
+        address: venue.location?.address || '',
+        city: venue.location?.city || '',
+        state: venue.location?.state || '',
+        country: venue.location?.country || '',
+      }));
+      setTokenStatus({ valid: true });
+    } catch (err: any) {
+      const msg = err.response?.data?.error || 'Token verification failed';
+      setTokenStatus({ valid: false, message: msg });
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
+      if (!bookingTokenCode) {
+        setError('Booking token is required');
+        setLoading(false);
+        return;
+      }
       const eventData = {
         title: formData.title,
         description: formData.description,
@@ -229,13 +265,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
           ? new Date(formData.endDate).toISOString()
           : new Date(formData.startDate).toISOString(),
         time: formData.time,
-        location: {
-          name: formData.locationName,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          country: formData.country,
-        },
+        bookingTokenCode,
         capacity: {
           max: Number(formData.maxCapacity),
           current: editingEvent?.capacity?.current || 0,
@@ -286,6 +316,8 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
         currency: 'USD',
         skillLevel: 'all',
       });
+      setBookingTokenCode('');
+      setTokenStatus(null);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to create event');
     } finally {
@@ -469,79 +501,85 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
             </div>
           </div>
 
-          {/* Location */}
+          {/* Venue Token & Location (locked after token validation) */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
               <MapPin className="w-5 h-5 text-teal-500" />
-              Location
+              Venue Booking Token
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Venue Name *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Booking Token *</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    value={bookingTokenCode}
+                    onChange={(e) => setBookingTokenCode(e.target.value.trim())}
+                    className="flex-1 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+                    placeholder="Enter token provided by venue owner"
+                  />
+                  <button
+                    type="button"
+                    onClick={verifyToken}
+                    className="px-4 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white"
+                  >Verify</button>
+                </div>
+                {tokenStatus && (
+                  <p className={tokenStatus.valid ? "text-teal-600 mt-2" : "text-red-600 mt-2"}>
+                    {tokenStatus.valid ? 'Token valid. Venue details loaded.' : tokenStatus.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Venue Name</label>
                 <input
                   type="text"
-                  required
                   value={formData.locationName}
-                  onChange={(e) => setFormData({ ...formData, locationName: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
-                  placeholder="e.g., Central Sports Complex"
+                  disabled
+                  className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Address
-                </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Address</label>
                 <input
                   type="text"
                   value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
-                  placeholder="Street address"
+                  disabled
+                  className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  City *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">City</label>
                 <input
                   type="text"
-                  required
                   value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
-                  placeholder="City"
+                  disabled
+                  className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  State/Province
-                </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">State/Province</label>
                 <input
                   type="text"
                   value={formData.state}
-                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
-                  placeholder="State"
+                  disabled
+                  className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Country *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Country</label>
                 <input
                   type="text"
-                  required
                   value={formData.country}
-                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
-                  placeholder="Country"
+                  disabled
+                  className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
             </div>
