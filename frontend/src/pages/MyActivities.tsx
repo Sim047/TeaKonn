@@ -198,40 +198,16 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               onClick={() => { setInitialEventToken(''); setShowCreateEvent(true); }}
             >
               + Create Event
-            {activeTab === 'events' && (
-              <div className="flex flex-wrap gap-2 mt-3" role="tablist" aria-label="Events Subtabs">
-                <button
-                  className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${eventsSubTab === 'created' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
-                  onClick={() => setEventsSubTab('created')}
-                  role="tab"
-                  aria-selected={eventsSubTab === 'created'}
-                >
-                  Created ({createdEvents.length})
-                </button>
-                <button
-                  className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${eventsSubTab === 'joined' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
-                  onClick={() => setEventsSubTab('joined')}
-                  role="tab"
-                  aria-selected={eventsSubTab === 'joined'}
-                >
-                  Joined ({joinedEvents.length})
-                </button>
-                <button
-                  className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${eventsSubTab === 'past' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
-                  onClick={() => setEventsSubTab('past')}
-                  role="tab"
-                  aria-selected={eventsSubTab === 'past'}
-                >
-                  Past ({archivedEvents.length})
-                </button>
-              </div>
-            )}
-
-            {activeTab === 'events' && eventsSubTab === 'created' && (
+            </button>
           </div>
         </div>
 
+      <div className="flex flex-wrap gap-3 items-center mt-3" role="tablist" aria-label="My Activities Tabs">
+        <button
+          className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'events' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+          onClick={() => setActiveTab('events')}
           role="tab"
+          aria-selected={activeTab === 'events'}
         >
           My Events ({createdEvents.length})
         </button>
@@ -261,6 +237,34 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         </button>
       </div>
 
+      {activeTab === 'events' && (
+        <div className="flex flex-wrap gap-2 mt-3" role="tablist" aria-label="Events Subtabs">
+          <button
+            className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${eventsSubTab === 'created' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+            onClick={() => setEventsSubTab('created')}
+            role="tab"
+            aria-selected={eventsSubTab === 'created'}
+          >
+            Created ({createdEvents.length})
+          </button>
+          <button
+            className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${eventsSubTab === 'joined' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+            onClick={() => setEventsSubTab('joined')}
+            role="tab"
+            aria-selected={eventsSubTab === 'joined'}
+          >
+            Joined ({joinedEvents.length})
+          </button>
+          <button
+            className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${eventsSubTab === 'past' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+            onClick={() => setEventsSubTab('past')}
+            role="tab"
+            aria-selected={eventsSubTab === 'past'}
+          >
+            Past ({archivedEvents.length})
+          </button>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
         <button className={`${btn('outline')} w-full sm:w-auto`} onClick={refreshAll}>Refresh</button>
         {activeTab === 'events' && (
