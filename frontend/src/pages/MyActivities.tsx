@@ -18,7 +18,7 @@ export default function MyActivities({ token, onOpenConversation }: { token: str
   const [joinedEvents, setJoinedEvents] = useState<any[]>([]);
   const [archivedEvents, setArchivedEvents] = useState<any[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
-  const [includeArchived, setIncludeArchived] = useState<boolean>(false);
+  const [includeArchived, setIncludeArchived] = useState<boolean>(true);
 
   async function refreshAll() {
     if (!token) return;
@@ -146,7 +146,7 @@ export default function MyActivities({ token, onOpenConversation }: { token: str
       <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">My Activities</h2>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
         <button
           className="px-3 py-2 rounded bg-teal-600 text-white"
           onClick={() => { setInitialEventToken(''); setShowCreateEvent(true); }}
@@ -156,6 +156,12 @@ export default function MyActivities({ token, onOpenConversation }: { token: str
         {me?.role === 'venue_owner' && (
           <button className="px-3 py-2 rounded bg-indigo-600 text-white" onClick={() => setShowCreateVenue(true)}>Create Venue</button>
         )}
+        <button
+          className="px-3 py-2 rounded border hover:bg-gray-50 dark:hover:bg-gray-800"
+          onClick={refreshAll}
+        >
+          Refresh
+        </button>
         <div className="ml-auto flex items-center gap-2">
           <span className="text-sm">Show past</span>
           <button
@@ -188,7 +194,7 @@ export default function MyActivities({ token, onOpenConversation }: { token: str
       </section>
 
       <section>
-        <h3 className="text-xl font-semibold mb-2">Events I Created</h3>
+        <h3 className="text-xl font-semibold mb-2">Events I Created <span className="text-sm font-normal text-gray-500">({createdEvents.length})</span></h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {createdEvents.map((e) => (
             <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900">
@@ -215,7 +221,7 @@ export default function MyActivities({ token, onOpenConversation }: { token: str
       </section>
 
       <section>
-        <h3 className="text-xl font-semibold mb-2">Events I Joined</h3>
+        <h3 className="text-xl font-semibold mb-2">Events I Joined <span className="text-sm font-normal text-gray-500">({joinedEvents.length})</span></h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {joinedEvents.map((e) => (
             <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900">
