@@ -33,7 +33,8 @@ export default function MyActivities({ token, onOpenConversation }: { token: str
         axios.get(`${API_URL}/tokens/my/generated`, { headers }),
         axios.get(`${API_URL}/tokens/my/received`, { headers }),
         axios.get(`${API_URL}/events/my/created?includeArchived=${includeArchived}`, { headers }),
-        axios.get(`${API_URL}/events/my/joined?includeArchived=${includeArchived}`, { headers }),
+        // Always fetch joined events as active-only (exclude archived)
+        axios.get(`${API_URL}/events/my/joined?includeArchived=false`, { headers }),
         includeArchived ? axios.get(`${API_URL}/events/my/archived`, { headers }) : Promise.resolve({ data: { events: [] } }),
       ]);
       setMyVenues(v.data.venues || []);
