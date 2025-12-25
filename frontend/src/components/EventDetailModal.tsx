@@ -108,7 +108,7 @@ export default function EventDetailModal({
         <div className="sticky top-0 bg-gradient-to-r from-cyan-600 to-purple-600 p-6 flex items-start justify-between z-10">
           <div className="flex-1">
             <h2 className="text-3xl font-bold text-white mb-2">{event.title}</h2>
-            <div className="flex items-center gap-3 text-cyan-100">
+            <div className="flex items-center gap-3 text-cyan-50">
               <span className="bg-white/20 px-3 py-1 rounded-full text-sm flex items-center gap-1">
                 <Trophy className="w-4 h-4" />
                 {event.sport}
@@ -152,7 +152,7 @@ export default function EventDetailModal({
           )}
 
           {/* Organizer Info */}
-          <div className="bg-white/5 backdrop-blur rounded-xl p-4">
+          <div className="bg-white/10 backdrop-blur rounded-xl p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div
                 className="flex items-center gap-3 cursor-pointer hover:bg-white/5 rounded-lg p-2 transition-colors"
@@ -170,7 +170,7 @@ export default function EventDetailModal({
                   <p className="text-white font-semibold hover:text-cyan-400 transition-colors">
                     {event.organizer.username}
                   </p>
-                  <p className="text-gray-400 text-sm">Event Organizer · Click to view profile</p>
+                  <p className="text-gray-200 text-sm">Event Organizer · Click to view profile</p>
                 </div>
               </div>
               {!isOrganizer && (
@@ -188,18 +188,18 @@ export default function EventDetailModal({
           {/* Event Details */}
           <div className="space-y-4">
             {isArchived && (
-              <div className="bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl p-3">
+              <div className="bg-red-600/15 border border-red-500/40 text-red-200 rounded-xl p-3">
                 This event has ended and is archived. Joining is disabled.
               </div>
             )}
             <div>
               <h3 className="text-xl font-bold text-white mb-2">About This Event</h3>
-              <p className="text-gray-300 leading-relaxed">{event.description}</p>
+              <p className="text-gray-200 leading-relaxed">{event.description}</p>
             </div>
 
             {/* Info Grid */}
             <div className="grid md:grid-cols-2 gap-4">
-              <div className="bg-white/5 backdrop-blur rounded-lg p-4">
+              <div className="bg-white/10 backdrop-blur rounded-lg p-4">
                 <div className="flex items-center gap-3 text-gray-300">
                   <div className="bg-purple-500/20 p-2 rounded-lg">
                     <Calendar className="w-5 h-5 text-purple-400" />
@@ -213,7 +213,7 @@ export default function EventDetailModal({
                 </div>
               </div>
 
-              <div className="bg-white/5 backdrop-blur rounded-lg p-4">
+              <div className="bg-white/10 backdrop-blur rounded-lg p-4">
                 <div className="flex items-center gap-3 text-gray-300">
                   <div className="bg-cyan-500/20 p-2 rounded-lg">
                     <Clock className="w-5 h-5 text-cyan-400" />
@@ -225,7 +225,7 @@ export default function EventDetailModal({
                 </div>
               </div>
 
-              <div className="bg-white/5 backdrop-blur rounded-lg p-4">
+              <div className="bg-white/10 backdrop-blur rounded-lg p-4">
                 <div className="flex items-center gap-3 text-gray-300">
                   <div className="bg-pink-500/20 p-2 rounded-lg">
                     <MapPin className="w-5 h-5 text-pink-400" />
@@ -243,7 +243,7 @@ export default function EventDetailModal({
                 </div>
               </div>
 
-              <div className="bg-white/5 backdrop-blur rounded-lg p-4">
+              <div className="bg-white/10 backdrop-blur rounded-lg p-4">
                 <div className="flex items-center gap-3 text-gray-300">
                   <div className="bg-green-500/20 p-2 rounded-lg">
                     <Users className="w-5 h-5 text-green-400" />
@@ -265,7 +265,7 @@ export default function EventDetailModal({
           </div>
 
           {/* Participants Section - COLLAPSIBLE */}
-          <div className="bg-gradient-to-br from-purple-900/30 to-cyan-900/30 border border-cyan-400/30 rounded-xl overflow-hidden">
+          <div className="bg-gradient-to-br from-purple-900/40 to-cyan-900/40 border border-cyan-400/40 rounded-xl overflow-hidden">
             {/* Header - Always Visible */}
             <button
               onClick={() => setParticipantsCollapsed(!participantsCollapsed)}
@@ -301,7 +301,7 @@ export default function EventDetailModal({
                     {event.participants.slice(0, 8).map((participant: any, idx: number) => (
                       <div
                         key={idx}
-                        className="bg-white/5 backdrop-blur rounded-lg p-3 flex items-center gap-2 hover:bg-white/10 transition-colors"
+                        className="bg-white/10 backdrop-blur rounded-lg p-3 flex items-center gap-2 hover:bg-white/20 transition-colors"
                       >
                         <img
                           src={
@@ -317,7 +317,7 @@ export default function EventDetailModal({
                       </div>
                     ))}
                     {event.participants?.length > 8 && (
-                      <div className="bg-white/5 backdrop-blur rounded-lg p-3 flex items-center justify-center">
+                      <div className="bg-white/10 backdrop-blur rounded-lg p-3 flex items-center justify-center">
                         <span className="text-cyan-400 text-sm font-semibold">
                           +{event.participants.length - 8} more
                         </span>
@@ -327,14 +327,14 @@ export default function EventDetailModal({
                 )}
 
                 {event.participants?.length === 0 && !isOrganizer && (
-                  <div className="text-center py-6 text-gray-400">
+                  <div className="text-center py-6 text-gray-200">
                     <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">No participants yet. Be the first!</p>
                   </div>
                 )}
 
                 {event.participants?.length === 0 && isOrganizer && (
-                  <div className="text-center py-6 text-gray-400">
+                  <div className="text-center py-6 text-gray-200">
                     <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">No participants yet. Share your event!</p>
                   </div>

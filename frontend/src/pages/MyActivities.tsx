@@ -183,7 +183,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
 
   return (
     <>
-    <div className="min-h-full bg-gradient-to-b from-white to-gray-50 dark:from-black dark:to-gray-900">
+    <div className="min-h-full bg-gradient-to-b from-white to-gray-50 dark:from-black dark:to-gray-900 text-gray-900 dark:text-gray-100">
       <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">My Activities</h2>
@@ -233,11 +233,11 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         {/* Venue owner CTA removed per request */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {myVenues.map((v) => (
-            <div key={v._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900 hover:ring-1 hover:ring-gray-300">
+            <div key={v._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-800 hover:ring-1 hover:ring-gray-300">
               <div className="flex justify-between items-start">
                 <div>
                   <div className="text-lg font-semibold text-gray-900 dark:text-white">{v.name}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300">{v.location?.city}</div>
+                  <div className="text-sm text-gray-700 dark:text-gray-200">{v.location?.city}</div>
                 </div>
                 <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">{v.status}</span>
               </div>
@@ -256,11 +256,11 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         <h3 className="text-xl font-semibold mb-2">Events I Created <span className="text-sm font-normal text-gray-500">({createdEvents.length})</span></h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {createdEvents.map((e) => (
-            <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900 hover:ring-1 hover:ring-gray-300">
+            <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-800 hover:ring-1 hover:ring-gray-300">
               <div className="flex justify-between items-start">
                 <div>
                   <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{e.title}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300">{e.location?.city || e.location?.name}</div>
+                  <div className="text-sm text-gray-700 dark:text-gray-200">{e.location?.city || e.location?.name}</div>
                 </div>
                 <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">{e.sport || 'Other'}</span>
               </div>
@@ -315,11 +315,11 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         <h3 className="text-xl font-semibold mb-2">Events I Joined <span className="text-sm font-normal text-gray-500">({joinedEvents.length})</span></h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {joinedEvents.map((e) => (
-            <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900 hover:ring-1 hover:ring-gray-300">
+            <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-800 hover:ring-1 hover:ring-gray-300">
               <div className="flex justify-between items-start">
                 <div>
                   <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{e.title}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300">{e.location?.city || e.location?.name}</div>
+                  <div className="text-sm text-gray-700 dark:text-gray-200">{e.location?.city || e.location?.name}</div>
                 </div>
                 <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">Organized by {e.organizer?.username}</span>
               </div>
@@ -445,11 +445,11 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           <h3 className="text-xl font-semibold mb-2">Past Events</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {archivedEvents.map((e) => (
-              <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900 hover:ring-1 hover:ring-gray-300">
+              <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-800 hover:ring-1 hover:ring-gray-300">
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{e.title}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-300">{e.location?.city || e.location?.name}</div>
+                    <div className="text-sm text-gray-700 dark:text-gray-200">{e.location?.city || e.location?.name}</div>
                   </div>
                   <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">Ended</span>
                 </div>

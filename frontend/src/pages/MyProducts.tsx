@@ -66,11 +66,11 @@ export default function MyProducts({ token, onNavigate, onToast }: MyProductsPro
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {items.map((p) => (
-              <div key={p._id} className="rounded-xl border p-4 shadow-sm bg-white dark:bg-gray-900 hover:shadow-md hover:ring-1 hover:ring-gray-300 transition-shadow">
+              <div key={p._id} className="rounded-xl border p-4 shadow-sm bg-white dark:bg-gray-800 hover:shadow-md hover:ring-1 hover:ring-gray-300 transition-shadow">
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{p.title}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-300">{p.location}</div>
+                    <div className="text-sm text-gray-700 dark:text-gray-200">{p.location}</div>
                   </div>
                   <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">{p.status}</span>
                 </div>
