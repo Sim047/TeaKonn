@@ -86,6 +86,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
   const [confirmDeleteVenueId, setConfirmDeleteVenueId] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState<'events' | 'services' | 'products'>('events');
+  const [eventsQuery, setEventsQuery] = useState<string>('');
 
   async function refreshAll() {
     if (!token) return;
@@ -289,6 +290,15 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
 
       <div className="flex flex-wrap gap-2 items-center">
         <button className={btn('outline')} onClick={refreshAll}>Refresh</button>
+        {activeTab === 'events' && (
+          <input
+            value={eventsQuery}
+            onChange={(e) => setEventsQuery(e.target.value)}
+            placeholder="Search events, venues, requests, tokens"
+            className="input w-full sm:w-80 ml-auto"
+            aria-label="Search events"
+          />
+        )}
         <div className="ml-auto flex items-center gap-2">
           <span className="text-sm text-theme-secondary">Show past</span>
           <button
@@ -301,12 +311,23 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         </div>
       </div>
 
+      {/* helper to filter by query */}
+      {/**/}
+
       {activeTab === 'events' && (
       <section>
         <h3 className="text-xl font-semibold mb-2">My Venues</h3>
         {/* Venue owner CTA removed per request */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {myVenues.map((v) => (
+          {myVenues.filter((v) => {
+            const q = eventsQuery.toLowerCase();
+            if (!q) return true;
+            return (
+              (v.name || '').toLowerCase().includes(q) ||
+              (v.location?.city || '').toLowerCase().includes(q) ||
+              (v.status || '').toLowerCase().includes(q)
+            );
+          }).map((v) => (
             <div key={v._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
               <div className="h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80 group-hover:opacity-100" />
               <div className="flex justify-between items-start">
@@ -338,7 +359,15 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       <section>
         <h3 className="text-xl font-semibold mb-2">Events I Created <span className="text-sm font-normal text-gray-500">({createdEvents.length})</span></h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {createdEvents.map((e) => (
+          {createdEvents.filter((e) => {
+            const q = eventsQuery.toLowerCase();
+            if (!q) return true;
+            return (
+              (e.title || '').toLowerCase().includes(q) ||
+              (e.sport || '').toLowerCase().includes(q) ||
+              (e.location?.city || e.location?.name || '').toLowerCase().includes(q)
+            );
+          }).map((e) => (
             <div key={e._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
               <div className={`h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80 group-hover:opacity-100`} />
               <div className="flex justify-between items-start">
@@ -413,7 +442,15 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       <section>
         <h3 className="text-xl font-semibold mb-2">Events I Joined <span className="text-sm font-normal text-gray-500">({joinedEvents.length})</span></h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {joinedEvents.map((e) => (
+          {joinedEvents.filter((e) => {
+            const q = eventsQuery.toLowerCase();
+            if (!q) return true;
+            return (
+              (e.title || '').toLowerCase().includes(q) ||
+              (e.organizer?.username || '').toLowerCase().includes(q) ||
+              (e.location?.city || e.location?.name || '').toLowerCase().includes(q)
+            );
+          }).map((e) => (
             <div key={e._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
               <div className={`h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80 group-hover:opacity-100`} />
               <div className="flex justify-between items-start">
@@ -461,7 +498,14 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       <section>
         <h3 className="text-xl font-semibold mb-2">Booking Requests (Sent)</h3>
         <div className="space-y-2">
-          {sentRequests.map((r) => (
+          {sentRequests.filter((r) => {
+            const q = eventsQuery.toLowerCase();
+            if (!q) return true;
+            return (
+              (r.venue?.name || '').toLowerCase().includes(q) ||
+              (r.status || '').toLowerCase().includes(q)
+            );
+          }).map((r) => (
             <div key={r._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all">
               <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
               <div className="flex justify-between items-start">
@@ -486,7 +530,15 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       <section>
         <h3 className="text-xl font-semibold mb-2">Booking Requests (Received)</h3>
         <div className="space-y-2">
-          {receivedRequests.map((r) => (
+          {receivedRequests.filter((r) => {
+            const q = eventsQuery.toLowerCase();
+            if (!q) return true;
+            return (
+              (r.venue?.name || '').toLowerCase().includes(q) ||
+              (r.requester?.username || '').toLowerCase().includes(q) ||
+              (r.status || '').toLowerCase().includes(q)
+            );
+          }).map((r) => (
             <div key={r._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all">
               <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
               <div className="flex justify-between items-start">
@@ -517,7 +569,15 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       <section>
         <h3 className="text-xl font-semibold mb-2">Generated Tokens</h3>
         <div className="space-y-2">
-          {generatedTokens.map((t) => (
+          {generatedTokens.filter((t) => {
+            const q = eventsQuery.toLowerCase();
+            if (!q) return true;
+            return (
+              (t.code || '').toLowerCase().includes(q) ||
+              (t.venue?.name || '').toLowerCase().includes(q) ||
+              (t.status || '').toLowerCase().includes(q)
+            );
+          }).map((t) => (
             <div key={t._id} className="themed-card rounded-2xl p-4 shadow-sm">
               <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
               <div className="flex justify-between items-center">
@@ -543,7 +603,15 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       <section>
         <h3 className="text-xl font-semibold mb-2">Received Tokens</h3>
         <div className="space-y-2">
-          {receivedTokens.map((t) => (
+          {receivedTokens.filter((t) => {
+            const q = eventsQuery.toLowerCase();
+            if (!q) return true;
+            return (
+              (t.code || '').toLowerCase().includes(q) ||
+              (t.venue?.name || '').toLowerCase().includes(q) ||
+              (t.status || '').toLowerCase().includes(q)
+            );
+          }).map((t) => (
             <div key={t._id} className="themed-card rounded-2xl p-4 shadow-sm">
               <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
               <div className="flex justify-between items-center">
@@ -570,7 +638,14 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         <section>
           <h3 className="text-xl font-semibold mb-2">Past Events</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {archivedEvents.map((e) => (
+            {archivedEvents.filter((e) => {
+              const q = eventsQuery.toLowerCase();
+              if (!q) return true;
+              return (
+                (e.title || '').toLowerCase().includes(q) ||
+                (e.location?.city || e.location?.name || '').toLowerCase().includes(q)
+              );
+            }).map((e) => (
               <div key={e._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
                 <div className={`h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-70`} />
                 <div className="flex justify-between items-start">

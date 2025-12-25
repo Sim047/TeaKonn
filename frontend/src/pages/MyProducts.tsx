@@ -21,6 +21,7 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [confirmDeleteProductId, setConfirmDeleteProductId] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [query, setQuery] = useState<string>('');
 
   async function refresh() {
     if (!token) return;
@@ -82,7 +83,14 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">My Products</h2>
             <p className="text-sm text-gray-700 dark:text-gray-200">Manage items in your marketplace</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search products by title, category, location"
+              className="input w-56"
+              aria-label="Search products"
+            />
             <button className="inline-flex items-center px-4 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => onNavigate && onNavigate('my-activities')}>Back</button>
             <button className="btn" onClick={() => setOpenCreate(true)}>Create Product</button>
           </div>
@@ -98,7 +106,15 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {items.map((p) => (
+            {items.filter((p) => {
+              const q = query.toLowerCase();
+              if (!q) return true;
+              return (
+                (p.title || '').toLowerCase().includes(q) ||
+                (p.category || '').toLowerCase().includes(q) ||
+                (p.location || '').toLowerCase().includes(q)
+              );
+            }).map((p) => (
               <div key={p._id} className="group themed-card rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
                 <div className="relative mb-3">
                   {p.images?.[0] ? (
