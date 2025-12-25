@@ -43,7 +43,7 @@ export default function MyServices({ token, onNavigate, onToast, onUpdated }: My
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">My Services</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Manage your service offerings</p>
+            <p className="text-sm text-gray-700 dark:text-gray-200">Manage your service offerings</p>
           </div>
           <div className="flex gap-2">
             <button className="px-4 py-2 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => onNavigate && onNavigate('my-activities')}>Back</button>
@@ -54,10 +54,10 @@ export default function MyServices({ token, onNavigate, onToast, onUpdated }: My
         {error && <div className="rounded-xl border p-3 text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-300 mb-4">{error}</div>}
 
         {loading ? (
-          <div className="text-sm text-gray-600 dark:text-gray-300">Loading...</div>
+          <div className="text-sm text-gray-700 dark:text-gray-200">Loading...</div>
         ) : services.length === 0 ? (
           <div className="rounded-xl border p-4 bg-white dark:bg-gray-900">
-            <p className="text-sm text-gray-600 dark:text-gray-300">No services yet.</p>
+            <p className="text-sm text-gray-700 dark:text-gray-200">No services yet.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -68,7 +68,7 @@ export default function MyServices({ token, onNavigate, onToast, onUpdated }: My
                     <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{s.name || s.title}</div>
                     <div className="text-sm text-gray-700 dark:text-gray-200">{s.location?.city || s.location?.name}</div>
                   </div>
-                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">{s.active ? 'Active' : 'Inactive'}</span>
+                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200">{s.active ? 'Active' : 'Inactive'}</span>
                 </div>
                 <div className="mt-2 text-sm">Price: {s.pricing?.amount ? `${s.pricing?.currency || 'USD'} ${s.pricing?.amount}` : 'Free'}</div>
                 <div className="mt-3 flex gap-2">
