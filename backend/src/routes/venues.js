@@ -4,10 +4,8 @@ import Venue from "../models/Venue.js";
 
 const router = express.Router();
 
+// Temporarily allow any authenticated user to manage venues
 function ensureVenueOwner(req, res, next) {
-  // Require role venue_owner
-  const role = req.user?.role || "user";
-  if (role !== "venue_owner") return res.status(403).json({ error: "Only venue owners can perform this action" });
   next();
 }
 

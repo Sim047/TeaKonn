@@ -154,7 +154,12 @@ export default function MyActivities({ token, onOpenConversation }: { token: str
         >
           Create Event
         </button>
-        {/* Create Venue intentionally hidden per request */}
+        <button
+          className="px-3 py-2 rounded bg-indigo-600 text-white"
+          onClick={() => setShowCreateVenue(true)}
+        >
+          Create Venue
+        </button>
         <button
           className="px-3 py-2 rounded border hover:bg-gray-50 dark:hover:bg-gray-800"
           onClick={refreshAll}
