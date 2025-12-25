@@ -43,6 +43,10 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
   const [confirmGenerateReq, setConfirmGenerateReq] = useState<any | null>(null);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [initialEventToken, setInitialEventToken] = useState<string>('');
+  const [showSent, setShowSent] = useState<boolean>(true);
+  const [showReceived, setShowReceived] = useState<boolean>(true);
+  const [showGenTokens, setShowGenTokens] = useState<boolean>(true);
+  const [showRecvTokens, setShowRecvTokens] = useState<boolean>(true);
 
   async function refreshVenues() {
     if (!token) return;
@@ -194,7 +198,14 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
         </section>
 
         <section>
-          <h3 className="text-xl font-semibold mb-2">Booking Requests (Sent)</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xl font-semibold">Booking Requests (Sent)</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-theme-secondary">Show</span>
+              <button className={`chip ${showSent ? 'chip-active' : ''}`} onClick={() => setShowSent(s => !s)} aria-pressed={showSent}>{showSent ? 'On' : 'Off'}</button>
+            </div>
+          </div>
+          {showSent && (
           <div className="space-y-2">
             {sentRequests.filter((r) => {
               const q = query.toLowerCase();
@@ -221,10 +232,18 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             ))}
             {sentRequests.length === 0 && <p className="text-sm text-gray-500">No sent requests.</p>}
           </div>
+          )}
         </section>
 
         <section>
-          <h3 className="text-xl font-semibold mb-2">Booking Requests (Received)</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xl font-semibold">Booking Requests (Received)</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-theme-secondary">Show</span>
+              <button className={`chip ${showReceived ? 'chip-active' : ''}`} onClick={() => setShowReceived(s => !s)} aria-pressed={showReceived}>{showReceived ? 'On' : 'Off'}</button>
+            </div>
+          </div>
+          {showReceived && (
           <div className="space-y-2">
             {receivedRequests.filter((r) => {
               const q = query.toLowerCase();
@@ -258,10 +277,18 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             ))}
             {receivedRequests.length === 0 && <p className="text-sm text-gray-500">No received requests.</p>}
           </div>
+          )}
         </section>
 
         <section>
-          <h3 className="text-xl font-semibold mb-2">Generated Tokens</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xl font-semibold">Generated Tokens</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-theme-secondary">Show</span>
+              <button className={`chip ${showGenTokens ? 'chip-active' : ''}`} onClick={() => setShowGenTokens(s => !s)} aria-pressed={showGenTokens}>{showGenTokens ? 'On' : 'Off'}</button>
+            </div>
+          </div>
+          {showGenTokens && (
           <div className="space-y-2">
             {generatedTokens.filter((t) => {
               const q = query.toLowerCase();
@@ -290,10 +317,18 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             ))}
             {generatedTokens.length === 0 && <p className="text-sm text-gray-500">No generated tokens.</p>}
           </div>
+          )}
         </section>
 
         <section>
-          <h3 className="text-xl font-semibold mb-2">Received Tokens</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xl font-semibold">Received Tokens</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-theme-secondary">Show</span>
+              <button className={`chip ${showRecvTokens ? 'chip-active' : ''}`} onClick={() => setShowRecvTokens(s => !s)} aria-pressed={showRecvTokens}>{showRecvTokens ? 'On' : 'Off'}</button>
+            </div>
+          </div>
+          {showRecvTokens && (
           <div className="space-y-2">
             {receivedTokens.filter((t) => {
               const q = query.toLowerCase();
@@ -323,6 +358,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             ))}
             {receivedTokens.length === 0 && <p className="text-sm text-gray-500">No received tokens.</p>}
           </div>
+          )}
         </section>
       </div>
 
