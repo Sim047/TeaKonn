@@ -49,6 +49,20 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
     if (s.includes('book')) return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300';
     return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
   };
+
+  const btn = (variant: 'primary' | 'success' | 'danger' | 'outline' | 'warning' | 'ghost', size: 'sm' | 'md' = 'md') => {
+    const base = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed';
+    const sizing = size === 'sm' ? 'px-2.5 py-1.5 text-sm' : 'px-3 py-2 text-sm';
+    const variants: Record<string, string> = {
+      primary: 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-400',
+      success: 'bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-400',
+      danger: 'bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-400',
+      outline: 'border border-gray-300 text-gray-800 dark:text-gray-100 bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 focus:ring-gray-300',
+      warning: 'bg-amber-600 text-white hover:bg-amber-700 focus:ring-amber-400',
+      ghost: 'border border-transparent text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 focus:ring-gray-300',
+    };
+    return `${base} ${sizing} ${variants[variant]}`;
+  };
   const [myVenues, setMyVenues] = useState<any[]>([]);
   const [sentRequests, setSentRequests] = useState<any[]>([]);
   const [receivedRequests, setReceivedRequests] = useState<any[]>([]);
@@ -232,13 +246,13 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">My Activities</h2>
           <div className="flex items-center gap-2">
             <button
-              className="inline-flex items-center px-4 py-2 rounded-lg bg-teal-600 text-white shadow hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-400"
+              className={btn('success')}
               onClick={() => { setInitialEventToken(''); setShowCreateEvent(true); }}
             >
               + Create Event
             </button>
             <button
-              className="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className={btn('primary')}
               onClick={() => setShowCreateVenue(true)}
             >
               + Create Venue
@@ -274,12 +288,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       </div>
 
       <div className="flex flex-wrap gap-2 items-center">
-        <button
-          className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300"
-          onClick={refreshAll}
-        >
-          Refresh
-        </button>
+        <button className={btn('outline')} onClick={refreshAll}>Refresh</button>
         <div className="ml-auto flex items-center gap-2">
           <span className="text-sm">Show past</span>
           <button
@@ -315,8 +324,8 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                 <span>Capacity: {v.capacity?.max ?? '—'}</span>
               </div>
               <div className="mt-3 flex gap-2">
-                <button className="px-3 py-2 rounded-md bg-indigo-600 text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400" onClick={() => { setEditingVenue(v); setShowCreateVenue(true); }}>Edit</button>
-                <button className="px-3 py-2 rounded-md border border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 focus:outline-none focus:ring-2 focus:ring-red-300" onClick={() => setConfirmDeleteVenueId(v._id)}>Delete</button>
+                <button className={btn('primary')} onClick={() => { setEditingVenue(v); setShowCreateVenue(true); }}>Edit</button>
+                <button className={btn('danger')} onClick={() => setConfirmDeleteVenueId(v._id)}>Delete</button>
               </div>
             </div>
           ))}
@@ -356,24 +365,24 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {e.organizer && (
-                  <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => startConversationWithUser(e.organizer?._id)}>
+                  <button className={btn('outline')} onClick={() => startConversationWithUser(e.organizer?._id)}>
                     Message Participants (DM organizer)
                   </button>
                 )}
                 <button
-                  className="px-3 py-2 rounded-md bg-indigo-600 text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className={btn('primary')}
                   onClick={() => { setEditingEvent(e); setShowCreateEvent(true); }}
                 >
                   Edit
                 </button>
                 <button
-                  className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  className={btn('outline')}
                   onClick={() => setSelectedEvent(e)}
                 >
                   View
                 </button>
                 <button
-                  className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  className={e.archivedAt ? btn('success') : btn('warning')}
                   onClick={async () => {
                     if (!token) return;
                     const headers = { Authorization: `Bearer ${token}` };
@@ -387,7 +396,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                   {e.archivedAt ? 'Restore' : 'Archive'}
                 </button>
                 <button
-                  className="px-3 py-2 rounded-md border border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  className={btn('danger')}
                   onClick={() => setConfirmDeleteEventId(e._id)}
                 >
                   Delete
@@ -423,18 +432,18 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {e.organizer?._id && (
-                  <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => startConversationWithUser(e.organizer._id)}>
+                  <button className={btn('outline')} onClick={() => startConversationWithUser(e.organizer._id)}>
                     Message Organizer
                   </button>
                 )}
                 <button
-                  className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  className={btn('outline')}
                   onClick={() => setSelectedEvent(e)}
                 >
                   View
                 </button>
                 <button
-                  className="px-3 py-2 rounded-md bg-red-600 text-white disabled:opacity-50 shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  className={btn('danger')}
                   disabled={busy === e._id}
                   onClick={() => setConfirmLeaveEventId(e._id)}
                 >
@@ -461,8 +470,8 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                 </div>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => openRequestChat(r._id)}>Open Chat</button>
-                <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => startConversationWithUser(r.owner?._id)}>Message Owner</button>
+                <button className={btn('outline')} onClick={() => openRequestChat(r._id)}>Open Chat</button>
+                <button className={btn('outline')} onClick={() => startConversationWithUser(r.owner?._id)}>Message Owner</button>
               </div>
             </div>
           ))}
@@ -486,9 +495,9 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               </div>
               {me?.role === 'venue_owner' && r.status === 'pending' && (
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => openRequestChat(r._id)}>Open Chat</button>
-                  <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
-                  <button className="px-3 py-2 rounded-md bg-cyan-600 text-white shadow hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-400" onClick={() => generateTokenForRequest(r)}>Generate Token (after payment)</button>
+                  <button className={btn('outline')} onClick={() => openRequestChat(r._id)}>Open Chat</button>
+                  <button className={btn('outline')} onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
+                  <button className={btn('success')} onClick={() => generateTokenForRequest(r)}>Generate Token (after payment)</button>
                 </div>
               )}
             </div>
@@ -509,8 +518,8 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               <div className="text-sm">Status: {t.status} | Expires: {new Date(t.expiresAt).toLocaleString()}</div>
               {me?.role === 'venue_owner' && t.status === 'active' && (
                 <div className="mt-2 flex gap-2">
-                  <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => extendToken(t.code, 24)}>Extend 24h</button>
-                  <button className="px-3 py-2 rounded-md border border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 focus:outline-none focus:ring-2 focus:ring-red-300" onClick={() => revokeToken(t.code)}>Revoke</button>
+                  <button className={btn('outline')} onClick={() => extendToken(t.code, 24)}>Extend 24h</button>
+                  <button className={btn('danger')} onClick={() => revokeToken(t.code)}>Revoke</button>
                 </div>
               )}
             </div>
@@ -531,10 +540,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
               <div className="text-sm">Status: {t.status} | Expires: {new Date(t.expiresAt).toLocaleString()}</div>
               {t.status === 'active' && (
                 <div className="mt-2">
-                  <button
-                    className="px-3 py-2 rounded-md bg-teal-600 text-white shadow hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-400"
-                    onClick={() => { setInitialEventToken(t.code); setShowCreateEvent(true); }}
-                  >
+                  <button className={btn('success')} onClick={() => { setInitialEventToken(t.code); setShowCreateEvent(true); }}>
                     Use Token to Create Event
                   </button>
                 </div>
@@ -575,10 +581,10 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                 </div>
                 {e.organizer?._id && (
                   <div className="mt-3">
-                    <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => startConversationWithUser(e.organizer._id)}>
+                    <button className={btn('outline')} onClick={() => startConversationWithUser(e.organizer._id)}>
                       Message Organizer
                     </button>
-                    <button className="ml-2 px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => setSelectedEvent(e)}>
+                    <button className={`ml-2 ${btn('outline')}`} onClick={() => setSelectedEvent(e)}>
                       View
                     </button>
                   </div>
