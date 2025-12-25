@@ -80,7 +80,6 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
   const [joinedEvents, setJoinedEvents] = useState<any[]>([]);
   const [archivedEvents, setArchivedEvents] = useState<any[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
-  const [confirmGenerateReq, setConfirmGenerateReq] = useState<any | null>(null);
   const [includeArchived, setIncludeArchived] = useState<boolean>(true);
   const [servicesCount, setServicesCount] = useState<number>(0);
   const [productsCount, setProductsCount] = useState<number>(0);
@@ -134,43 +133,6 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
 
   useEffect(() => { refreshAll(); }, [token, includeArchived]);
 
-  async function generateTokenForRequest(reqItem: any) {
-    if (!token) return;
-    const headers = { Authorization: `Bearer ${token}` };
-    try {
-      // Initiate payment (stub)
-      const idempotencyKey = `br_${reqItem._id}`;
-      await axios.post(`${API_URL}/payments/initiate`, { bookingRequestId: reqItem._id, amount: 1000, currency: 'KES', idempotencyKey }, { headers });
-      // Simulate callback success
-      await axios.post(`${API_URL}/payments/callback`, { status: 'success', idempotencyKey });
-      // Generate token
-      await axios.post(`${API_URL}/tokens/generate`, { bookingRequestId: reqItem._id, expiresInHours: 72 }, { headers });
-      onToast && onToast('Token generated and sent to requester in chat.', 'success');
-      // Refresh lists
-      const [g, t] = await Promise.all([
-        axios.get(`${API_URL}/tokens/my/generated`, { headers }),
-        axios.get(`${API_URL}/tokens/my/received`, { headers }),
-      ]);
-      setGeneratedTokens(g.data.tokens || []);
-      setReceivedTokens(t.data.tokens || []);
-    } catch (e: any) {
-      onToast && onToast(e.response?.data?.error || 'Failed to generate token', 'error');
-    }
-  }
-
-  async function openRequestChat(reqId: string) {
-    if (!token || !onOpenConversation) return;
-    const headers = { Authorization: `Bearer ${token}` };
-    try {
-      const res = await axios.get(`${API_URL}/booking-requests/${reqId}`, { headers });
-      const conv = res.data?.conversation;
-      if (conv) onOpenConversation(conv);
-      else alert('No conversation found for this request');
-    } catch (e: any) {
-      console.error('Open request chat error', e);
-      alert(e.response?.data?.error || 'Failed to open chat');
-    }
-  }
 
   async function startConversationWithUser(userId: string) {
     if (!token || !onOpenConversation) return;
@@ -216,29 +178,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
     }
   }
 
-  async function revokeToken(code: string) {
-    if (!token) return;
-    const headers = { Authorization: `Bearer ${token}` };
-    try {
-      await axios.post(`${API_URL}/tokens/revoke`, { code }, { headers });
-      const g = await axios.get(`${API_URL}/tokens/my/generated`, { headers });
-      setGeneratedTokens(g.data.tokens || []);
-    } catch (e: any) {
-      alert(e.response?.data?.error || 'Failed to revoke token');
-    }
-  }
-
-  async function extendToken(code: string, hours = 24) {
-    if (!token) return;
-    const headers = { Authorization: `Bearer ${token}` };
-    try {
-      await axios.post(`${API_URL}/tokens/extend`, { code, hours }, { headers });
-      const g = await axios.get(`${API_URL}/tokens/my/generated`, { headers });
-      setGeneratedTokens(g.data.tokens || []);
-    } catch (e: any) {
-      alert(e.response?.data?.error || 'Failed to extend token');
-    }
-  }
+  // Booking system moved to MyVenues
 
   return (
     <>
@@ -458,145 +398,6 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       </section>
       )}
 
-      {activeTab === 'events' && (
-      <section>
-        <h3 className="text-xl font-semibold mb-2">Booking Requests (Sent)</h3>
-        <div className="space-y-2">
-          {sentRequests.filter((r) => {
-            const q = eventsQuery.toLowerCase();
-            if (!q) return true;
-            return (
-              (r.venue?.name || '').toLowerCase().includes(q) ||
-              (r.status || '').toLowerCase().includes(q)
-            );
-          }).map((r) => (
-            <div key={r._id} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all">
-              <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                <div>
-                  <div className="text-lg font-semibold text-heading">{r.venue?.name}</div>
-                  <div className="text-sm text-theme-secondary">Status: {r.status}</div>
-                </div>
-                <span className={`badge ${r.status === 'pending' ? 'badge-amber' : r.status === 'approved' ? 'badge-accent' : 'badge-violet'}`}>{r.status}</span>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => openRequestChat(r._id)}>Open Chat</button>
-                <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => startConversationWithUser(r.owner?._id)}>Message Owner</button>
-              </div>
-            </div>
-          ))}
-          {sentRequests.length === 0 && <p className="text-sm text-gray-500">No sent requests.</p>}
-        </div>
-      </section>
-      )}
-
-      {activeTab === 'events' && (
-      <section>
-        <h3 className="text-xl font-semibold mb-2">Booking Requests (Received)</h3>
-        <div className="space-y-2">
-          {receivedRequests.filter((r) => {
-            const q = eventsQuery.toLowerCase();
-            if (!q) return true;
-            return (
-              (r.venue?.name || '').toLowerCase().includes(q) ||
-              (r.requester?.username || '').toLowerCase().includes(q) ||
-              (r.status || '').toLowerCase().includes(q)
-            );
-          }).map((r) => (
-            <div key={r._id} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all">
-              <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                <div>
-                  <div className="text-lg font-semibold text-heading">{r.venue?.name}</div>
-                  <div className="text-sm text-theme-secondary">Requester: {r.requester?.username}</div>
-                  <div className="text-sm text-theme-secondary">Status: {r.status}</div>
-                </div>
-                <span className={`badge ${r.status === 'pending' ? 'badge-amber' : r.status === 'approved' ? 'badge-accent' : 'badge-violet'}`}>{r.status}</span>
-              </div>
-              {(me && String(r.owner?._id || r.owner) === String(me?._id)) && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => openRequestChat(r._id)}>Open Chat</button>
-                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
-                  {r.status === 'pending' && (
-                    <button className="btn w-full sm:w-auto" onClick={() => setConfirmGenerateReq(r)}>Generate Token (after payment)</button>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
-          {receivedRequests.length === 0 && <p className="text-sm text-gray-500">No received requests.</p>}
-        </div>
-      </section>
-      )}
-
-      {activeTab === 'events' && (
-      <section>
-        <h3 className="text-xl font-semibold mb-2">Generated Tokens</h3>
-        <div className="space-y-2">
-          {generatedTokens.filter((t) => {
-            const q = eventsQuery.toLowerCase();
-            if (!q) return true;
-            return (
-              (t.code || '').toLowerCase().includes(q) ||
-              (t.venue?.name || '').toLowerCase().includes(q) ||
-              (t.status || '').toLowerCase().includes(q)
-            );
-          }).map((t) => (
-            <div key={t._id} className="themed-card rounded-2xl p-3 sm:p-4 shadow-sm">
-              <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                <div className="font-medium text-heading">{t.code}</div>
-                <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
-              </div>
-              <div className="text-sm text-theme-secondary">Venue: {t.venue?.name}</div>
-              <div className="text-sm text-theme-secondary">Expires: {new Date(t.expiresAt).toLocaleString()}</div>
-              {me?.role === 'venue_owner' && t.status === 'active' && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => extendToken(t.code, 24)}>Extend 24h</button>
-                  <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400 w-full sm:w-auto" onClick={() => revokeToken(t.code)}>Revoke</button>
-                </div>
-              )}
-            </div>
-          ))}
-          {generatedTokens.length === 0 && <p className="text-sm text-gray-500">No generated tokens.</p>}
-        </div>
-      </section>
-      )}
-
-      {activeTab === 'events' && (
-      <section>
-        <h3 className="text-xl font-semibold mb-2">Received Tokens</h3>
-        <div className="space-y-2">
-          {receivedTokens.filter((t) => {
-            const q = eventsQuery.toLowerCase();
-            if (!q) return true;
-            return (
-              (t.code || '').toLowerCase().includes(q) ||
-              (t.venue?.name || '').toLowerCase().includes(q) ||
-              (t.status || '').toLowerCase().includes(q)
-            );
-          }).map((t) => (
-            <div key={t._id} className="themed-card rounded-2xl p-3 sm:p-4 shadow-sm">
-              <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                <div className="font-medium text-heading">{t.code}</div>
-                <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
-              </div>
-              <div className="text-sm text-theme-secondary">Venue: {t.venue?.name}</div>
-              <div className="text-sm text-theme-secondary">Expires: {new Date(t.expiresAt).toLocaleString()}</div>
-              {t.status === 'active' && (
-                <div className="mt-2">
-                  <button className="btn w-full sm:w-auto" onClick={() => { setInitialEventToken(t.code); setShowCreateEvent(true); }}>
-                    Use Token to Create Event
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
-          {receivedTokens.length === 0 && <p className="text-sm text-gray-500">No received tokens.</p>}
-        </div>
-      </section>
-      )}
 
       {activeTab === 'events' && includeArchived && (
         <section>
@@ -677,21 +478,13 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
             onToast={onToast}
             onCountChange={(n) => setVenuesCount(n)}
             onUpdated={() => refreshAll()}
+            onOpenConversation={onOpenConversation}
           />
         </div>
       )}
 
       </div>
     </div>
-    <ConfirmDialog
-      isOpen={!!confirmGenerateReq}
-      title="Generate Booking Token"
-      message="This will record a payment, create a booking token, and send it to the requester in the booking chat. Proceed?"
-      confirmLabel="Generate Token"
-      cancelLabel="Cancel"
-      onConfirm={() => { if (confirmGenerateReq) generateTokenForRequest(confirmGenerateReq); setConfirmGenerateReq(null); }}
-      onCancel={() => setConfirmGenerateReq(null)}
-    />
     <ConfirmDialog
       isOpen={!!confirmLeaveEventId}
       title="Leave Event"
