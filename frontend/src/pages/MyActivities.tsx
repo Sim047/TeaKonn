@@ -7,8 +7,48 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import EventDetailModal from '../components/EventDetailModal';
 import MyServices from './MyServices';
 import MyProducts from './MyProducts';
+import { Calendar, MapPin, Users, Trophy } from 'lucide-react';
 
 export default function MyActivities({ token, onOpenConversation, onNavigate, onToast }: { token: string | null, onOpenConversation?: (conv: any) => void, onNavigate?: (view: string) => void, onToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void }) {
+  const sportStyle = (raw?: string) => {
+    const s = (raw || '').toLowerCase();
+    const map: Record<string, { badge: string; gradient: string }> = {
+      basketball: {
+        badge: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+        gradient: 'from-orange-500/30 to-amber-500/30',
+      },
+      rugby: {
+        badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+        gradient: 'from-emerald-500/30 to-teal-500/30',
+      },
+      chess: {
+        badge: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
+        gradient: 'from-indigo-500/30 to-purple-500/30',
+      },
+      football: {
+        badge: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+        gradient: 'from-green-500/30 to-lime-500/30',
+      },
+      soccer: {
+        badge: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+        gradient: 'from-green-500/30 to-lime-500/30',
+      },
+      tennis: {
+        badge: 'bg-lime-100 text-lime-700 dark:bg-lime-900/30 dark:text-lime-300',
+        gradient: 'from-lime-500/30 to-emerald-500/30',
+      },
+    };
+    return map[s] || { badge: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300', gradient: 'from-indigo-500/30 to-cyan-500/30' };
+  };
+
+  const venueStatusStyle = (raw?: string) => {
+    const s = (raw || '').toLowerCase();
+    if (s.includes('avail')) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300';
+    if (s.includes('closed')) return 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300';
+    if (s.includes('maint')) return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300';
+    if (s.includes('book')) return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300';
+    return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+  };
   const [myVenues, setMyVenues] = useState<any[]>([]);
   const [sentRequests, setSentRequests] = useState<any[]>([]);
   const [receivedRequests, setReceivedRequests] = useState<any[]>([]);
@@ -258,15 +298,22 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         {/* Venue owner CTA removed per request */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {myVenues.map((v) => (
-            <div key={v._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900 hover:ring-1 hover:ring-gray-300">
+            <div key={v._id} className="group rounded-2xl border p-4 shadow-sm hover:shadow-lg transition-all bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-indigo-400/50 hover:ring-2 hover:ring-indigo-300/40">
+              <div className="h-1 w-full rounded-full bg-gradient-to-r from-indigo-500/30 to-emerald-500/30 mb-3 group-hover:from-indigo-500 group-hover:to-emerald-500" />
               <div className="flex justify-between items-start">
                 <div>
                   <div className="text-lg font-semibold text-gray-900 dark:text-white">{v.name}</div>
-                  <div className="text-sm text-gray-700 dark:text-gray-200">{v.location?.city}</div>
+                  <div className="mt-1 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                    <MapPin className="w-4 h-4 text-indigo-500" />
+                    <span>{v.location?.city || 'Location TBA'}</span>
+                  </div>
                 </div>
-                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">{v.status}</span>
+                <span className={`text-xs px-2 py-1 rounded-full ${venueStatusStyle(v.status)}`}>{v.status}</span>
               </div>
-              <div className="mt-2 text-sm">Capacity: {v.capacity?.max}</div>
+              <div className="mt-2 flex items-center gap-2 text-sm">
+                <Users className="w-4 h-4 text-emerald-500" />
+                <span>Capacity: {v.capacity?.max ?? '—'}</span>
+              </div>
               <div className="mt-3 flex gap-2">
                 <button className="px-3 py-2 rounded-md bg-indigo-600 text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400" onClick={() => { setEditingVenue(v); setShowCreateVenue(true); }}>Edit</button>
                 <button className="px-3 py-2 rounded-md border border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 focus:outline-none focus:ring-2 focus:ring-red-300" onClick={() => setConfirmDeleteVenueId(v._id)}>Delete</button>
@@ -283,16 +330,30 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         <h3 className="text-xl font-semibold mb-2">Events I Created <span className="text-sm font-normal text-gray-500">({createdEvents.length})</span></h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {createdEvents.map((e) => (
-            <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900 hover:ring-1 hover:ring-gray-300">
+            <div key={e._id} className="group rounded-2xl border p-4 shadow-sm hover:shadow-lg transition-all bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-indigo-400/50 hover:ring-2 hover:ring-indigo-300/40">
+              <div className={`h-1 w-full rounded-full bg-gradient-to-r ${sportStyle(e.sport).gradient} mb-3 opacity-80 group-hover:opacity-100`} />
               <div className="flex justify-between items-start">
                 <div>
                   <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{e.title}</div>
-                  <div className="text-sm text-gray-700 dark:text-gray-200">{e.location?.city || e.location?.name}</div>
+                  <div className="mt-1 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                    <MapPin className="w-4 h-4 text-indigo-500" />
+                    <span>{e.location?.city || e.location?.name || 'Location TBA'}</span>
+                  </div>
                 </div>
-                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">{e.sport || 'Other'}</span>
+                <span className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${sportStyle(e.sport).badge}`}>
+                  <Trophy className="w-3 h-3" /> {e.sport || 'Other'}
+                </span>
               </div>
-              <div className="mt-2 text-sm">Starts: {new Date(e.startDate).toLocaleString()}</div>
-              <div className="text-sm">Participants: {(e.participants?.length || 0)}/{e.capacity?.max || 0}</div>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-purple-500" />
+                  <span>Starts: {new Date(e.startDate).toLocaleString()}</span>
+                </div>
+                <div className="flex items-center gap-2 justify-end">
+                  <Users className="w-4 h-4 text-emerald-500" />
+                  <span>{(e.participants?.length || 0)}/{e.capacity?.max || 0}</span>
+                </div>
+              </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {e.organizer && (
                   <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => startConversationWithUser(e.organizer?._id)}>
@@ -344,15 +405,22 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         <h3 className="text-xl font-semibold mb-2">Events I Joined <span className="text-sm font-normal text-gray-500">({joinedEvents.length})</span></h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {joinedEvents.map((e) => (
-            <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900 hover:ring-1 hover:ring-gray-300">
+            <div key={e._id} className="group rounded-2xl border p-4 shadow-sm hover:shadow-lg transition-all bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-indigo-400/50 hover:ring-2 hover:ring-indigo-300/40">
+              <div className={`h-1 w-full rounded-full bg-gradient-to-r ${sportStyle(e.sport).gradient} mb-3 opacity-80 group-hover:opacity-100`} />
               <div className="flex justify-between items-start">
                 <div>
                   <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{e.title}</div>
-                  <div className="text-sm text-gray-700 dark:text-gray-200">{e.location?.city || e.location?.name}</div>
+                  <div className="mt-1 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                    <MapPin className="w-4 h-4 text-indigo-500" />
+                    <span>{e.location?.city || e.location?.name || 'Location TBA'}</span>
+                  </div>
                 </div>
                 <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">Organized by {e.organizer?.username}</span>
               </div>
-              <div className="mt-2 text-sm">Starts: {new Date(e.startDate).toLocaleString()}</div>
+              <div className="mt-2 flex items-center gap-2 text-sm">
+                <Calendar className="w-4 h-4 text-purple-500" />
+                <span>Starts: {new Date(e.startDate).toLocaleString()}</span>
+              </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {e.organizer?._id && (
                   <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => startConversationWithUser(e.organizer._id)}>
@@ -483,16 +551,28 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           <h3 className="text-xl font-semibold mb-2">Past Events</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {archivedEvents.map((e) => (
-              <div key={e._id} className="rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900 hover:ring-1 hover:ring-gray-300">
+              <div key={e._id} className="group rounded-2xl border p-4 shadow-sm hover:shadow-lg transition-all bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-indigo-400/50 hover:ring-2 hover:ring-indigo-300/40">
+                <div className={`h-1 w-full rounded-full bg-gradient-to-r ${sportStyle(e.sport).gradient} mb-3 opacity-70`} />
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">{e.title}</div>
-                    <div className="text-sm text-gray-700 dark:text-gray-200">{e.location?.city || e.location?.name}</div>
+                    <div className="mt-1 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                      <MapPin className="w-4 h-4 text-indigo-500" />
+                      <span>{e.location?.city || e.location?.name || 'Location TBA'}</span>
+                    </div>
                   </div>
                   <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">Ended</span>
                 </div>
-                <div className="mt-2 text-sm">Started: {new Date(e.startDate).toLocaleString()}</div>
-                <div className="text-sm">Participants: {(e.participants?.length || 0)}</div>
+                <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-purple-500" />
+                    <span>Started: {new Date(e.startDate).toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center gap-2 justify-end">
+                    <Users className="w-4 h-4 text-emerald-500" />
+                    <span>{e.participants?.length || 0} joined</span>
+                  </div>
+                </div>
                 {e.organizer?._id && (
                   <div className="mt-3">
                     <button className="px-3 py-2 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300" onClick={() => startConversationWithUser(e.organizer._id)}>
