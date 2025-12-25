@@ -126,10 +126,26 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
     const headers = { Authorization: `Bearer ${token}` };
     try {
       await axios.post(`${API_URL}/events/${eventId}/join`, {}, { headers });
-      const je = await axios.get(`${API_URL}/events/my/joined`, { headers });
+      const je = await axios.get(`${API_URL}/events/my/joined?includeArchived=false`, { headers });
       setJoinedEvents(je.data.events || []);
     } catch (e: any) {
       alert(e.response?.data?.error || 'Failed to join event');
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function leaveEvent(eventId: string) {
+    if (!token) return;
+    setBusy(eventId);
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      await axios.post(`${API_URL}/events/${eventId}/leave`, {}, { headers });
+      const je = await axios.get(`${API_URL}/events/my/joined?includeArchived=false`, { headers });
+      setJoinedEvents(je.data.events || []);
+      onToast && onToast('Left event.', 'success');
+    } catch (e: any) {
+      onToast && onToast(e.response?.data?.error || 'Failed to leave event', 'error');
     } finally {
       setBusy(null);
     }
@@ -323,11 +339,11 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
                   </button>
                 )}
                 <button
-                  className="px-3 py-2 rounded-md bg-teal-600 text-white disabled:opacity-50 shadow hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                  className="px-3 py-2 rounded-md bg-red-600 text-white disabled:opacity-50 shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
                   disabled={busy === e._id}
-                  onClick={() => joinEvent(e._id)}
+                  onClick={() => leaveEvent(e._id)}
                 >
-                  {busy === e._id ? 'Joining…' : 'Join Again'}
+                  {busy === e._id ? 'Leaving…' : 'Leave Event'}
                 </button>
               </div>
             </div>
