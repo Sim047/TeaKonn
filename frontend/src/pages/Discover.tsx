@@ -25,6 +25,7 @@ import {
   Search,
   ChevronLeft,
   Image as ImageIcon,
+  Trophy,
   Plus,
   Users,
   Heart,
