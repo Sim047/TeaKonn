@@ -112,6 +112,9 @@ export default function CreateServiceModal({
   const [images, setImages] = useState<string[]>(editService?.images || []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [bookingTokenCode, setBookingTokenCode] = useState<string>('');
+  const [tokenStatus, setTokenStatus] = useState<{ valid: boolean; message?: string } | null>(null);
+  const [noTokenMode, setNoTokenMode] = useState<boolean>(false);
 
   if (!isOpen) return null;
 
@@ -198,6 +201,62 @@ export default function CreateServiceModal({
               {error}
             </div>
           )}
+
+          {/* Venue Booking Token (optional) */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-purple-400" />
+              Venue Booking Token
+            </h3>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Booking Token</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={bookingTokenCode}
+                  onChange={(e) => setBookingTokenCode(e.target.value.trim())}
+                  placeholder="Enter token provided by venue owner"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-400/50"
+                />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setTokenStatus(null);
+                    if (!bookingTokenCode) {
+                      setTokenStatus({ valid: false, message: 'Booking token is required' });
+                      return;
+                    }
+                    try {
+                      const res = await axios.post(`${API}/api/tokens/verify`, { code: bookingTokenCode }, {
+                        headers: { Authorization: `Bearer ${token}` },
+                      });
+                      const { venue } = res.data || {};
+                      setFormData((prev) => ({
+                        ...prev,
+                        locationType: 'in-person',
+                        city: venue?.location?.city || '',
+                        address: venue?.location?.address || '',
+                      }));
+                      setNoTokenMode(false);
+                      setTokenStatus({ valid: true, message: 'Token valid. Venue details loaded.' });
+                    } catch (err: any) {
+                      setTokenStatus({ valid: false, message: err.response?.data?.error || 'Token verification failed' });
+                    }
+                  }}
+                  className="px-4 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white"
+                >Verify</button>
+              </div>
+              {tokenStatus && (
+                <p className={tokenStatus.valid ? 'text-emerald-400 mt-2' : 'text-red-400 mt-2'}>
+                  {tokenStatus.message}
+                </p>
+              )}
+              <div className="mt-3 flex items-center gap-2">
+                <input id="noTokenMode" type="checkbox" checked={noTokenMode} onChange={(e) => setNoTokenMode(e.target.checked)} />
+                <label htmlFor="noTokenMode" className="text-sm text-gray-300">I don't have a venue token (set location manually)</label>
+              </div>
+            </div>
+          </div>
 
           {/* Service Name */}
           <div>
@@ -422,7 +481,7 @@ export default function CreateServiceModal({
             </div>
           </div>
 
-          {/* City & Address */}
+          {/* City & Address (disabled when using token) */}
           {formData.locationType !== 'online' && (
             <div className="grid md:grid-cols-2 gap-4">
               <div>
@@ -433,7 +492,8 @@ export default function CreateServiceModal({
                   value={formData.city}
                   onChange={handleChange}
                   placeholder="e.g., New York"
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-400/50"
+                  disabled={!noTokenMode && !!bookingTokenCode && tokenStatus?.valid}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-400/50 disabled:opacity-70"
                 />
               </div>
               <div>
@@ -444,7 +504,8 @@ export default function CreateServiceModal({
                   value={formData.address}
                   onChange={handleChange}
                   placeholder="e.g., 123 Main St"
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-400/50"
+                  disabled={!noTokenMode && !!bookingTokenCode && tokenStatus?.valid}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-400/50 disabled:opacity-70"
                 />
               </div>
             </div>
