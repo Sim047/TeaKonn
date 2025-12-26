@@ -55,6 +55,9 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
     const saved = localStorage.getItem('myvenues.tab');
     return (saved === 'received' || saved === 'generated' || saved === 'receivedTokens') ? (saved as any) : 'sent';
   });
+  const [showAllVenues, setShowAllVenues] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.all.show') || 'true'); } catch { return true; }
+  });
 
   async function refreshVenues() {
     if (!token) return;
@@ -176,6 +179,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [query, searchScope]);
   useEffect(() => { localStorage.setItem('myvenues.tab', venuesSubTab); }, [venuesSubTab]);
+  useEffect(() => { localStorage.setItem('myvenues.all.show', JSON.stringify(showAllVenues)); }, [showAllVenues]);
 
   return (
     <div className="min-h-screen themed-page">
@@ -313,58 +317,70 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
         <section>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xl font-semibold">All Venues</h3>
-            {loadingSearch && <span className="text-sm text-theme-secondary">Loading…</span>}
-          </div>
-          {query.trim().length < 2 && (
-            <div className="text-sm text-gray-500">
-              <p>Browse all available venues or refine with search.</p>
-              {myVenues.length > 0 && (
-                <button
-                  className="mt-2 inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40"
-                  onClick={() => setSearchScope('mine')}
-                >
-                  View My Venues ({myVenues.length})
-                </button>
-              )}
-            </div>
-          )}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {allVenues.map((v: any) => (
-              <div key={v._id || `${v.name}-${v.location?.city}`} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all">
-                <div className="h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80" />
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                  <div>
-                    <div className="text-lg font-semibold text-heading">{v.name}</div>
-                    <div className="mt-1 flex items-center gap-2 text-sm text-theme-secondary">
-                      <MapPin className="w-4 h-4 text-[var(--accent-cyan)]" />
-                      <span>{v.location?.city || 'Location TBA'}</span>
-                    </div>
-                  </div>
-                  {v.status && <span className={`badge ${venueStatusStyle(v.status)}`}>{v.status}</span>}
-                </div>
-                {v.capacity?.max && (
-                  <div className="mt-2 flex items-center gap-2 text-sm text-theme-secondary">
-                    <Users className="w-4 h-4 text-[var(--accent-amber)]" />
-                    <span>Capacity: {v.capacity?.max}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-          {query.trim().length >= 2 && (
-            <div className="mt-3">
+            <div className="flex items-center gap-2">
+              {loadingSearch && <span className="text-sm text-theme-secondary">Loading…</span>}
+              <span className="text-sm text-theme-secondary">Show</span>
               <button
-                className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40"
-                onClick={() => searchAllVenues(query.trim(), allVenuesPage + 1)}
-                disabled={!allVenuesHasMore || loadingSearch}
-              >
-                {loadingSearch ? 'Loading…' : allVenuesHasMore ? 'Load more' : 'No more results'}
-              </button>
+                className={`chip ${showAllVenues ? 'chip-active' : ''}`}
+                onClick={() => setShowAllVenues((s) => !s)}
+                aria-pressed={showAllVenues}
+              >{showAllVenues ? 'On' : 'Off'}</button>
             </div>
-          )}
-          {query.trim().length >= 2 && !loadingSearch && allVenues.length === 0 && (
-            <p className="text-sm text-gray-500">No venues found.</p>
-          )}
+          </div>
+          {showAllVenues ? (
+            <>
+              {query.trim().length < 2 && (
+                <div className="text-sm text-gray-500">
+                  <p>Browse all available venues or refine with search.</p>
+                  {myVenues.length > 0 && (
+                    <button
+                      className="mt-2 inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40"
+                      onClick={() => setSearchScope('mine')}
+                    >
+                      View My Venues ({myVenues.length})
+                    </button>
+                  )}
+                </div>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {allVenues.map((v: any) => (
+                  <div key={v._id || `${v.name}-${v.location?.city}`} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all">
+                    <div className="h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80" />
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                      <div>
+                        <div className="text-lg font-semibold text-heading">{v.name}</div>
+                        <div className="mt-1 flex items-center gap-2 text-sm text-theme-secondary">
+                          <MapPin className="w-4 h-4 text-[var(--accent-cyan)]" />
+                          <span>{v.location?.city || 'Location TBA'}</span>
+                        </div>
+                      </div>
+                      {v.status && <span className={`badge ${venueStatusStyle(v.status)}`}>{v.status}</span>}
+                    </div>
+                    {v.capacity?.max && (
+                      <div className="mt-2 flex items-center gap-2 text-sm text-theme-secondary">
+                        <Users className="w-4 h-4 text-[var(--accent-amber)]" />
+                        <span>Capacity: {v.capacity?.max}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {query.trim().length >= 2 && (
+                <div className="mt-3">
+                  <button
+                    className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40"
+                    onClick={() => searchAllVenues(query.trim(), allVenuesPage + 1)}
+                    disabled={!allVenuesHasMore || loadingSearch}
+                  >
+                    {loadingSearch ? 'Loading…' : allVenuesHasMore ? 'Load more' : 'No more results'}
+                  </button>
+                </div>
+              )}
+              {query.trim().length >= 2 && !loadingSearch && allVenues.length === 0 && (
+                <p className="text-sm text-gray-500">No venues found.</p>
+              )}
+            </>
+          ) : null}
         </section>
         )}
 
