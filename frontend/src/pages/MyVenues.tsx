@@ -185,6 +185,22 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
           <div className="flex flex-wrap sm:flex-nowrap gap-2 sm:justify-end w-full sm:w-auto">
             <button className={`${btn('primary')} w-full sm:w-auto`} onClick={() => setShowCreateVenue(true)}>+ Create Venue</button>
             <button className={`${btn('outline')} w-full sm:w-auto`} onClick={refreshVenues}>Refresh</button>
+            {me?.role === 'venue_owner' && (
+              <button
+                className={`${btn('warning')} w-full sm:w-auto`}
+                onClick={async () => {
+                  if (!token) return;
+                  const headers = { Authorization: `Bearer ${token}` };
+                  try {
+                    const res = await axios.post(`${API_URL}/venues/unlock-all`, {}, { headers });
+                    onToast && onToast(`Unlocked ${res.data?.updatedCount ?? 0} venues`, 'success');
+                    await refreshVenues();
+                  } catch (e: any) {
+                    onToast && onToast(e.response?.data?.error || 'Failed to unlock all venues', 'error');
+                  }
+                }}
+              >Unlock All</button>
+            )}
           </div>
         </div>
 

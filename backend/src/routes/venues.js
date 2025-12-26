@@ -164,3 +164,17 @@ router.post('/:id/unlock', auth, ensureVenueOwner, async (req, res) => {
     res.status(500).json({ error: 'Failed to unlock venue' });
   }
 });
+
+// POST /api/venues/unlock-all - owner can reset all their venues to available
+router.post('/unlock-all', auth, ensureVenueOwner, async (req, res) => {
+  try {
+    const result = await Venue.updateMany(
+      { owner: req.user.id },
+      { $set: { status: 'available', available: true } }
+    );
+    res.json({ success: true, updatedCount: result.modifiedCount ?? result.nModified ?? 0 });
+  } catch (err) {
+    console.error('Unlock all venues error:', err);
+    res.status(500).json({ error: 'Failed to unlock all venues' });
+  }
+});
