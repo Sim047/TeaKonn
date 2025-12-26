@@ -338,11 +338,12 @@ router.post("/", auth, async (req, res) => {
       const event = await Event.create(data);
       await event.populate("organizer", "username avatar");
 
-      // Consume token and mark venue booked
+      // Consume token (do not lock venue to allow multiple bookings)
       token.status = "used";
       token.consumedAt = new Date();
       await token.save();
-      await Venue.findByIdAndUpdate(venue._id, { status: "booked", available: false });
+      // Previously: mark venue as booked/unavailable.
+      // Now: keep venue available so multiple events can book the same venue.
 
       return res.status(201).json(event);
     }

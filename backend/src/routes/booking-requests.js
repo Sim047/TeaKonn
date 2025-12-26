@@ -13,7 +13,7 @@ router.post("/create", auth, async (req, res) => {
     if (!venueId) return res.status(400).json({ error: "venueId required" });
     const venue = await Venue.findById(venueId);
     if (!venue) return res.status(404).json({ error: "Venue not found" });
-    if (!venue.available) return res.status(400).json({ error: "Venue not available" });
+    // Allow booking requests even if a venue already has events; venue remains available
 
     // Create 1:1 conversation between requester and owner specific to this booking
     const conversation = await Conversation.create({
