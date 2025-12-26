@@ -108,7 +108,6 @@ export default function DiscoverVenues({ token }: { token: string | null }) {
               <button
                 className="px-3 py-2 rounded bg-teal-600 text-white"
                 onClick={() => requestBooking(v._id)}
-                disabled={v.status !== 'available'}
               >Request Booking</button>
             </div>
           </div>

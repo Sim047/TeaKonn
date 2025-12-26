@@ -41,12 +41,18 @@ router.post("/create", auth, ensureVenueOwner, async (req, res) => {
 // GET /api/venues/search?name=&city=&capacityMin=&capacityMax=&page=&limit=
 router.get("/search", async (req, res) => {
   try {
-    const { name, location, city, capacityMin, capacityMax } = req.query;
+    const { name, location, city, capacityMin, capacityMax, status, onlyAvailable } = req.query;
     const page = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
     const skip = (page - 1) * limit;
 
-    const q = { available: true };
+    const q = {};
+    if (String(onlyAvailable).toLowerCase() === 'true') {
+      q.available = true;
+    }
+    if (status) {
+      q.status = String(status);
+    }
     if (name) q.name = { $regex: String(name), $options: "i" };
     const cityValue = city || (typeof location === "string" ? location : undefined);
     if (cityValue) q["location.city"] = { $regex: String(cityValue), $options: "i" };
@@ -138,5 +144,23 @@ router.delete('/:id', auth, ensureVenueOwner, async (req, res) => {
   } catch (err) {
     console.error('Delete venue error:', err);
     res.status(500).json({ error: 'Failed to delete venue' });
+  }
+});
+
+// POST /api/venues/:id/unlock - owner can reset venue to available
+router.post('/:id/unlock', auth, ensureVenueOwner, async (req, res) => {
+  try {
+    const venue = await Venue.findById(req.params.id);
+    if (!venue) return res.status(404).json({ error: 'Venue not found' });
+    if (String(venue.owner) !== String(req.user.id)) {
+      return res.status(403).json({ error: 'Only owner can unlock venue' });
+    }
+    venue.status = 'available';
+    venue.available = true;
+    await venue.save();
+    res.json({ success: true, venue });
+  } catch (err) {
+    console.error('Unlock venue error:', err);
+    res.status(500).json({ error: 'Failed to unlock venue' });
   }
 });
