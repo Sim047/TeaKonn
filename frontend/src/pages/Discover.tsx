@@ -1639,7 +1639,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
               <ChevronLeft className="w-5 h-5 mr-1" />
               Back to Discover
             </button>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h1 className="text-4xl font-bold text-heading mb-2">
                   Other Events <Calendar className="inline w-8 h-8 text-blue-300 ml-2" />
@@ -1651,14 +1651,14 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setCreateOtherOpen((v) => !v)}
-                  className="btn flex items-center gap-2"
+                  className="btn flex items-center gap-2 w-full sm:w-auto"
                 >
                   <Plus className="w-5 h-5" />
                   Create Other Event
                 </button>
                 <button
                   onClick={() => setOtherListOpen((v) => !v)}
-                  className="btn text-sm"
+                  className="btn text-sm w-full sm:w-auto"
                   title={otherListOpen ? 'Hide posts' : 'Show posts'}
                 >
                   {otherListOpen ? 'Hide Posts' : 'Show Posts'}
@@ -1878,7 +1878,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
               <p>No posts found</p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {otherEvents
                 .filter((p) => {
                   const q = searchTerm.trim().toLowerCase();
