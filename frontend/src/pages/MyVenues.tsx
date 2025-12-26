@@ -58,6 +58,21 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
   const [showAllVenues, setShowAllVenues] = useState<boolean>(() => {
     try { return JSON.parse(localStorage.getItem('myvenues.all.show') || 'true'); } catch { return true; }
   });
+  const [showMyVenues, setShowMyVenues] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.mine.show') || 'true'); } catch { return true; }
+  });
+  const [showSent, setShowSent] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.sent.show') || 'true'); } catch { return true; }
+  });
+  const [showReceived, setShowReceived] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.received.show') || 'true'); } catch { return true; }
+  });
+  const [showGenerated, setShowGenerated] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.generated.show') || 'true'); } catch { return true; }
+  });
+  const [showReceivedTokens, setShowReceivedTokens] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.receivedTokens.show') || 'true'); } catch { return true; }
+  });
 
   async function refreshVenues() {
     if (!token) return;
@@ -180,6 +195,11 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
     }, [query, searchScope]);
   useEffect(() => { localStorage.setItem('myvenues.tab', venuesSubTab); }, [venuesSubTab]);
   useEffect(() => { localStorage.setItem('myvenues.all.show', JSON.stringify(showAllVenues)); }, [showAllVenues]);
+  useEffect(() => { localStorage.setItem('myvenues.mine.show', JSON.stringify(showMyVenues)); }, [showMyVenues]);
+  useEffect(() => { localStorage.setItem('myvenues.sent.show', JSON.stringify(showSent)); }, [showSent]);
+  useEffect(() => { localStorage.setItem('myvenues.received.show', JSON.stringify(showReceived)); }, [showReceived]);
+  useEffect(() => { localStorage.setItem('myvenues.generated.show', JSON.stringify(showGenerated)); }, [showGenerated]);
+  useEffect(() => { localStorage.setItem('myvenues.receivedTokens.show', JSON.stringify(showReceivedTokens)); }, [showReceivedTokens]);
 
   return (
     <div className="min-h-screen themed-page">
@@ -276,40 +296,53 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
 
         {searchScope === 'mine' && (
         <section>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {myVenues.filter((v) => {
-              const q = query.toLowerCase();
-              if (!q) return true;
-              return (
-                (v.name || '').toLowerCase().includes(q) ||
-                (v.location?.city || '').toLowerCase().includes(q) ||
-                (v.status || '').toLowerCase().includes(q)
-              );
-            }).map((v) => (
-              <div key={v._id} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
-                <div className="h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80 group-hover:opacity-100" />
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                  <div>
-                    <div className="text-lg font-semibold text-heading">{v.name}</div>
-                    <div className="mt-1 flex items-center gap-2 text-sm text-theme-secondary">
-                      <MapPin className="w-4 h-4 text-[var(--accent-cyan)]" />
-                      <span>{v.location?.city || 'Location TBA'}</span>
-                    </div>
-                  </div>
-                  <span className={`badge ${venueStatusStyle(v.status)}`}>{v.status}</span>
-                </div>
-                <div className="mt-2 flex items-center gap-2 text-sm text-theme-secondary">
-                  <Users className="w-4 h-4 text-[var(--accent-amber)]" />
-                  <span>Capacity: {v.capacity?.max ?? '—'}</span>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button className="btn w-full sm:w-auto" onClick={() => { setEditingVenue(v); setShowCreateVenue(true); }}>Edit</button>
-                  <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400 w-full sm:w-auto" onClick={() => setConfirmDeleteVenueId(v._id)}>Delete</button>
-                </div>
-              </div>
-            ))}
-            {myVenues.length === 0 && <p className="text-sm text-gray-500">No venues yet.</p>}
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xl font-semibold">My Venues</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-theme-secondary">Show</span>
+              <button
+                className={`chip ${showMyVenues ? 'chip-active' : ''}`}
+                onClick={() => setShowMyVenues((s) => !s)}
+                aria-pressed={showMyVenues}
+              >{showMyVenues ? 'On' : 'Off'}</button>
+            </div>
           </div>
+          {showMyVenues ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {myVenues.filter((v) => {
+                const q = query.toLowerCase();
+                if (!q) return true;
+                return (
+                  (v.name || '').toLowerCase().includes(q) ||
+                  (v.location?.city || '').toLowerCase().includes(q) ||
+                  (v.status || '').toLowerCase().includes(q)
+                );
+              }).map((v) => (
+                <div key={v._id} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
+                  <div className="h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80 group-hover:opacity-100" />
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                    <div>
+                      <div className="text-lg font-semibold text-heading">{v.name}</div>
+                      <div className="mt-1 flex items-center gap-2 text-sm text-theme-secondary">
+                        <MapPin className="w-4 h-4 text-[var(--accent-cyan)]" />
+                        <span>{v.location?.city || 'Location TBA'}</span>
+                      </div>
+                    </div>
+                    <span className={`badge ${venueStatusStyle(v.status)}`}>{v.status}</span>
+                  </div>
+                  <div className="mt-2 flex items-center gap-2 text-sm text-theme-secondary">
+                    <Users className="w-4 h-4 text-[var(--accent-amber)]" />
+                    <span>Capacity: {v.capacity?.max ?? '—'}</span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button className="btn w-full sm:w-auto" onClick={() => { setEditingVenue(v); setShowCreateVenue(true); }}>Edit</button>
+                    <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400 w-full sm:w-auto" onClick={() => setConfirmDeleteVenueId(v._id)}>Delete</button>
+                  </div>
+                </div>
+              ))}
+              {myVenues.length === 0 && <p className="text-sm text-gray-500">No venues yet.</p>}
+            </div>
+          ) : null}
         </section>
         )}
 
@@ -388,7 +421,12 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
         <section>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xl font-semibold">Booking Requests (Sent)</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-theme-secondary">Show</span>
+              <button className={`chip ${showSent ? 'chip-active' : ''}`} onClick={() => setShowSent(s => !s)} aria-pressed={showSent}>{showSent ? 'On' : 'Off'}</button>
+            </div>
           </div>
+          {showSent ? (
           <div className="space-y-2">
             {sentRequests.filter((r) => {
               const q = query.toLowerCase();
@@ -415,6 +453,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             ))}
             {sentRequests.length === 0 && <p className="text-sm text-gray-500">No sent requests.</p>}
           </div>
+          ) : null}
         </section>
         )}
 
@@ -422,7 +461,12 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
         <section>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xl font-semibold">Booking Requests (Received)</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-theme-secondary">Show</span>
+              <button className={`chip ${showReceived ? 'chip-active' : ''}`} onClick={() => setShowReceived(s => !s)} aria-pressed={showReceived}>{showReceived ? 'On' : 'Off'}</button>
+            </div>
           </div>
+          {showReceived ? (
           <div className="space-y-2">
             {receivedRequests.filter((r) => {
               const q = query.toLowerCase();
@@ -456,6 +500,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             ))}
             {receivedRequests.length === 0 && <p className="text-sm text-gray-500">No received requests.</p>}
           </div>
+          ) : null}
         </section>
         )}
 
@@ -463,7 +508,12 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
         <section>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xl font-semibold">Generated Tokens</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-theme-secondary">Show</span>
+              <button className={`chip ${showGenerated ? 'chip-active' : ''}`} onClick={() => setShowGenerated(s => !s)} aria-pressed={showGenerated}>{showGenerated ? 'On' : 'Off'}</button>
+            </div>
           </div>
+          {showGenerated ? (
           <div className="space-y-2">
             {generatedTokens.filter((t) => {
               const q = query.toLowerCase();
@@ -492,6 +542,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             ))}
             {generatedTokens.length === 0 && <p className="text-sm text-gray-500">No generated tokens.</p>}
           </div>
+          ) : null}
         </section>
         )}
 
@@ -499,7 +550,12 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
         <section>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xl font-semibold">Received Tokens</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-theme-secondary">Show</span>
+              <button className={`chip ${showReceivedTokens ? 'chip-active' : ''}`} onClick={() => setShowReceivedTokens(s => !s)} aria-pressed={showReceivedTokens}>{showReceivedTokens ? 'On' : 'Off'}</button>
+            </div>
           </div>
+          {showReceivedTokens ? (
           <div className="space-y-2">
             {receivedTokens.filter((t) => {
               const q = query.toLowerCase();
@@ -529,6 +585,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             ))}
             {receivedTokens.length === 0 && <p className="text-sm text-gray-500">No received tokens.</p>}
           </div>
+          ) : null}
         </section>
         )}
       </div>
