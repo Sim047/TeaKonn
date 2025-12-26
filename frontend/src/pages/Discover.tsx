@@ -25,6 +25,10 @@ import {
   Search,
   ChevronLeft,
   Image as ImageIcon,
+  Plus,
+  Users,
+  Heart,
+  ShoppingBag,
 } from 'lucide-react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
