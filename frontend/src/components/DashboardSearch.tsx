@@ -165,7 +165,7 @@ export default function DashboardSearch({
           ref={inputRef}
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search users, events, posts, services"
+          placeholder="Search users, events, posts, services, products"
           className="flex-1 bg-transparent outline-none text-sm sm:text-base"
         />
       </div>
@@ -255,7 +255,7 @@ function labelFor(type: ResultItem['type']) {
     case 'service':
       return 'Service';
     case 'product':
-      return 'Marketplace';
+      return 'Product';
     case 'post':
       return 'Post';
     default:

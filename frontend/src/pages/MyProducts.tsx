@@ -85,7 +85,7 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">My Products</h2>
-            <p className="text-sm text-theme-secondary">Manage items in your marketplace</p>
+            <p className="text-sm text-theme-secondary">Manage your products</p>
           </div>
           <div className="flex flex-wrap sm:flex-nowrap gap-2 sm:justify-end w-full sm:w-auto">
             <input

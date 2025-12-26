@@ -177,7 +177,7 @@ export default function AssistantWidget({ token, user, currentView, view }: Assi
         lines.push(...services.map((s: any) => `- ${s.name} (${s.sport})`));
       }
       if (items.length) {
-        lines.push(`Marketplace:`);
+        lines.push(`Products:`);
         lines.push(...items.map((it: any) => `- ${it.title} (${it.category})`));
       }
       if (users.length) {
@@ -267,7 +267,7 @@ export default function AssistantWidget({ token, user, currentView, view }: Assi
               Find services
             </button>
             <button onClick={() => quickSearch('marketplace shoes')} className="chip">
-              Search marketplace
+              Search products
             </button>
           </div>
 

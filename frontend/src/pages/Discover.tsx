@@ -825,7 +825,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
               Discover <span className="text-cyan-300">More</span>
             </h1>
             <p className="text-theme-secondary text-lg">
-              Explore sports events, professional services, and marketplace
+              Explore sports events, professional services, and products
             </p>
           </div>
 
@@ -891,7 +891,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
               </div>
             </div>
 
-            {/* Marketplace Card */}
+            {/* Products Card */}
             <div
               onClick={() => setActiveCategory('marketplace')}
               className="group cursor-pointer rounded-2xl p-8 border hover:border-amber-500/40 transition-all themed-card"
@@ -901,7 +901,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                   <ShoppingBag className="w-12 h-12 text-amber-300" />
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-heading text-center mb-3">Marketplace</h2>
+              <h2 className="text-2xl font-bold text-heading text-center mb-3">Products</h2>
               <p className="text-theme-secondary text-center mb-6">
                 Buy and sell sports equipment, apparel, supplements & gear
               </p>
@@ -959,12 +959,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by title, sport, or location"
-                className="w-full pl-10 pr-4 py-2 rounded-xl border"
-                style={{
-                  borderColor: 'var(--border)',
-                  background: 'var(--card)',
-                  color: 'var(--text)',
-                }}
+                className="w-full pl-10 pr-4 py-2 rounded-xl input"
               />
             </div>
           </div>
@@ -1409,7 +1404,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
     );
   }
 
-  // Marketplace View
+  // Products View
   if (activeCategory === 'marketplace') {
     const categories = [
       'All',
@@ -1434,7 +1429,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
               Back to Discover
             </button>
             <h1 className="text-4xl font-bold text-heading mb-2">
-              Marketplace <ShoppingBag className="inline w-8 h-8 text-amber-300 ml-2" />
+              Products <ShoppingBag className="inline w-8 h-8 text-amber-300 ml-2" />
             </h1>
             <p className="text-theme-secondary">Buy and sell sports equipment and gear</p>
           </div>
@@ -1445,7 +1440,7 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-theme-secondary w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search items..."
+                placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && fetchMarketplaceItems()}
@@ -1470,13 +1465,13 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
             </div>
           </div>
 
-          {/* Marketplace Grid */}
+          {/* Products Grid */}
           {loading ? (
-            <div className="text-center text-theme-secondary py-12">Loading items...</div>
+            <div className="text-center text-theme-secondary py-12">Loading products...</div>
           ) : marketplaceItems.length === 0 ? (
             <div className="text-center text-theme-secondary py-12">
               <ShoppingBag className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p>No items found</p>
+              <p>No products found</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">

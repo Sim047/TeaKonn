@@ -208,7 +208,7 @@ export default function GlobalSearch({ token, onNavigate, onViewProfile }: Globa
           <Search className="w-4 h-4 text-theme-secondary" />
           <input
             readOnly
-            placeholder="Search everything… users, events, posts, services"
+            placeholder="Search everything… users, events, posts, services, products"
             className="flex-1 bg-transparent outline-none text-sm sm:text-base"
           />
           <span className="hidden sm:inline text-xs text-theme-secondary">Press Ctrl+K</span>
@@ -374,7 +374,7 @@ function labelFor(type: ResultItem['type']) {
     case 'service':
       return 'Service';
     case 'product':
-      return 'Marketplace';
+      return 'Product';
     case 'post':
       return 'Post';
     default:
