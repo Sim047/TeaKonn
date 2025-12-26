@@ -90,12 +90,24 @@ body {
 
 /* Inputs */
 .input {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--card);
   border: 1px solid var(--border);
   color: var(--text);
   padding: 0.6rem;
   border-radius: 0.5rem;
   width: 100%;
+  caret-color: var(--text);
+}
+
+.input::placeholder {
+  color: var(--muted);
+  opacity: 1; /* ensure visibility in dark mode */
+}
+
+.input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.45); /* indigo ring */
+  border-color: rgba(99, 102, 241, 0.45);
 }
 
 /* Message bubble tweaks */

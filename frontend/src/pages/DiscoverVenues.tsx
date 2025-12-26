@@ -65,26 +65,26 @@ export default function DiscoverVenues({ token }: { token: string | null }) {
       <h2 className="text-2xl font-bold">Discover Venues</h2>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <input
-          className="px-3 py-2 rounded border"
+          className="input"
           placeholder="Search by name"
           value={query.name}
           onChange={(e) => setQuery({ ...query, name: e.target.value })}
         />
         <input
-          className="px-3 py-2 rounded border"
+          className="input"
           placeholder="City"
           value={query.city}
           onChange={(e) => setQuery({ ...query, city: e.target.value })}
         />
         <input
-          className="px-3 py-2 rounded border"
+          className="input"
           placeholder="Min capacity"
           type="number"
           value={query.capacityMin}
           onChange={(e) => setQuery({ ...query, capacityMin: e.target.value })}
         />
         <input
-          className="px-3 py-2 rounded border"
+          className="input"
           placeholder="Max capacity"
           type="number"
           value={query.capacityMax}
