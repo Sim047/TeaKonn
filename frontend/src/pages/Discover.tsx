@@ -1230,7 +1230,12 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                 </p>
               </div>
               <button
-                onClick={() => (window.location.href = '/#/my-events')}
+                onClick={() => {
+                  try {
+                    localStorage.setItem('auralink-current-view', 'my-services');
+                  } catch {}
+                  window.location.href = '/?view=my-services';
+                }}
                 className="btn flex items-center gap-2"
               >
                 <Plus className="w-5 h-5" />
