@@ -600,7 +600,7 @@ export default function MyEvents({
                     </div>
                   ) : organizingListOpen ? (
                     <div className="max-h-[460px] overflow-y-auto pr-1">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         {eventsCreated.filter(matchesEventSearch).map((ev) => (
                         <div key={ev._id} className="rounded-2xl overflow-hidden themed-card">
                           <div className="bg-gradient-to-r from-cyan-600 to-purple-600 p-5">
@@ -668,7 +668,7 @@ export default function MyEvents({
                     </div>
                   ) : joinedListOpen ? (
                     <div className="max-h-[460px] overflow-y-auto pr-1">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         {eventsJoined.filter(matchesEventSearch).map((ev) => (
                         <div key={ev._id} className="rounded-2xl overflow-hidden themed-card">
                           <div className="bg-gradient-to-r from-emerald-600 to-cyan-600 p-5">

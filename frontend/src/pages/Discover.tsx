@@ -2004,12 +2004,12 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
           )}
           {/* Other Event Detail Modal */}
           {selectedOther && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
               <div
                 className="absolute inset-0 bg-black/50"
                 onClick={() => setSelectedOther(null)}
               />
-              <div className="relative w-full max-w-2xl mx-3 sm:mx-4 mt-14 mb-10 rounded-2xl themed-card overflow-hidden shadow-2xl">
+              <div className="relative w-full max-w-lg sm:max-w-2xl mx-2 sm:mx-4 mt-12 sm:mt-14 mb-6 sm:mb-10 rounded-2xl themed-card overflow-hidden shadow-2xl max-h-[85vh] overflow-y-auto">
                 {selectedOther.imageUrl && (
                   <div className="w-full h-40 sm:h-48">
                     <img
