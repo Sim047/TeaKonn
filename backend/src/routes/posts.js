@@ -160,7 +160,7 @@ router.post("/:id/leave", auth, async (req, res) => {
 // Create new post
 router.post("/", auth, async (req, res) => {
   try {
-    const { title, caption, imageUrl, tags, location } = req.body;
+    const { title, caption, imageUrl, tags, location, eventDate } = req.body;
 
     const post = new Post({
       author: req.user.id,
@@ -169,6 +169,7 @@ router.post("/", auth, async (req, res) => {
       imageUrl,
       tags: tags || [],
       location: location || "",
+      eventDate: eventDate ? new Date(eventDate) : undefined,
     });
 
     await post.save();
@@ -201,7 +202,7 @@ router.put("/:id", auth, async (req, res) => {
       return res.status(403).json({ error: "Not authorized" });
     }
 
-    const { title, caption, tags, location } = req.body;
+    const { title, caption, tags, location, eventDate } = req.body;
       if (title !== undefined) post.title = title;
     
     // Track if caption was actually changed
@@ -211,6 +212,7 @@ router.put("/:id", auth, async (req, res) => {
     }
     if (tags !== undefined) post.tags = tags;
     if (location !== undefined) post.location = location;
+    if (eventDate !== undefined) post.eventDate = eventDate ? new Date(eventDate) : undefined;
 
     await post.save();
     await post.populate("author", "username avatar email");

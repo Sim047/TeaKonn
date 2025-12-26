@@ -10,12 +10,6 @@ import axios from 'axios';
 import {
   Calendar,
   MapPin,
-  Users,
-  Trophy,
-  ShoppingBag,
-  Heart,
-  Sparkles,
-  Plus,
   Filter,
   X,
   Star,
@@ -194,10 +188,21 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
     imageUrl: '',
     location: '',
     tags: 'event',
+    eventDate: '',
   });
+  const [bookingTokenCode, setBookingTokenCode] = useState<string>('');
+  const [tokenStatus, setTokenStatus] = useState<{ valid: boolean; message?: string } | null>(null);
+  const [noTokenMode, setNoTokenMode] = useState<boolean>(false);
   const [uploadingOtherImage, setUploadingOtherImage] = useState(false);
   const [selectedOther, setSelectedOther] = useState<any | null>(null);
   const [joiningOther, setJoiningOther] = useState<InFlightMap>({});
+  const [otherListOpen, setOtherListOpen] = useState<boolean>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('auralink-other-list-open') || 'true');
+    } catch {
+      return true;
+    }
+  });
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState(
     () => localStorage.getItem('auralink-discover-search') || '',
@@ -241,6 +246,10 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   useEffect(() => {
     localStorage.setItem('auralink-discover-category', activeCategory ?? '');
   }, [activeCategory]);
+
+  useEffect(() => {
+    localStorage.setItem('auralink-other-list-open', JSON.stringify(otherListOpen));
+  }, [otherListOpen]);
   useEffect(() => {
     localStorage.setItem('auralink-discover-sport', selectedSport);
   }, [selectedSport]);
@@ -394,11 +403,15 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
           imageUrl: newOther.imageUrl,
           tags,
           location: newOther.location,
+          eventDate: newOther.eventDate || undefined,
         },
         { headers: { Authorization: `Bearer ${token}` } },
       );
       setOtherEvents((prev) => [res.data, ...prev]);
-      setNewOther({ title: '', caption: '', imageUrl: '', location: '', tags: 'event' });
+      setNewOther({ title: '', caption: '', imageUrl: '', location: '', tags: 'event', eventDate: '' });
+      setBookingTokenCode('');
+      setTokenStatus(null);
+      setNoTokenMode(false);
       setCreateOtherOpen(false);
     } catch (err) {
       console.error('Failed to create event post:', err);
@@ -1635,13 +1648,22 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                   Community posts related to events and announcements
                 </p>
               </div>
-              <button
-                onClick={() => setCreateOtherOpen((v) => !v)}
-                className="btn flex items-center gap-2"
-              >
-                <Plus className="w-5 h-5" />
-                Create Other Event
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCreateOtherOpen((v) => !v)}
+                  className="btn flex items-center gap-2"
+                >
+                  <Plus className="w-5 h-5" />
+                  Create Other Event
+                </button>
+                <button
+                  onClick={() => setOtherListOpen((v) => !v)}
+                  className="btn text-sm"
+                  title={otherListOpen ? 'Hide posts' : 'Show posts'}
+                >
+                  {otherListOpen ? 'Hide Posts' : 'Show Posts'}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1659,6 +1681,15 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                   />
                 </div>
                 <div>
+                  <label className="text-sm text-theme-secondary">Event Date</label>
+                  <input
+                    type="date"
+                    value={newOther.eventDate}
+                    onChange={(e) => setNewOther((p) => ({ ...p, eventDate: e.target.value }))}
+                    className="w-full mt-1 rounded-lg input"
+                  />
+                </div>
+                <div className="md:col-span-2">
                   <label className="text-sm text-theme-secondary">Caption</label>
                   <textarea
                     value={newOther.caption}
@@ -1675,6 +1706,53 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                     className="w-full mt-1 rounded-lg input"
                     placeholder="City or venue"
                   />
+                </div>
+                <div>
+                  <label className="text-sm text-theme-secondary">Venue Booking Token</label>
+                  <div className="flex gap-2 mt-1">
+                    <input
+                      type="text"
+                      value={bookingTokenCode}
+                      onChange={(e) => setBookingTokenCode(e.target.value.trim())}
+                      className="flex-1 rounded-lg input"
+                      placeholder="Enter token provided by venue owner"
+                    />
+                    <button
+                      type="button"
+                      className="px-3 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white"
+                      onClick={async () => {
+                        setTokenStatus(null);
+                        if (!bookingTokenCode) {
+                          setTokenStatus({ valid: false, message: 'Booking token is required' });
+                          return;
+                        }
+                        try {
+                          const API = API_URL.replace(/\/api$/, '');
+                          const res = await axios.post(`${API}/api/tokens/verify`, { code: bookingTokenCode }, {
+                            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+                          });
+                          const { venue } = res.data || {};
+                          const locStr = [venue?.location?.city, venue?.location?.address]
+                            .filter(Boolean)
+                            .join(' • ');
+                          setNewOther((p) => ({ ...p, location: locStr }));
+                          setNoTokenMode(false);
+                          setTokenStatus({ valid: true, message: 'Token valid. Venue details loaded.' });
+                        } catch (err: any) {
+                          setTokenStatus({ valid: false, message: err.response?.data?.error || 'Token verification failed' });
+                        }
+                      }}
+                    >Verify</button>
+                  </div>
+                  {tokenStatus && (
+                    <p className={tokenStatus.valid ? 'text-emerald-600 mt-2' : 'text-red-600 mt-2'}>
+                      {tokenStatus.message}
+                    </p>
+                  )}
+                  <div className="mt-2 flex items-center gap-2">
+                    <input id="noTokenModeOther" type="checkbox" checked={noTokenMode} onChange={(e) => setNoTokenMode(e.target.checked)} />
+                    <label htmlFor="noTokenModeOther" className="text-sm text-theme-secondary">I don't have a venue token (set location manually)</label>
+                  </div>
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4 mt-4">
@@ -1777,7 +1855,9 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
           </div>
 
           {/* Posts Grid */}
-          {loading ? (
+          {!otherListOpen ? (
+            <div className="rounded-2xl p-8 text-center themed-card">Posts hidden</div>
+          ) : loading ? (
             <div className="text-center text-theme-secondary py-12">Loading posts...</div>
           ) : otherEvents.filter((p) => {
               const q = searchTerm.trim().toLowerCase();
@@ -1837,6 +1917,12 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
                       <h3 className="text-base sm:text-lg font-bold text-heading mb-2 line-clamp-2">
                         {post.title || post.caption || 'Untitled'}
                       </h3>
+                      {post.eventDate && (
+                        <div className="text-xs text-theme-secondary flex items-center gap-2 mb-2">
+                          <Calendar className="w-4 h-4" />
+                          <span>{dayjs(post.eventDate).format('MMM D, YYYY')}</span>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between mb-3">
                         <div className="text-xs text-theme-secondary flex items-center gap-2">
                           <Users className="w-4 h-4" />
