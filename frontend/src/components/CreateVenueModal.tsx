@@ -86,16 +86,16 @@ export default function CreateVenueModal({ isOpen, onClose, token, onCreated, ed
         </div>
         {error && <p className="text-red-600 mb-2">{error}</p>}
         <form onSubmit={submit} className="space-y-3">
-          <input className="w-full px-3 py-2 rounded border" placeholder="Venue name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-          <input className="w-full px-3 py-2 rounded border" placeholder="Location name" value={form.locationName} onChange={(e) => setForm({ ...form, locationName: e.target.value })} />
-          <input className="w-full px-3 py-2 rounded border" placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+          <input className="input" placeholder="Venue name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+          <input className="input" placeholder="Location name" value={form.locationName} onChange={(e) => setForm({ ...form, locationName: e.target.value })} />
+          <input className="input" placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            <input className="px-3 py-2 rounded border" placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
-            <input className="px-3 py-2 rounded border" placeholder="State" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} />
-            <input className="px-3 py-2 rounded border" placeholder="Country" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
+            <input className="input" placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+            <input className="input" placeholder="State" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} />
+            <input className="input" placeholder="Country" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
           </div>
-          <input className="w-full px-3 py-2 rounded border" type="number" min="1" placeholder="Capacity (max)" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: Number(e.target.value) })} required />
-          <textarea className="w-full px-3 py-2 rounded border" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          <input className="input" type="number" min="1" placeholder="Capacity (max)" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: Number(e.target.value) })} required />
+          <textarea className="input" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           <div className="flex gap-2 justify-end">
             <button type="button" className="px-4 py-2 rounded border" onClick={onClose}>Cancel</button>
             <button type="submit" className="px-4 py-2 rounded bg-teal-600 text-white" disabled={loading}>{loading ? (editVenue ? 'Saving...' : 'Creating...') : (editVenue ? 'Save Changes' : 'Create Venue')}</button>

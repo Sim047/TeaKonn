@@ -382,7 +382,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                 required
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+                className="input"
                 placeholder="e.g., Summer Basketball Tournament"
               />
             </div>
@@ -396,7 +396,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+                className="input"
                 placeholder="Describe your event..."
               />
             </div>
@@ -418,7 +418,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                 <select
                   value={formData.sport}
                   onChange={(e) => setFormData({ ...formData, sport: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+                  className="input"
                 >
                   {SPORTS.map((sport) => (
                     <option key={sport} value={sport}>
@@ -435,7 +435,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                 <select
                   value={formData.eventType}
                   onChange={(e) => setFormData({ ...formData, eventType: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+                  className="input"
                 >
                   {EVENT_TYPES.map((type) => (
                     <option key={type.value} value={type.value}>
@@ -452,7 +452,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                 <select
                   value={formData.skillLevel}
                   onChange={(e) => setFormData({ ...formData, skillLevel: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+                  className="input"
                 >
                   {SKILL_LEVELS.map((level) => (
                     <option key={level.value} value={level.value}>
@@ -481,7 +481,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                   required
                   value={formData.startDate}
                   onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+                  className="input"
                 />
               </div>
 
@@ -493,7 +493,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                   type="date"
                   value={formData.endDate}
                   onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+                  className="input"
                 />
               </div>
 
@@ -505,7 +505,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                   type="time"
                   value={formData.time}
                   onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+                  className="input"
                 />
               </div>
             </div>
@@ -527,7 +527,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                     required={!noTokenMode}
                     value={bookingTokenCode}
                     onChange={(e) => setBookingTokenCode(e.target.value.trim())}
-                    className="flex-1 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+                    className="input flex-1"
                     placeholder="Enter token provided by venue owner"
                   />
                   <button
@@ -553,7 +553,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                   type="text"
                   value={formData.locationName}
                   disabled={!noTokenMode}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+                  className="input w-full"
                 />
               </div>
 
@@ -563,7 +563,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                   type="text"
                   value={formData.address}
                   disabled={!noTokenMode}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+                  className="input w-full"
                 />
               </div>
 
@@ -573,7 +573,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                   type="text"
                   value={formData.city}
                   disabled={!noTokenMode}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+                  className="input w-full"
                 />
               </div>
 
@@ -583,7 +583,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                   type="text"
                   value={formData.state}
                   disabled={!noTokenMode}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+                  className="input w-full"
                 />
               </div>
 
@@ -593,7 +593,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                   type="text"
                   value={formData.country}
                   disabled={!noTokenMode}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white"
+                  className="input w-full"
                 />
               </div>
             </div>
@@ -619,7 +619,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                   onChange={(e) =>
                     setFormData({ ...formData, maxCapacity: Number(e.target.value) })
                   }
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+                  className="input"
                 />
               </div>
 
@@ -630,7 +630,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                 <select
                   value={formData.pricingType}
                   onChange={(e) => setFormData({ ...formData, pricingType: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+                  className="input"
                 >
                   <option value="free">Free</option>
                   <option value="paid">Paid</option>
@@ -645,7 +645,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                   <select
                     value={formData.currency}
                     onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+                    className="input"
                   >
                     {CURRENCIES.map((curr) => (
                       <option key={curr.code} value={curr.code}>
@@ -668,7 +668,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                   step="0.01"
                   value={formData.amount}
                   onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+                  className="input"
                   placeholder="0.00"
                 />
               </div>
@@ -684,7 +684,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                   onChange={(e) =>
                     setFormData({ ...formData, paymentInstructions: e.target.value })
                   }
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 dark:text-white resize-none"
+                  className="input resize-none"
                   rows={3}
                   placeholder="E.g., Send M-Pesa payment to 0712345678, Account Name: John Doe. Include your name in the description."
                 />
