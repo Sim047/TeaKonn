@@ -61,23 +61,23 @@ export default function MyServices({ token, onNavigate, onToast, onUpdated }: My
   };
 
   return (
-    <div className="min-h-full bg-transparent">
-      <div className="max-w-4xl mx-auto p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-4">
+    <div className="min-h-screen themed-page">
+      <div className="max-w-4xl mx-auto p-3 sm:p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">My Services</h2>
-            <p className="text-sm text-gray-700 dark:text-gray-200">Manage your service offerings</p>
+            <p className="text-sm text-theme-secondary">Manage your service offerings</p>
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex flex-wrap sm:flex-nowrap gap-2 sm:justify-end w-full sm:w-auto">
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search services by name, category, city"
-              className="input w-56"
+              className="input w-full sm:w-80"
               aria-label="Search services"
             />
-            <button className="inline-flex items-center px-4 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => onNavigate && onNavigate('my-activities')}>Back</button>
-            <button className="btn" onClick={() => setOpenCreate(true)}>Create Service</button>
+            <button className="inline-flex items-center px-4 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => onNavigate && onNavigate('my-activities')}>Back</button>
+            <button className="btn w-full sm:w-auto" onClick={() => setOpenCreate(true)}>Create Service</button>
           </div>
         </div>
 
@@ -100,7 +100,7 @@ export default function MyServices({ token, onNavigate, onToast, onUpdated }: My
                 <p className="text-sm text-gray-700 dark:text-gray-200">No services yet.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {services.filter((s) => {
                   const q = query.toLowerCase();
                   if (!q) return true;
@@ -138,14 +138,14 @@ export default function MyServices({ token, onNavigate, onToast, onUpdated }: My
                       <DollarSign className="w-4 h-4 text-[var(--accent-amber)]" />
                       <span>{s.pricing?.amount ? `${s.pricing?.currency || 'USD'} ${s.pricing?.amount}` : 'Free'}</span>
                     </div>
-                    <div className="mt-3 flex gap-2">
-                      <button className="btn inline-flex items-center px-3 py-2" onClick={() => { setEditingService(s); setOpenCreate(true); }}>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button className="btn inline-flex items-center px-3 py-2 w-full sm:w-auto" onClick={() => { setEditingService(s); setOpenCreate(true); }}>
                         <ClipboardList className="w-4 h-4 mr-2" /> Edit
                       </button>
-                      <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => setSelectedService(s)}>
+                      <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => setSelectedService(s)}>
                         <BadgeCheck className="w-4 h-4 mr-2" /> View
                       </button>
-                      <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400" onClick={() => setConfirmDeleteServiceId(s._id)}>
+                      <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400 w-full sm:w-auto" onClick={() => setConfirmDeleteServiceId(s._id)}>
                         Delete
                       </button>
                     </div>

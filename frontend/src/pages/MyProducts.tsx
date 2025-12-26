@@ -80,23 +80,23 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
   };
 
   return (
-    <div className="min-h-full bg-transparent">
-      <div className="max-w-4xl mx-auto p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-4">
+    <div className="min-h-screen themed-page">
+      <div className="max-w-4xl mx-auto p-3 sm:p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">My Products</h2>
-            <p className="text-sm text-gray-700 dark:text-gray-200">Manage items in your marketplace</p>
+            <p className="text-sm text-theme-secondary">Manage items in your marketplace</p>
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex flex-wrap sm:flex-nowrap gap-2 sm:justify-end w-full sm:w-auto">
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search products by title, category, location"
-              className="input w-56"
+              className="input w-full sm:w-80"
               aria-label="Search products"
             />
-            <button className="inline-flex items-center px-4 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => onNavigate && onNavigate('my-activities')}>Back</button>
-            <button className="btn" onClick={() => setOpenCreate(true)}>Create Product</button>
+            <button className="inline-flex items-center px-4 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => onNavigate && onNavigate('my-activities')}>Back</button>
+            <button className="btn w-full sm:w-auto" onClick={() => setOpenCreate(true)}>Create Product</button>
           </div>
         </div>
 
@@ -119,7 +119,7 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
                 <p className="text-sm text-gray-700 dark:text-gray-200">No products yet.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {items.filter((p) => {
                   const q = query.toLowerCase();
                   if (!q) return true;
@@ -157,14 +157,14 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
                       <DollarSign className="w-4 h-4 text-[var(--accent-amber)]" />
                       <span>{p.price !== undefined ? `${p.currency || 'USD'} ${p.price}` : 'N/A'}</span>
                     </div>
-                    <div className="mt-3 flex gap-2">
-                      <button className="btn inline-flex items-center px-3 py-2" onClick={() => { setEditingProduct(p); setOpenCreate(true); }}>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button className="btn inline-flex items-center px-3 py-2 w-full sm:w-auto" onClick={() => { setEditingProduct(p); setOpenCreate(true); }}>
                         <Package className="w-4 h-4 mr-2" /> Edit
                       </button>
-                      <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40" onClick={() => setSelectedProduct(p)}>
+                      <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => setSelectedProduct(p)}>
                         View
                       </button>
-                      <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400" onClick={() => setConfirmDeleteProductId(p._id)}>
+                      <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400 w-full sm:w-auto" onClick={() => setConfirmDeleteProductId(p._id)}>
                         Delete
                       </button>
                     </div>
