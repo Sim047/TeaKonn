@@ -280,8 +280,8 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
     fetchFollowing();
   }, [token]);
 
-  // Compute weighted score for a post
-  function scorePost(post: Post): number {
+  // Compute weighted score for a post (seeded per refresh for variety)
+  function scorePost(post: Post, seed?: number): number {
     const now = dayjs();
     const created = dayjs(post.createdAt || post.updatedAt || 0);
     const ageHours = Math.max(0, now.diff(created, 'hour', true));
@@ -291,14 +291,16 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
     const isFollowed = followingIds.has(String(post.author?._id));
     const followed = isFollowed ? 1 : 0;
     // Seeded, stable noise for this refresh
-    const noise = seededNoise(String(post._id));
-    // Weighted sum; ensure recency dominates, followed next, noise small
-    return recency * 0.6 + followed * 0.35 + noise * 0.05;
+    const noise = seededNoise(String(post._id), seed);
+    // Small author-specific jitter to avoid repetitive ordering
+    const authorNoise = seededNoise('author:' + String(post.author?._id || 'unknown'), seed);
+    // Weighted sum; ensure recency dominates, followed next, then jitter for variety
+    return recency * 0.55 + followed * 0.3 + noise * 0.1 + authorNoise * 0.05;
   }
 
-  function seededNoise(key: string): number {
-    // Simple string hash to [0,1) using rotationSeed
-    let h = 2166136261 ^ rotationSeed;
+  function seededNoise(key: string, seed?: number): number {
+    // Simple string hash to [0,1) using provided seed (falls back to rotationSeed)
+    let h = 2166136261 ^ (seed ?? rotationSeed);
     for (let i = 0; i < key.length; i++) {
       h ^= key.charCodeAt(i);
       h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
@@ -378,21 +380,22 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
   async function loadPosts() {
     try {
       setLoading(true);
-      setRotationSeed(Date.now()); // change rotation each refresh/load
+      // Use a local seed to avoid relying on async state updates
+      const seed = (Date.now() ^ Math.floor(Math.random() * 0x7fffffff)) >>> 0;
       const res = await axios.get(`${API}/api/posts`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const incoming: Post[] = res.data.posts || [];
       // Apply prioritized rotation
       const sorted = [...incoming].sort((a, b) => {
-        const sa = scorePost(a);
-        const sb = scorePost(b);
+        const sa = scorePost(a, seed);
+        const sb = scorePost(b, seed);
         if (sa !== sb) return sb - sa;
         // Stable tiebreaker by createdAt desc then id noise
         const ta = dayjs(a.createdAt || 0).valueOf();
         const tb = dayjs(b.createdAt || 0).valueOf();
         if (ta !== tb) return tb - ta;
-        return seededNoise(a._id) - seededNoise(b._id);
+        return seededNoise(a._id, seed) - seededNoise(b._id, seed);
       });
       setPosts(sorted);
     } catch (err) {
@@ -518,10 +521,30 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
 
       const combined = [...(initial ? [] : eventFeed), ...evs, ...svs, ...mkt, ...vns];
       const dedup = Array.from(new Map(combined.map((i) => [i.kind + ':' + i.id, i])).values());
+      // Seed per refresh/load to rotate events ordering while keeping recency dominance
+      const seed = (Date.now() ^ Math.floor(Math.random() * 0x7fffffff)) >>> 0;
+      function scoreItem(x: UnifiedItem): number {
+        const ta = x.createdAt ? dayjs(x.createdAt).valueOf() : 0;
+        // Recency scaled like posts
+        const ageHours = Math.max(0, (Date.now() - ta) / (1000 * 60 * 60));
+        const recency = 1 / (1 + ageHours / 24);
+        // Followed owner boost if present
+        const uid = x.user?._id ? String(x.user._id) : '';
+        const followed = uid && followingIds.has(uid) ? 1 : 0;
+        // Kind-based jitter to interleave categories
+        const kindNoise = seededNoise('kind:' + x.kind, seed);
+        // Item-specific jitter
+        const idNoise = seededNoise(x.kind + ':' + x.id, seed);
+        return recency * 0.6 + followed * 0.25 + kindNoise * 0.1 + idNoise * 0.05;
+      }
       const sorted = dedup.sort((a, b) => {
+        const sa = scoreItem(a);
+        const sb = scoreItem(b);
+        if (sa !== sb) return sb - sa;
         const ta = a.createdAt ? dayjs(a.createdAt).valueOf() : 0;
         const tb = b.createdAt ? dayjs(b.createdAt).valueOf() : 0;
-        return tb - ta;
+        if (ta !== tb) return tb - ta;
+        return seededNoise(a.kind + ':' + a.id, seed) - seededNoise(b.kind + ':' + b.id, seed);
       });
       setEventFeed(sorted);
       if (initial) {
