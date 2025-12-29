@@ -20,6 +20,7 @@ export default function UserProfileModal({
   const [followState, setFollowState] = React.useState(user.isFollowed);
   const [details, setDetails] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
+  const [status, setStatus] = React.useState<any>(null);
   const [tab, setTab] = React.useState<'events'>('events');
   const [events, setEvents] = React.useState<any[]>([]);
   const [posts, setPosts] = React.useState<any[]>([]);
@@ -67,6 +68,18 @@ export default function UserProfileModal({
         setLoading(false);
       })
       .catch(() => setLoading(false));
+  }, [user, token]);
+
+  // Load user's status for display in header
+  React.useEffect(() => {
+    if (!token || !user) return;
+    axios
+      .get(API + '/api/status/user/' + user._id, {
+        headers: { Authorization: 'Bearer ' + token },
+        timeout: 6000,
+      })
+      .then((r) => setStatus(r.data))
+      .catch(() => setStatus(null));
   }, [user, token]);
 
   React.useEffect(() => {
@@ -178,8 +191,10 @@ export default function UserProfileModal({
             alt={user.username}
           />
           <h2 className="mt-4 text-2xl font-bold text-white">{user.username}</h2>
-          <p className="text-cyan-100 text-sm mt-1">
-            {user.status || (user.username ? `@${user.username}` : '')}
+          <p className="text-cyan-100 text-sm mt-1 line-clamp-1">
+            {status && (status.mood || status.emoji)
+              ? `${status.emoji ? status.emoji + ' ' : ''}${status.mood || 'Status set'}`
+              : user.username ? `@${user.username}` : ''}
           </p>
         </div>
 

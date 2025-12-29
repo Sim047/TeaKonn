@@ -43,7 +43,7 @@ router.get("/user/:id", auth, async (req, res) => {
 router.post("/", auth, async (req, res) => {
   try {
     const { mood = "", emoji = "", expiresAt = null } = req.body;
-    const moodSafe = String(mood || "").slice(0, 80).trim();
+    const moodSafe = String(mood || "").slice(0, 40).trim();
     const emojiSafe = String(emoji || "").slice(0, 8);
 
     // upsert
