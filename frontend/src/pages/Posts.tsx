@@ -1140,21 +1140,23 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
               Feed
             </h1>
           </div>
-          <div className="mt-2 -mx-4 sm:-mx-6">
+          {/* Thin themed divider to minimize perceived margin */}
+          <div className="h-[1px] bg-gradient-to-r from-cyan-400 to-purple-500 opacity-50 -mx-4 sm:-mx-6" />
+          <div className="mt-1 -mx-4 sm:-mx-6">
             <div
-              className="flex items-center gap-2 border themed-card rounded-none sm:rounded-xl px-3 py-1 w-full"
+              className="flex items-center gap-2 border themed-card rounded-none sm:rounded-xl px-2 py-0.5 w-full"
               style={{ borderColor: 'var(--border)' }}
             >
               <div className="flex rounded-md border overflow-hidden flex-none" style={{ borderColor: 'var(--border)' }}>
                 <button
-                  className={`px-1.5 py-0.5 text-[11px] ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                  className={`px-1 py-0.5 text-[11px] ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
                   onClick={() => setSortMode(sortMode === 'prioritized' ? 'random' : 'prioritized')}
                   aria-pressed={sortMode === 'prioritized'}
                 >
                   Prioritized
                 </button>
                 <button
-                  className={`px-1.5 py-0.5 text-[11px] ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                  className={`px-1 py-0.5 text-[11px] ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
                   onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
                   aria-pressed={sortMode === 'newest'}
                 >
@@ -1172,7 +1174,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                 <button
                   onClick={() => setCreateModalOpen(true)}
                   aria-label="Create post"
-                  className="p-1.5 rounded-md themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all flex-none"
+                  className="p-1 rounded-md themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all flex-none"
                   style={{ borderColor: 'var(--border)' }}
                   title="Create post"
                 >
@@ -1182,7 +1184,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                 <button
                   onClick={() => loadEventFeed(true)}
                   aria-label="Refresh events"
-                  className="p-1.5 rounded-md themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all flex-none"
+                  className="p-1 rounded-md themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all flex-none"
                   style={{ borderColor: 'var(--border)' }}
                   disabled={eventsLoading}
                   title="Refresh"
