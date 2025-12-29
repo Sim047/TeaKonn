@@ -271,7 +271,9 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search venues, requests, tokens"
               aria-label="Search venues"
-              className="input pl-9 pr-3"
+              className="input pr-3 has-leading-icon"
+              maxLength={100}
+              inputMode="search"
             />
           </div>
           <div className="flex flex-wrap gap-2" role="tablist" aria-label="Search Scope">

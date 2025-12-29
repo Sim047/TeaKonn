@@ -810,6 +810,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                         className="input w-full resize-none"
                         rows={3}
                         placeholder="Caption..."
+                        maxLength={280}
                       />
                       <input
                         type="text"
@@ -819,6 +820,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                         }
                         className="input w-full"
                         placeholder="Location..."
+                        maxLength={100}
                       />
                       <input
                         type="text"
@@ -826,6 +828,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                         onChange={(e) => setEditPostData({ ...editPostData, tags: e.target.value })}
                         className="input w-full"
                         placeholder="Tags (comma-separated)..."
+                        maxLength={100}
                       />
                       <div className="flex gap-2">
                         <button onClick={handleUpdatePost} className="btn">
@@ -1190,6 +1193,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                                             handleReplyToComment(post._id, comment._id);
                                           }
                                         }}
+                                        maxLength={300}
                                         autoFocus
                                       />
                                       <button
@@ -1251,6 +1255,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                         onKeyPress={(e) => {
                           if (e.key === 'Enter') handleComment(post._id);
                         }}
+                        maxLength={300}
                         autoFocus
                       />
                       <button
@@ -1360,6 +1365,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                 rows={4}
                 value={newPost.caption}
                 onChange={(e) => setNewPost({ ...newPost, caption: e.target.value })}
+                maxLength={280}
               />
 
               <input
@@ -1368,6 +1374,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                 className="input w-full"
                 value={newPost.location}
                 onChange={(e) => setNewPost({ ...newPost, location: e.target.value })}
+                maxLength={100}
               />
 
               <input
@@ -1376,6 +1383,7 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                 className="input w-full"
                 value={newPost.tags}
                 onChange={(e) => setNewPost({ ...newPost, tags: e.target.value })}
+                maxLength={100}
               />
 
               <div>

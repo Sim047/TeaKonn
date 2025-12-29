@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 const StatusSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, unique: true },
-    mood: { type: String, default: "" },      // e.g. "Busy", "Away", "In a meeting", or custom text
-    emoji: { type: String, default: "" },     // optional emoji/icon string
+    mood: { type: String, default: "", trim: true, maxlength: 80 },      // e.g. "Busy", "Away", custom text (max 80 chars)
+    emoji: { type: String, default: "", maxlength: 8 },                  // optional emoji/icon (max 8 chars)
     expiresAt: { type: Date, default: null }, // optional (not required for simple mood statuses)
   },
   {

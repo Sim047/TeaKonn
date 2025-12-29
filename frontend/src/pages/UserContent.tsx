@@ -251,6 +251,8 @@ export default function UserContent({ token, onNavigate }: any) {
               background: 'var(--card)',
               color: 'var(--text)',
             }}
+            maxLength={100}
+            inputMode="search"
           />
           {/* Event filter removed */}
         </div>

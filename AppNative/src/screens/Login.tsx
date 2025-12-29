@@ -27,8 +27,25 @@ export default function Login({ onLoggedIn }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>TeaKonn</Text>
-      <TextInput style={styles.input} placeholder="Email" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
-      <TextInput style={styles.input} placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} />
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        autoCapitalize="none"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+        maxLength={254}
+        placeholderTextColor="#94A3B8"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+        maxLength={128}
+        placeholderTextColor="#94A3B8"
+      />
       <Button title={loading ? 'Logging in…' : 'Log In'} onPress={doLogin} disabled={loading} />
     </View>
   );

@@ -267,6 +267,7 @@ import {
               placeholder="e.g., Event is full, Requirements not met..."
               className="input w-full rounded-xl mb-4 resize-none"
               rows={4}
+              maxLength={200}
             />
             <div className="flex gap-3">
               <button

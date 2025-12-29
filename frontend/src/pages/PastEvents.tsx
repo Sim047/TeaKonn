@@ -100,7 +100,9 @@ export default function PastEvents({ token, onBack, onNavigate }: { token?: stri
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by title, sport, or location"
-              className="w-full pl-10 pr-4 py-2 rounded-lg input"
+              className="w-full pr-4 py-2 rounded-lg input has-leading-icon"
+              maxLength={100}
+              inputMode="search"
             />
           </div>
         </div>

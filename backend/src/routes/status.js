@@ -43,11 +43,13 @@ router.get("/user/:id", auth, async (req, res) => {
 router.post("/", auth, async (req, res) => {
   try {
     const { mood = "", emoji = "", expiresAt = null } = req.body;
+    const moodSafe = String(mood || "").slice(0, 80).trim();
+    const emojiSafe = String(emoji || "").slice(0, 8);
 
     // upsert
     const updated = await Status.findOneAndUpdate(
       { user: req.user.id },
-      { mood, emoji, expiresAt: expiresAt ? new Date(expiresAt) : null },
+      { mood: moodSafe, emoji: emojiSafe, expiresAt: expiresAt ? new Date(expiresAt) : null },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     ).populate("user", "username avatar");
 

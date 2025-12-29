@@ -94,6 +94,8 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
               placeholder="Search products by title, category, location"
               className="input w-full sm:w-80"
               aria-label="Search products"
+              maxLength={100}
+              inputMode="search"
             />
             <button className="inline-flex items-center px-4 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => onNavigate && onNavigate('my-activities')}>Back</button>
             <button className="btn w-full sm:w-auto" onClick={() => setOpenCreate(true)}>Create Product</button>

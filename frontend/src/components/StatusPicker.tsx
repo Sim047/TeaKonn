@@ -101,9 +101,10 @@ export default function StatusPicker({ token, currentStatus, onUpdated }: any) {
 
           <input
             className="w-full mb-2 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm text-white placeholder-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
-            placeholder="Enter your status"
+            placeholder="Set your status (max 80 chars)"
             value={mood}
             onChange={(e) => setMood(e.target.value)}
+            maxLength={80}
           />
           <input
             className="w-full mb-3 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm text-white placeholder-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"

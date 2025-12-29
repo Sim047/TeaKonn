@@ -312,6 +312,12 @@ textarea,
 .input::placeholder {
   color: var(--muted);
   opacity: 1;
+  font-style: italic;
+}
+
+/* Helper for inputs with an absolutely positioned leading icon */
+.input.has-leading-icon {
+  padding-left: 2.5rem; /* matches Tailwind pl-10 */
 }
 
 .input:focus {

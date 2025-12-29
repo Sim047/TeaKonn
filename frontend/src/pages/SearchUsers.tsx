@@ -66,6 +66,8 @@ export default function SearchUsers({
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search users..."
           className="input flex-1"
+          maxLength={100}
+          inputMode="search"
         />
       </div>
 

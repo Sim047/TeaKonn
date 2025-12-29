@@ -575,6 +575,8 @@ export default function MyEvents({
                     placeholder="Search my events"
                     value={eventSearch}
                     onChange={(e) => setEventSearch(e.target.value)}
+                    maxLength={100}
+                    inputMode="search"
                   />
                 </div>
                 {/* Events I Created */}
@@ -723,6 +725,8 @@ export default function MyEvents({
                     placeholder="Search my services"
                     value={serviceSearch}
                     onChange={(e) => setServiceSearch(e.target.value)}
+                    maxLength={100}
+                    inputMode="search"
                   />
                 </div>
                 {services.length === 0 ? (

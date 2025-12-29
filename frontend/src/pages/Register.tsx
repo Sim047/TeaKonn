@@ -59,6 +59,8 @@ export default function Register({ onSuccess, switchToLogin }) {
               placeholder=" "
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              maxLength={30}
+              autoComplete="username"
             />
             <label
               htmlFor="reg-username"
@@ -80,6 +82,8 @@ export default function Register({ onSuccess, switchToLogin }) {
               placeholder=" "
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              maxLength={254}
+              autoComplete="email"
             />
             <label
               htmlFor="reg-email"
@@ -101,6 +105,8 @@ export default function Register({ onSuccess, switchToLogin }) {
               placeholder=" "
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              maxLength={128}
+              autoComplete="new-password"
             />
             <label
               htmlFor="reg-password"

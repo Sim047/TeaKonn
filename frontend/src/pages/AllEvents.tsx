@@ -222,7 +222,7 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by title, sport, or location"
-              className="w-full pl-10 pr-4 py-2 rounded-lg input"
+              className="w-full pr-4 py-2 rounded-lg input has-leading-icon"
             />
           </div>
         </div>
