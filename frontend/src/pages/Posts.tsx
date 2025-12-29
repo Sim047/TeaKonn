@@ -1148,7 +1148,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
               >
                 <div className="flex rounded-md border overflow-hidden flex-none" style={{ borderColor: 'var(--border)' }}>
                   <button
-                    className={`px-0.5 py-0 text-[11px] ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                    className={`px-1 py-0.5 text-[12px] sm:text-[11px] font-medium leading-tight ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
                     onClick={() => setSortMode(sortMode === 'prioritized' ? 'random' : 'prioritized')}
                     aria-pressed={sortMode === 'prioritized'}
                   >
@@ -1156,7 +1156,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                     <span className="inline sm:hidden">Prio</span>
                   </button>
                   <button
-                    className={`px-0.5 py-0 text-[11px] ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                    className={`px-1 py-0.5 text-[12px] sm:text-[11px] font-medium leading-tight ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
                     onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
                     aria-pressed={sortMode === 'newest'}
                   >
