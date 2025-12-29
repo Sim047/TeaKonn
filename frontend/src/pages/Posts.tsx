@@ -13,6 +13,10 @@ import {
   Plus,
   ArrowUp,
   Share,
+  Calendar,
+  ShoppingBag,
+  Briefcase,
+  Tag as TagIcon,
 } from 'lucide-react';
 import Avatar from '../components/Avatar';
 import dayjs from 'dayjs';
@@ -403,6 +407,25 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
     } finally {
       setEventsLoading(false);
     }
+  }
+
+  function TypePill({ kind }: { kind: UnifiedItem['kind'] }) {
+    const cls =
+      kind === 'event'
+        ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+        : kind === 'service'
+          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+          : 'bg-amber-500/10 text-amber-600 dark:text-amber-400';
+    const Icon = kind === 'event' ? Calendar : kind === 'service' ? Briefcase : ShoppingBag;
+    const label = kind === 'event' ? 'Event' : kind === 'service' ? 'Service' : 'Product';
+    return (
+      <span
+        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium border ${cls}`}
+        style={{ borderColor: 'var(--border)' }}
+      >
+        <Icon className="w-3.5 h-3.5" /> {label}
+      </span>
+    );
   }
 
   function makeAvatarUrl(avatar?: string) {
@@ -1470,9 +1493,13 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
             ) : (
               <>
                 {eventFeed.map((item) => (
-                  <div key={`${item.kind}:${item.id}`} className="rounded-2xl shadow-md themed-card">
+                  <div
+                    key={`${item.kind}:${item.id}`}
+                    className="rounded-2xl themed-card overflow-hidden border hover:shadow-xl hover:-translate-y-[2px] transition-all"
+                    style={{ borderColor: 'var(--border)' }}
+                  >
                     {/* Header */}
-                    <div className="flex items-center justify-between p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 p-3">
                       <div className="flex items-center gap-3">
                         <Avatar
                           src={
@@ -1493,22 +1520,29 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                           )}
                         </div>
                       </div>
-                      {item.kind === 'event' && item.dateHint && (
-                        <div className="text-xs px-2 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border" style={{ borderColor: 'var(--border)' }}>
-                          {item.dateHint}
-                        </div>
-                      )}
-                      {item.kind !== 'event' && item.priceHint && (
-                        <div className="text-xs px-2 py-1 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border" style={{ borderColor: 'var(--border)' }}>
-                          {item.priceHint}
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2 ml-auto">
+                        <TypePill kind={item.kind} />
+                        {item.kind === 'event' && item.dateHint && (
+                          <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border" style={{ borderColor: 'var(--border)' }}>
+                            <Calendar className="w-3.5 h-3.5" /> {item.dateHint}
+                          </span>
+                        )}
+                        {item.kind !== 'event' && item.priceHint && (
+                          <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border" style={{ borderColor: 'var(--border)' }}>
+                            <TagIcon className="w-3.5 h-3.5" /> {item.priceHint}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Media */}
                     {item.imageUrl && (
-                      <div className="w-full h-56 sm:h-64 overflow-hidden">
+                      <div className="relative w-full h-56 sm:h-64 overflow-hidden">
                         <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/0 to-transparent" />
+                        <div className="absolute top-2 left-2">
+                          <TypePill kind={item.kind} />
+                        </div>
                       </div>
                     )}
 
