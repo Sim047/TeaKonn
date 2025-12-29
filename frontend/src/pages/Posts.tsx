@@ -1146,24 +1146,14 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                 className="flex items-center gap-0.5 themed-card rounded-none sm:rounded-xl px-1 py-0 w-full flex-nowrap"
                 style={{ background: 'var(--card)' }}
               >
-                <div className="flex rounded-md border overflow-hidden flex-none" style={{ borderColor: 'var(--border)' }}>
-                  <button
-                    className={`px-1 py-0.5 text-[12px] sm:text-[11px] font-medium leading-tight ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
-                    onClick={() => setSortMode(sortMode === 'prioritized' ? 'random' : 'prioritized')}
-                    aria-pressed={sortMode === 'prioritized'}
-                  >
-                    <span className="hidden sm:inline">Prioritized</span>
-                    <span className="inline sm:hidden">Prio</span>
-                  </button>
-                  <button
-                    className={`px-1 py-0.5 text-[12px] sm:text-[11px] font-medium leading-tight ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
-                    onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
-                    aria-pressed={sortMode === 'newest'}
-                  >
-                    <span className="hidden sm:inline">Newest</span>
-                    <span className="inline sm:hidden">New</span>
-                  </button>
-                </div>
+                <button
+                  className="px-2 py-0.5 text-[12px] font-medium leading-tight rounded-md border themed-card flex-none"
+                  style={{ borderColor: 'var(--border)' }}
+                  onClick={() => setSortMode((m) => (m === 'prioritized' ? 'newest' : m === 'newest' ? 'random' : 'prioritized'))}
+                  aria-label="Toggle sort"
+                >
+                  {sortMode === 'prioritized' ? 'Prioritized' : sortMode === 'newest' ? 'Newest' : 'Random'}
+                </button>
                 <input
                   type="text"
                   className="input h-8 text-sm flex-1 min-w-0"
