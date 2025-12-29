@@ -650,7 +650,7 @@ export default function App() {
       setInDM(false);
       setActiveConversation(null);
       setRoom('general');
-      setView('my-events');
+      navigateTo('my-events');
     });
 
     // Join request notifications
@@ -1220,7 +1220,7 @@ export default function App() {
   async function openConversation(conv: any) {
     setActiveConversation(conv);
     setInDM(true);
-    setView('chat');
+    navigateTo('chat');
 
     if (socket.connected) {
       const roomId = conv._id || conv.id;
