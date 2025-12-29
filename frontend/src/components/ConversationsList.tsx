@@ -530,6 +530,17 @@ export default function ConversationsList({
               </div>
 
               <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  className="text-xs px-3 py-1.5 rounded-md border"
+                  style={{ borderColor: 'var(--border)' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onShowProfile(partner);
+                  }}
+                  title="View Profile"
+                >
+                  View Profile
+                </button>
                 {/* Long-press action sheet */}
                 {longPressFor === c._id && (
                   <div

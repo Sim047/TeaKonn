@@ -191,7 +191,7 @@ export default function UserProfileModal({
             alt={user.username}
           />
           <h2 className="mt-4 text-2xl font-bold text-white">{user.username}</h2>
-          <p className="text-cyan-100 text-sm mt-1 line-clamp-1">
+          <p className="text-cyan-100 text-sm mt-1 whitespace-pre-wrap break-words">
             {status && (status.mood || status.emoji)
               ? `${status.emoji ? status.emoji + ' ' : ''}${status.mood || 'Status set'}`
               : user.username ? `@${user.username}` : ''}
