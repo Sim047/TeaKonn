@@ -88,6 +88,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<FeedTab>('events');
+  const [sortMode, setSortMode] = useState<'prioritized' | 'newest'>('prioritized');
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [newPost, setNewPost] = useState({ caption: '', imageUrl: '', location: '', tags: '' });
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
@@ -405,17 +406,24 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
       // Merge with existing (if not initial) and deduplicate
       const merged = [...(initial ? [] : posts), ...incoming];
       const dedup = Array.from(new Map(merged.map((p) => [p._id, p])).values());
-      // Apply prioritized rotation on merged list
-      const sorted = dedup.sort((a, b) => {
-        const sa = scorePost(a, seed);
-        const sb = scorePost(b, seed);
-        if (sa !== sb) return sb - sa;
-        // Stable tiebreaker by createdAt desc then id noise
-        const ta = dayjs(a.createdAt || 0).valueOf();
-        const tb = dayjs(b.createdAt || 0).valueOf();
-        if (ta !== tb) return tb - ta;
-        return seededNoise(a._id, seed) - seededNoise(b._id, seed);
-      });
+      // Sort according to mode
+      const sorted =
+        sortMode === 'newest'
+          ? dedup.sort((a, b) => {
+              const ta = dayjs(a.createdAt || 0).valueOf();
+              const tb = dayjs(b.createdAt || 0).valueOf();
+              return tb - ta;
+            })
+          : dedup.sort((a, b) => {
+              const sa = scorePost(a, seed);
+              const sb = scorePost(b, seed);
+              if (sa !== sb) return sb - sa;
+              // Stable tiebreaker by createdAt desc then id noise
+              const ta = dayjs(a.createdAt || 0).valueOf();
+              const tb = dayjs(b.createdAt || 0).valueOf();
+              if (ta !== tb) return tb - ta;
+              return seededNoise(a._id, seed) - seededNoise(b._id, seed);
+            });
       setPosts(sorted);
       setPostsPage(nextPage);
       const cp = Number(res.data?.currentPage || nextPage);
@@ -560,15 +568,24 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
         const idNoise = seededNoise(x.kind + ':' + x.id, seed);
         return recency * 0.6 + followed * 0.25 + kindNoise * 0.1 + idNoise * 0.05;
       }
-      const sorted = dedup.sort((a, b) => {
-        const sa = scoreItem(a);
-        const sb = scoreItem(b);
-        if (sa !== sb) return sb - sa;
-        const ta = a.createdAt ? dayjs(a.createdAt).valueOf() : 0;
-        const tb = b.createdAt ? dayjs(b.createdAt).valueOf() : 0;
-        if (ta !== tb) return tb - ta;
-        return seededNoise(a.kind + ':' + a.id, seed) - seededNoise(b.kind + ':' + b.id, seed);
-      });
+      const sorted =
+        sortMode === 'newest'
+          ? dedup.sort((a, b) => {
+              const ta = a.createdAt ? dayjs(a.createdAt).valueOf() : 0;
+              const tb = b.createdAt ? dayjs(b.createdAt).valueOf() : 0;
+              return tb - ta;
+            })
+          : dedup.sort((a, b) => {
+              const sa = scoreItem(a);
+              const sb = scoreItem(b);
+              if (sa !== sb) return sb - sa;
+              const ta = a.createdAt ? dayjs(a.createdAt).valueOf() : 0;
+              const tb = b.createdAt ? dayjs(b.createdAt).valueOf() : 0;
+              if (ta !== tb) return tb - ta;
+              return (
+                seededNoise(a.kind + ':' + a.id, seed) - seededNoise(b.kind + ':' + b.id, seed)
+              );
+            });
       setEventFeed(sorted);
       const evDone = (eventsRes.data?.currentPage || 1) >= (eventsRes.data?.totalPages || 1);
       if (initial) {
@@ -987,6 +1004,24 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
           <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
             Feed
           </h1>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 text-xs text-theme-secondary">
+              <span>Sort:</span>
+              <div className="flex rounded-md border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+                <button
+                  className={`px-2 py-1 ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                  onClick={() => setSortMode('prioritized')}
+                >
+                  Prioritized
+                </button>
+                <button
+                  className={`px-2 py-1 ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                  onClick={() => setSortMode('newest')}
+                >
+                  Newest
+                </button>
+              </div>
+            </div>
           {tab === 'posts' ? (
             <button
               onClick={() => setCreateModalOpen(true)}
@@ -1006,6 +1041,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
               </button>
             </div>
           )}
+          </div>
         </div>
         <div className="flex items-center gap-2 mb-6" role="tablist" aria-label="Feed Tabs">
           <button
