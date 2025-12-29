@@ -11,6 +11,7 @@ export interface UserCardProps {
   onOpenConversation: (opts: { partnerId: string }) => void;
   onToggleFollow: (u: any) => void;
   avatarUrl: (u: any) => string;
+  compact?: boolean;
 }
 
 export default function UserCard({
@@ -22,14 +23,31 @@ export default function UserCard({
   onOpenConversation,
   onToggleFollow,
   avatarUrl,
+  compact,
 }: UserCardProps) {
-  const followButton = (
+  const followButton = compact ? (
+    <button
+      onClick={() => onToggleFollow(user)}
+      className={
+        `p-2 rounded-xl transition-colors ${
+          isFollowingPage || user.isFollowed
+            ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-300 dark:hover:bg-slate-600'
+            : 'bg-green-500 text-white hover:bg-green-600'
+        }`
+      }
+      title={isFollowingPage || user.isFollowed ? 'Unfollow' : 'Follow Back'}
+    >
+      <span className="sr-only">{isFollowingPage || user.isFollowed ? 'Unfollow' : 'Follow Back'}</span>
+      <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" aria-hidden="true">
+        <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v1.2h19.2v-1.2c0-3.2-6.4-4.8-9.6-4.8z" />
+      </svg>
+    </button>
+  ) : (
     <button
       onClick={() => onToggleFollow(user)}
       className={
         mode === 'grid'
           ? `${
-              /* grid button */
               'w-full px-4 py-2 rounded-md text-sm font-medium transition-colors'
             } ${
               isFollowingPage || user.isFollowed
@@ -37,7 +55,6 @@ export default function UserCard({
                 : 'bg-green-500 text-white hover:bg-green-600'
             }`
           : `${
-              /* list button */
               'flex-1 sm:flex-none px-4 py-2 rounded-md text-sm font-medium transition-colors'
             } ${
               isFollowingPage || user.isFollowed
@@ -50,7 +67,18 @@ export default function UserCard({
     </button>
   );
 
-  const messageButton = (
+  const messageButton = compact ? (
+    <button
+      onClick={() => onOpenConversation({ partnerId: user._id })}
+      className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+      title="Message"
+    >
+      <span className="sr-only">Message</span>
+      <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor" aria-hidden="true">
+        <path d="M4 4h16v12H7l-3 3V4z" />
+      </svg>
+    </button>
+  ) : (
     <button
       onClick={() => onOpenConversation({ partnerId: user._id })}
       className={
@@ -64,6 +92,36 @@ export default function UserCard({
   );
 
   if (mode === 'grid') {
+    if (compact) {
+      return (
+        <div className="rounded-xl p-3 shadow-sm hover:shadow-lg transition-all themed-card">
+          <div className="flex items-center gap-3">
+            <Avatar
+              src={avatarUrl(user)}
+              className="w-12 h-12 rounded-lg object-cover cursor-pointer flex-shrink-0"
+              onClick={() => onShowProfile(user)}
+              alt={user.username}
+            />
+            <div className="flex items-center gap-2">
+              {messageButton}
+              {followButton}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold card-text truncate cursor-pointer" onClick={() => onShowProfile(user)}>
+                {user.username}
+              </div>
+              {(() => {
+                const subtitle = getUserSubtitle(user, userStatus);
+                return subtitle ? (
+                  <div className="text-xs card-text-muted truncate">{subtitle}</div>
+                ) : null;
+              })()}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="rounded-xl p-5 flex flex-col items-center text-center shadow-sm hover:shadow-lg transition-all min-h-[280px] themed-card">
         <Avatar
@@ -99,13 +157,18 @@ export default function UserCard({
 
   // list mode
   return (
-    <div className="flex items-center gap-3 p-4 rounded-xl hover:shadow-md transition-all flex-wrap sm:flex-nowrap themed-card">
+    <div className={`${compact ? 'p-3' : 'p-4'} flex items-center gap-3 rounded-xl hover:shadow-md transition-all flex-wrap sm:flex-nowrap themed-card`}>
       <Avatar
         src={avatarUrl(user)}
-        className="w-14 h-14 rounded-lg object-cover cursor-pointer flex-shrink-0"
+        className={`${compact ? 'w-12 h-12' : 'w-14 h-14'} rounded-lg object-cover cursor-pointer flex-shrink-0`}
         onClick={() => onShowProfile(user)}
         alt={user.username}
       />
+
+      <div className="flex items-center gap-2">
+        {messageButton}
+        {followButton}
+      </div>
 
       <div className="flex-1 cursor-pointer min-w-0" onClick={() => onShowProfile(user)}>
         <div className="font-semibold card-text truncate">{user.username}</div>
@@ -115,11 +178,6 @@ export default function UserCard({
             <div className="text-sm card-text-muted truncate">{subtitle}</div>
           ) : null;
         })()}
-      </div>
-
-      <div className="flex gap-2 w-full sm:w-auto">
-        {messageButton}
-        {followButton}
       </div>
     </div>
   );
