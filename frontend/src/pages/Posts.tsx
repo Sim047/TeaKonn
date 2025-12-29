@@ -17,10 +17,15 @@ import {
   ShoppingBag,
   Briefcase,
   Tag as TagIcon,
+  MapPin,
 } from 'lucide-react';
 import Avatar from '../components/Avatar';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import EventDetailModal from '../components/EventDetailModal';
+import ServiceDetailModal from '../components/ServiceDetailModal';
+import ProductDetailModal from '../components/ProductDetailModal';
+import VenueDetailModal from '../components/VenueDetailModal';
 
 dayjs.extend(relativeTime);
 
@@ -67,7 +72,7 @@ interface Post {
 type FeedTab = 'posts' | 'events';
 
 interface UnifiedItem {
-  kind: 'event' | 'service' | 'product';
+  kind: 'event' | 'service' | 'product' | 'venue';
   id: string;
   title: string;
   subtitle?: string;
@@ -100,7 +105,14 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
   const [eventsLoading, setEventsLoading] = useState<boolean>(false);
   const [svcPage, setSvcPage] = useState<number>(1);
   const [mktPage, setMktPage] = useState<number>(1);
+  const [venuePage, setVenuePage] = useState<number>(1);
   const [hasMoreEvents, setHasMoreEvents] = useState<boolean>(true);
+
+  // Detail modals state
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
+  const [selectedService, setSelectedService] = useState<any | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [selectedVenue, setSelectedVenue] = useState<any | null>(null);
 
   function openImage(url: string) {
     setPreviewImage(url);
@@ -212,6 +224,55 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
     }
   });
 
+  // Follow graph + rotation seed for feed ordering
+  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
+  const [rotationSeed, setRotationSeed] = useState<number>(() => Date.now());
+
+  // Load following once (used to prioritize followed authors)
+  useEffect(() => {
+    async function fetchFollowing() {
+      if (!token) return;
+      try {
+        const res = await axios.get(`${API}/api/users/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const ids: string[] = (res.data?.following || []).map((u: any) => String(u._id || u.id));
+        setFollowingIds(new Set(ids));
+      } catch (e) {
+        console.warn('Failed to fetch following; prioritization limited:', e);
+      }
+    }
+    fetchFollowing();
+  }, [token]);
+
+  // Compute weighted score for a post
+  function scorePost(post: Post): number {
+    const now = dayjs();
+    const created = dayjs(post.createdAt || post.updatedAt || 0);
+    const ageHours = Math.max(0, now.diff(created, 'hour', true));
+    // Recency: 1 at 0h, 0.5 at 24h, ~0.25 at 72h, asymptotically -> 0
+    const recency = 1 / (1 + ageHours / 24);
+    // Followed author boost
+    const isFollowed = followingIds.has(String(post.author?._id));
+    const followed = isFollowed ? 1 : 0;
+    // Seeded, stable noise for this refresh
+    const noise = seededNoise(String(post._id));
+    // Weighted sum; ensure recency dominates, followed next, noise small
+    return recency * 0.6 + followed * 0.35 + noise * 0.05;
+  }
+
+  function seededNoise(key: string): number {
+    // Simple string hash to [0,1) using rotationSeed
+    let h = 2166136261 ^ rotationSeed;
+    for (let i = 0; i < key.length; i++) {
+      h ^= key.charCodeAt(i);
+      h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
+    }
+    // Convert to 0..1
+    const u = (h >>> 0) / 4294967295;
+    return u;
+  }
+
   function startPostPress(postId: string) {
     try {
       if (pressTimerRef.current) {
@@ -282,10 +343,23 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
   async function loadPosts() {
     try {
       setLoading(true);
+      setRotationSeed(Date.now()); // change rotation each refresh/load
       const res = await axios.get(`${API}/api/posts`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setPosts(res.data.posts || []);
+      const incoming: Post[] = res.data.posts || [];
+      // Apply prioritized rotation
+      const sorted = [...incoming].sort((a, b) => {
+        const sa = scorePost(a);
+        const sb = scorePost(b);
+        if (sa !== sb) return sb - sa;
+        // Stable tiebreaker by createdAt desc then id noise
+        const ta = dayjs(a.createdAt || 0).valueOf();
+        const tb = dayjs(b.createdAt || 0).valueOf();
+        if (ta !== tb) return tb - ta;
+        return seededNoise(a._id) - seededNoise(b._id);
+      });
+      setPosts(sorted);
     } catch (err) {
       console.error('Failed to load posts:', err);
     } finally {
@@ -359,6 +433,24 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
     };
   }
 
+  function normVenue(v: any): UnifiedItem {
+    const title = v.name || 'Venue';
+    const city = v.location?.city || v.location?.name || '';
+    const capacity = v.capacity?.max ? `Capacity: ${v.capacity.max}` : '';
+    const subtitle = [city, capacity].filter(Boolean).join(' · ');
+    const imageUrl = Array.isArray(v.images) && v.images.length > 0 ? v.images[0] : undefined;
+    return {
+      kind: 'venue',
+      id: v._id,
+      title,
+      subtitle,
+      createdAt: v.createdAt,
+      imageUrl,
+      user: undefined,
+      raw: v,
+    };
+  }
+
   async function loadEventFeed(initial = false) {
     try {
       setEventsLoading(true);
@@ -366,7 +458,9 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
       const nextSvc = initial ? 1 : svcPage + 1;
       const nextMkt = initial ? 1 : mktPage + 1;
 
-      const [eventsRes, servicesRes, marketRes] = await Promise.all([
+      const nextVenue = initial ? 1 : venuePage + 1;
+
+      const [eventsRes, servicesRes, marketRes, venuesRes] = await Promise.all([
         axios.get(`${API}/api/events`, { headers }),
         axios.get(`${API}/api/services`, {
           headers,
@@ -376,13 +470,18 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
           headers,
           params: { page: initial ? 1 : nextMkt, limit: 10 },
         }),
+        axios.get(`${API}/api/venues/search`, {
+          headers,
+          params: { page: initial ? 1 : nextVenue, limit: 10, name: '' },
+        }),
       ]);
 
       const evs = (eventsRes.data?.events || eventsRes.data || []).map(normEvent);
       const svs = (servicesRes.data?.services || servicesRes.data || []).map(normService);
       const mkt = (marketRes.data?.items || marketRes.data || []).map(normProduct);
+      const vns = (venuesRes.data?.venues || venuesRes.data || []).map(normVenue);
 
-      const combined = [...(initial ? [] : eventFeed), ...evs, ...svs, ...mkt];
+      const combined = [...(initial ? [] : eventFeed), ...evs, ...svs, ...mkt, ...vns];
       const dedup = Array.from(new Map(combined.map((i) => [i.kind + ':' + i.id, i])).values());
       const sorted = dedup.sort((a, b) => {
         const ta = a.createdAt ? dayjs(a.createdAt).valueOf() : 0;
@@ -393,14 +492,16 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
       if (initial) {
         setSvcPage(1);
         setMktPage(1);
-        setHasMoreEvents((servicesRes.data?.pagination?.pages || marketRes.data?.totalPages) ? true : true);
+        setHasMoreEvents((servicesRes.data?.pagination?.pages || marketRes.data?.totalPages || venuesRes.data?.totalPages) ? true : true);
       } else {
         setSvcPage(nextSvc);
         setMktPage(nextMkt);
+        setVenuePage(nextVenue);
         const svcDone =
           servicesRes.data?.pagination?.page >= servicesRes.data?.pagination?.pages;
         const mktDone = marketRes.data?.currentPage >= marketRes.data?.totalPages;
-        if (svcDone && mktDone) setHasMoreEvents(false);
+        const vnsDone = (venuesRes.data?.page || 1) >= (venuesRes.data?.totalPages || 1);
+        if (svcDone && mktDone && vnsDone) setHasMoreEvents(false);
       }
     } catch (e) {
       console.error('Failed to load events feed', e);
@@ -415,9 +516,11 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
         ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
         : kind === 'service'
           ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-          : 'bg-amber-500/10 text-amber-600 dark:text-amber-400';
-    const Icon = kind === 'event' ? Calendar : kind === 'service' ? Briefcase : ShoppingBag;
-    const label = kind === 'event' ? 'Event' : kind === 'service' ? 'Service' : 'Product';
+          : kind === 'product'
+            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+            : 'bg-sky-500/10 text-sky-600 dark:text-sky-400';
+    const Icon = kind === 'event' ? Calendar : kind === 'service' ? Briefcase : kind === 'product' ? ShoppingBag : MapPin;
+    const label = kind === 'event' ? 'Event' : kind === 'service' ? 'Service' : kind === 'product' ? 'Product' : 'Venue';
     return (
       <span
         className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium border ${cls}`}
@@ -1554,32 +1657,30 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                         {item.kind === 'event' ? (
                           <button
                             className="btn px-3 py-1.5 text-sm"
-                            onClick={() => {
-                              try { localStorage.setItem('auralink-highlight-event', item.id); } catch {}
-                              if (onNavigate) onNavigate('discover'); else window.location.href='/?view=discover';
-                            }}
+                            onClick={() => setSelectedEvent(item.raw)}
                           >
-                            Open in Discover
+                            View Event
                           </button>
                         ) : item.kind === 'service' ? (
                           <button
                             className="btn px-3 py-1.5 text-sm"
-                            onClick={() => {
-                              try { localStorage.setItem('auralink-discover-category', 'services'); } catch {}
-                              if (onNavigate) onNavigate('discover'); else window.location.href='/?view=discover';
-                            }}
+                            onClick={() => setSelectedService(item.raw)}
                           >
                             View Service
+                          </button>
+                        ) : item.kind === 'product' ? (
+                          <button
+                            className="btn px-3 py-1.5 text-sm"
+                            onClick={() => setSelectedProduct(item.raw)}
+                          >
+                            View Product
                           </button>
                         ) : (
                           <button
                             className="btn px-3 py-1.5 text-sm"
-                            onClick={() => {
-                              try { localStorage.setItem('auralink-discover-category', 'marketplace'); } catch {}
-                              if (onNavigate) onNavigate('discover'); else window.location.href='/?view=discover';
-                            }}
+                            onClick={() => setSelectedVenue(item.raw)}
                           >
-                            View Product
+                            View Venue
                           </button>
                         )}
                       </div>
@@ -1766,6 +1867,87 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
         >
           <ArrowUp className="w-6 h-6" />
         </button>
+      )}
+
+      {/* Detail Modals */}
+      {selectedEvent && (
+        <EventDetailModal
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+          onJoin={async (eventId: string) => {
+            try {
+              await axios.post(`${API}/api/events/${eventId}/join`, {}, {
+                headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+              });
+              const refreshed = await axios.get(`${API}/api/events/${eventId}`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+              });
+              setSelectedEvent(refreshed.data);
+            } catch (err) {
+              console.error('Join error:', err);
+            }
+          }}
+          onMessage={(organizerId: string) => {
+            try { localStorage.setItem('auralink-open-chat-with', organizerId); } catch {}
+            onNavigate && onNavigate('dashboard');
+          }}
+          onViewProfile={(userId: string) => {
+            const user = selectedEvent?.organizer ? { ...selectedEvent.organizer, _id: selectedEvent.organizer._id } : null;
+            if (user) {
+              (onShowProfile as any)?.(user);
+            }
+          }}
+          currentUserId={currentUserId}
+        />
+      )}
+
+      {selectedService && (
+        <ServiceDetailModal
+          service={selectedService}
+          onClose={() => setSelectedService(null)}
+          onMessage={(providerId: string) => {
+            try { localStorage.setItem('auralink-open-chat-with', providerId); } catch {}
+            onNavigate && onNavigate('dashboard');
+          }}
+          onLike={async (serviceId: string) => {
+            try {
+              await axios.post(`${API}/api/services/${serviceId}/like`, {}, { headers: token ? { Authorization: `Bearer ${token}` } : undefined });
+              const refreshed = await axios.get(`${API}/api/services/${serviceId}`);
+              setSelectedService(refreshed.data);
+            } catch (e) {
+              console.error('Failed to like service', e);
+            }
+          }}
+          currentUserId={currentUserId}
+        />
+      )}
+
+      {selectedProduct && (
+        <ProductDetailModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onMessage={(sellerId: string) => {
+            try { localStorage.setItem('auralink-open-chat-with', sellerId); } catch {}
+            onNavigate && onNavigate('dashboard');
+          }}
+          onLike={async (productId: string) => {
+            try {
+              const res = await axios.post(`${API}/api/marketplace/${productId}/like`, {}, { headers: token ? { Authorization: `Bearer ${token}` } : undefined });
+              setSelectedProduct(res.data);
+            } catch (e) {
+              console.error('Failed to like product', e);
+            }
+          }}
+          currentUserId={currentUserId}
+        />
+      )}
+
+      {selectedVenue && (
+        <VenueDetailModal
+          venue={selectedVenue}
+          token={token}
+          onClose={() => setSelectedVenue(null)}
+        />
       )}
     </div>
   );
