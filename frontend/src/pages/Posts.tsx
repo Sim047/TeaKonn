@@ -1140,21 +1140,21 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
               Feed
             </h1>
           </div>
-          <div className="mt-2">
+          <div className="mt-2 -mx-4 sm:-mx-6">
             <div
-              className="flex items-center gap-1.5 rounded-full border themed-card px-2 py-0.5 overflow-x-auto whitespace-nowrap"
+              className="flex items-center gap-2 border themed-card rounded-none sm:rounded-xl px-3 py-1 w-full"
               style={{ borderColor: 'var(--border)' }}
             >
-              <div className="flex rounded-full border overflow-hidden flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
+              <div className="flex rounded-md border overflow-hidden flex-none" style={{ borderColor: 'var(--border)' }}>
                 <button
-                  className={`px-2 py-0.5 text-[11px] ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                  className={`px-1.5 py-0.5 text-[11px] ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
                   onClick={() => setSortMode(sortMode === 'prioritized' ? 'random' : 'prioritized')}
                   aria-pressed={sortMode === 'prioritized'}
                 >
                   Prioritized
                 </button>
                 <button
-                  className={`px-2 py-0.5 text-[11px] ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                  className={`px-1.5 py-0.5 text-[11px] ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
                   onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
                   aria-pressed={sortMode === 'newest'}
                 >
@@ -1163,7 +1163,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
               </div>
               <input
                 type="text"
-                className="input h-7 text-xs w-28 sm:w-56 min-w-0 flex-shrink"
+                className="input h-8 text-xs flex-1 min-w-0"
                 placeholder="Search posts & events"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
@@ -1172,7 +1172,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                 <button
                   onClick={() => setCreateModalOpen(true)}
                   aria-label="Create post"
-                  className="p-1.5 rounded-full themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all flex-shrink-0"
+                  className="p-1.5 rounded-md themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all flex-none"
                   style={{ borderColor: 'var(--border)' }}
                   title="Create post"
                 >
@@ -1182,7 +1182,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                 <button
                   onClick={() => loadEventFeed(true)}
                   aria-label="Refresh events"
-                  className="p-1.5 rounded-full themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all flex-shrink-0"
+                  className="p-1.5 rounded-md themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all flex-none"
                   style={{ borderColor: 'var(--border)' }}
                   disabled={eventsLoading}
                   title="Refresh"
