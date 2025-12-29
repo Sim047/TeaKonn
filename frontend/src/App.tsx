@@ -207,7 +207,7 @@ export default function App() {
   >(() => {
     // Restore previous view from localStorage
     const saved = localStorage.getItem('auralink-current-view');
-    return (saved as any) || 'dashboard';
+    return (saved as any) || 'posts';
   });
 
   // Persist view changes to localStorage

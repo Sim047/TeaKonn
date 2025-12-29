@@ -87,7 +87,7 @@ interface UnifiedItem {
 export default function Posts({ token, currentUserId, onShowProfile, onNavigate }: any) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<FeedTab>('posts');
+  const [tab, setTab] = useState<FeedTab>('events');
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [newPost, setNewPost] = useState({ caption: '', imageUrl: '', location: '', tags: '' });
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
@@ -333,7 +333,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
   }
 
   useEffect(() => {
-    if (token) loadPosts();
+    if (token) loadPosts(true);
   }, [token]);
 
   // Load Events/Services/Products feed when switching to events tab (first time)
@@ -377,17 +377,25 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
     }, 300);
   }, [posts.length]);
 
-  async function loadPosts() {
+  const [postsPage, setPostsPage] = useState<number>(1);
+  const [hasMorePosts, setHasMorePosts] = useState<boolean>(true);
+
+  async function loadPosts(initial = false) {
     try {
       setLoading(true);
       // Use a local seed to avoid relying on async state updates
       const seed = (Date.now() ^ Math.floor(Math.random() * 0x7fffffff)) >>> 0;
+      const nextPage = initial ? 1 : postsPage + 1;
       const res = await axios.get(`${API}/api/posts`, {
         headers: { Authorization: `Bearer ${token}` },
+        params: { page: nextPage, limit: 10 },
       });
       const incoming: Post[] = res.data.posts || [];
-      // Apply prioritized rotation
-      const sorted = [...incoming].sort((a, b) => {
+      // Merge with existing (if not initial) and deduplicate
+      const merged = [...(initial ? [] : posts), ...incoming];
+      const dedup = Array.from(new Map(merged.map((p) => [p._id, p])).values());
+      // Apply prioritized rotation on merged list
+      const sorted = dedup.sort((a, b) => {
         const sa = scorePost(a, seed);
         const sb = scorePost(b, seed);
         if (sa !== sb) return sb - sa;
@@ -398,6 +406,10 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
         return seededNoise(a._id, seed) - seededNoise(b._id, seed);
       });
       setPosts(sorted);
+      setPostsPage(nextPage);
+      const cp = Number(res.data?.currentPage || nextPage);
+      const tp = Number(res.data?.totalPages || nextPage);
+      setHasMorePosts(cp < tp);
     } catch (err) {
       console.error('Failed to load posts:', err);
     } finally {
@@ -1633,6 +1645,18 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                 </div>
               </div>
             ))}
+            {hasMorePosts && (
+              <div className="flex justify-center pt-2">
+                <button
+                  className="px-4 py-2 rounded-xl border text-sm"
+                  style={{ borderColor: 'var(--border)' }}
+                  onClick={() => loadPosts(false)}
+                  disabled={loading}
+                >
+                  {loading ? 'Loading…' : 'Load more'}
+                </button>
+              </div>
+            )}
           </div>
           )
         ) : (
