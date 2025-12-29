@@ -89,6 +89,23 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<FeedTab>('events');
   const [sortMode, setSortMode] = useState<'prioritized' | 'newest'>('prioritized');
+  // Restore sort mode from URL or localStorage
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const s = (params.get('sort') || '').toLowerCase();
+      if (s === 'new' || s === 'newest') {
+        setSortMode('newest');
+        return;
+      }
+      if (s === 'prioritized') {
+        setSortMode('prioritized');
+        return;
+      }
+      const saved = localStorage.getItem('auralink-feed-sort');
+      if (saved === 'newest' || saved === 'prioritized') setSortMode(saved as any);
+    } catch {}
+  }, []);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [newPost, setNewPost] = useState({ caption: '', imageUrl: '', location: '', tags: '' });
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
@@ -132,15 +149,17 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
       const params = new URLSearchParams(window.location.search);
       if (tab === 'events') params.set('tab', 'events');
       else params.set('tab', 'posts');
+      // Persist sort mode in URL
+      params.set('sort', sortMode === 'newest' ? 'new' : 'prioritized');
       const qs = params.toString();
       const newUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
       const prevState = window.history.state || {};
       // Push a history entry so Back returns to previous tab/view
-      window.history.pushState({ ...prevState, tab }, '', newUrl);
+      window.history.pushState({ ...prevState, tab, sort: sortMode }, '', newUrl);
       // Persist last tab for next refresh alternation
       try { localStorage.setItem('auralink-last-feed-tab', tab); } catch {}
     } catch {}
-  }, [tab]);
+  }, [tab, sortMode]);
   
   useEffect(() => {
     const onPop = () => {
@@ -149,11 +168,19 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
         const t = params.get('tab');
         if (t === 'events') setTab('events');
         else setTab('posts');
+        const s = (params.get('sort') || '').toLowerCase();
+        if (s === 'new' || s === 'newest') setSortMode('newest');
+        else if (s === 'prioritized') setSortMode('prioritized');
       } catch {}
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
+
+  // Persist sort mode changes to localStorage and URL (handled above via [tab, sortMode] effect)
+  useEffect(() => {
+    try { localStorage.setItem('auralink-feed-sort', sortMode); } catch {}
+  }, [sortMode]);
 
   // Detail modals state
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
@@ -1005,22 +1032,21 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
             Feed
           </h1>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 text-xs text-theme-secondary">
-              <span>Sort:</span>
-              <div className="flex rounded-md border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
-                <button
-                  className={`px-2 py-1 ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
-                  onClick={() => setSortMode('prioritized')}
-                >
-                  Prioritized
-                </button>
-                <button
-                  className={`px-2 py-1 ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
-                  onClick={() => setSortMode('newest')}
-                >
-                  Newest
-                </button>
-              </div>
+            <div className="flex rounded-md border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+              <button
+                className={`px-2 py-1 text-xs ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                onClick={() => setSortMode('prioritized')}
+                aria-pressed={sortMode === 'prioritized'}
+              >
+                Prioritized
+              </button>
+              <button
+                className={`px-2 py-1 text-xs ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                onClick={() => setSortMode('newest')}
+                aria-pressed={sortMode === 'newest'}
+              >
+                Newest
+              </button>
             </div>
           {tab === 'posts' ? (
             <button
