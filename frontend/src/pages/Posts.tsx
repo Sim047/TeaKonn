@@ -108,12 +108,20 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
   const [venuePage, setVenuePage] = useState<number>(1);
   const [hasMoreEvents, setHasMoreEvents] = useState<boolean>(true);
   
-  // Persist tab across refresh and back/forward via URL query (?tab=events)
+  // Persist tab across refresh and back/forward via URL query (?tab=events) and alternate per refresh
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       const t = params.get('tab');
-      if (t === 'events') setTab('events');
+      if (t === 'events' || t === 'posts') {
+        setTab(t as FeedTab);
+        return;
+      }
+      // No explicit tab in URL → alternate between posts/events each refresh
+      const last = (localStorage.getItem('auralink-last-feed-tab') || '') as FeedTab | '';
+      const next: FeedTab = last === 'events' ? 'posts' : 'events';
+      setTab(next);
+      localStorage.setItem('auralink-last-feed-tab', next);
     } catch {}
   }, []);
   
@@ -121,12 +129,14 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
     try {
       const params = new URLSearchParams(window.location.search);
       if (tab === 'events') params.set('tab', 'events');
-      else params.delete('tab');
+      else params.set('tab', 'posts');
       const qs = params.toString();
       const newUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
       const prevState = window.history.state || {};
       // Push a history entry so Back returns to previous tab/view
       window.history.pushState({ ...prevState, tab }, '', newUrl);
+      // Persist last tab for next refresh alternation
+      try { localStorage.setItem('auralink-last-feed-tab', tab); } catch {}
     } catch {}
   }, [tab]);
   
