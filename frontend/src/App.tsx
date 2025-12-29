@@ -1935,6 +1935,7 @@ export default function App() {
             token={token}
             currentUserId={user?._id}
             onShowProfile={(u: any) => showProfile(u)}
+            onNavigate={(v: string) => setView(v as any)}
           />
         )}
 

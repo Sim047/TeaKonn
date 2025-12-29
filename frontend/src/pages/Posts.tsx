@@ -60,9 +60,25 @@ interface Post {
   captionEditedAt?: string;
 }
 
-export default function Posts({ token, currentUserId, onShowProfile }: any) {
+type FeedTab = 'posts' | 'events';
+
+interface UnifiedItem {
+  kind: 'event' | 'service' | 'product';
+  id: string;
+  title: string;
+  subtitle?: string;
+  imageUrl?: string;
+  createdAt?: string;
+  dateHint?: string; // for events
+  priceHint?: string; // for services/products
+  user?: { _id: string; username: string; avatar?: string };
+  raw: any;
+}
+
+export default function Posts({ token, currentUserId, onShowProfile, onNavigate }: any) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<FeedTab>('posts');
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [newPost, setNewPost] = useState({ caption: '', imageUrl: '', location: '', tags: '' });
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
@@ -74,6 +90,13 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
     () => posts.filter((p) => !!p.imageUrl).map((p) => p.imageUrl),
     [posts],
   );
+
+  // EVENTS FEED STATE
+  const [eventFeed, setEventFeed] = useState<UnifiedItem[]>([]);
+  const [eventsLoading, setEventsLoading] = useState<boolean>(false);
+  const [svcPage, setSvcPage] = useState<number>(1);
+  const [mktPage, setMktPage] = useState<number>(1);
+  const [hasMoreEvents, setHasMoreEvents] = useState<boolean>(true);
 
   function openImage(url: string) {
     setPreviewImage(url);
@@ -211,6 +234,13 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
     if (token) loadPosts();
   }, [token]);
 
+  // Load Events/Services/Products feed when switching to events tab (first time)
+  useEffect(() => {
+    if (tab === 'events' && eventFeed.length === 0 && token) {
+      loadEventFeed(true);
+    }
+  }, [tab, token]);
+
   const currentUser = React.useMemo(() => {
     try {
       return JSON.parse(localStorage.getItem('user') || '{}');
@@ -256,6 +286,122 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
       console.error('Failed to load posts:', err);
     } finally {
       setLoading(false);
+    }
+  }
+
+  function makeUser(u: any) {
+    if (!u) return undefined;
+    return { _id: u._id || u.id, username: u.username, avatar: u.avatar };
+  }
+
+  function normEvent(e: any): UnifiedItem {
+    const title = e.title || 'Event';
+    const city = e.location?.city || e.location?.name || '';
+    const sport = e.sport || '';
+    const subtitle = [sport, city].filter(Boolean).join(' · ');
+    const start = e.startDate ? String(e.startDate) : e.createdAt;
+    const dateHint = e.startDate ? dayjs(e.startDate).format('MMM D, YYYY') : undefined;
+    const img = e.image || e.cover || undefined;
+    return {
+      kind: 'event',
+      id: e._id,
+      title,
+      subtitle,
+      createdAt: start,
+      dateHint,
+      imageUrl: img,
+      user: makeUser(e.organizer),
+      raw: e,
+    };
+  }
+
+  function normService(s: any): UnifiedItem {
+    const title = s.name || s.title || 'Service';
+    const city = s.location?.city || '';
+    const cat = s.category || s.sport || '';
+    const subtitle = [cat, city].filter(Boolean).join(' · ');
+    const priceHint = s.pricing?.amount
+      ? `${s.pricing.amount} ${s.pricing.currency || ''}`.trim()
+      : undefined;
+    const imageUrl = Array.isArray(s.images) && s.images.length > 0 ? s.images[0] : undefined;
+    return {
+      kind: 'service',
+      id: s._id,
+      title,
+      subtitle,
+      createdAt: s.createdAt,
+      priceHint,
+      imageUrl,
+      user: makeUser(s.provider),
+      raw: s,
+    };
+  }
+
+  function normProduct(m: any): UnifiedItem {
+    const title = m.title || 'Product';
+    const subtitle = [m.category, m.location].filter(Boolean).join(' · ');
+    const imageUrl = Array.isArray(m.images) && m.images.length > 0 ? m.images[0] : undefined;
+    const priceHint = m.price !== undefined ? `${m.price} ${m.currency || ''}`.trim() : undefined;
+    return {
+      kind: 'product',
+      id: m._id,
+      title,
+      subtitle,
+      createdAt: m.createdAt,
+      priceHint,
+      imageUrl,
+      user: makeUser(m.seller),
+      raw: m,
+    };
+  }
+
+  async function loadEventFeed(initial = false) {
+    try {
+      setEventsLoading(true);
+      const headers = { Authorization: `Bearer ${token}` };
+      const nextSvc = initial ? 1 : svcPage + 1;
+      const nextMkt = initial ? 1 : mktPage + 1;
+
+      const [eventsRes, servicesRes, marketRes] = await Promise.all([
+        axios.get(`${API}/api/events`, { headers }),
+        axios.get(`${API}/api/services`, {
+          headers,
+          params: { page: initial ? 1 : nextSvc, limit: 10 },
+        }),
+        axios.get(`${API}/api/marketplace`, {
+          headers,
+          params: { page: initial ? 1 : nextMkt, limit: 10 },
+        }),
+      ]);
+
+      const evs = (eventsRes.data?.events || eventsRes.data || []).map(normEvent);
+      const svs = (servicesRes.data?.services || servicesRes.data || []).map(normService);
+      const mkt = (marketRes.data?.items || marketRes.data || []).map(normProduct);
+
+      const combined = [...(initial ? [] : eventFeed), ...evs, ...svs, ...mkt];
+      const dedup = Array.from(new Map(combined.map((i) => [i.kind + ':' + i.id, i])).values());
+      const sorted = dedup.sort((a, b) => {
+        const ta = a.createdAt ? dayjs(a.createdAt).valueOf() : 0;
+        const tb = b.createdAt ? dayjs(b.createdAt).valueOf() : 0;
+        return tb - ta;
+      });
+      setEventFeed(sorted);
+      if (initial) {
+        setSvcPage(1);
+        setMktPage(1);
+        setHasMoreEvents((servicesRes.data?.pagination?.pages || marketRes.data?.totalPages) ? true : true);
+      } else {
+        setSvcPage(nextSvc);
+        setMktPage(nextMkt);
+        const svcDone =
+          servicesRes.data?.pagination?.page >= servicesRes.data?.pagination?.pages;
+        const mktDone = marketRes.data?.currentPage >= marketRes.data?.totalPages;
+        if (svcDone && mktDone) setHasMoreEvents(false);
+      }
+    } catch (e) {
+      console.error('Failed to load events feed', e);
+    } finally {
+      setEventsLoading(false);
     }
   }
 
@@ -624,21 +770,55 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
   return (
     <div className="min-h-screen themed-page p-4 sm:p-6">
       <div className="max-w-3xl lg:max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        {/* Header + Tabs */}
+        <div className="flex items-center justify-between mb-4">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
             Feed
           </h1>
+          {tab === 'posts' ? (
+            <button
+              onClick={() => setCreateModalOpen(true)}
+              className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
+            >
+              Create Post
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => loadEventFeed(true)}
+                className="px-3 py-2 rounded-xl border text-sm"
+                style={{ borderColor: 'var(--border)' }}
+                disabled={eventsLoading}
+              >
+                {eventsLoading ? 'Refreshing…' : 'Refresh'}
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-2 mb-6" role="tablist" aria-label="Feed Tabs">
           <button
-            onClick={() => setCreateModalOpen(true)}
-            className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
+            className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${
+              tab === 'posts' ? 'bg-cyan-600 text-white' : 'themed-card'
+            }`}
+            onClick={() => setTab('posts')}
+            aria-selected={tab === 'posts'}
           >
-            Create Post
+            Posts
+          </button>
+          <button
+            className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${
+              tab === 'events' ? 'bg-purple-600 text-white' : 'themed-card'
+            }`}
+            onClick={() => setTab('events')}
+            aria-selected={tab === 'events'}
+          >
+            Events
           </button>
         </div>
 
-        {/* Posts */}
-        {loading ? (
+        {/* Tab Content */}
+        {tab === 'posts' ? (
+          loading ? (
           <div className="space-y-6">
             {[1, 2, 3].map((i) => (
               <div key={i} className="rounded-2xl p-6 animate-pulse themed-card">
@@ -646,13 +826,13 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
               </div>
             ))}
           </div>
-        ) : posts.length === 0 ? (
+          ) : posts.length === 0 ? (
           <div className="text-center py-20">
             <ImageIcon className="w-16 h-16 text-theme-secondary mx-auto mb-4" />
             <p className="text-theme-secondary text-lg">No posts yet</p>
             <p className="text-theme-secondary text-sm mt-2">Be the first to share something!</p>
           </div>
-        ) : (
+          ) : (
           <div className="space-y-4">
             {showLongPressHint && (
               <div
@@ -1269,6 +1449,124 @@ export default function Posts({ token, currentUserId, onShowProfile }: any) {
                 </div>
               </div>
             ))}
+          </div>
+          )
+        ) : (
+          // EVENTS FEED TAB
+          <div className="space-y-4">
+            {eventsLoading && eventFeed.length === 0 ? (
+              <div className="space-y-6">
+                {[1, 2].map((i) => (
+                  <div key={i} className="rounded-2xl p-6 animate-pulse themed-card">
+                    <div className="h-48 themed-card"></div>
+                  </div>
+                ))}
+              </div>
+            ) : eventFeed.length === 0 ? (
+              <div className="text-center py-16">
+                <ImageIcon className="w-14 h-14 text-theme-secondary mx-auto mb-3" />
+                <p className="text-theme-secondary">No items yet</p>
+              </div>
+            ) : (
+              <>
+                {eventFeed.map((item) => (
+                  <div key={`${item.kind}:${item.id}`} className="rounded-2xl shadow-md themed-card">
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar
+                          src={
+                            item.user?.avatar
+                              ? item.user.avatar.startsWith('http')
+                                ? item.user.avatar
+                                : API + (item.user.avatar.startsWith('/') ? item.user.avatar : '/uploads/' + item.user.avatar)
+                              : 'https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff'
+                          }
+                          className="w-9 h-9 rounded-full object-cover cursor-pointer"
+                          alt={item.user?.username || 'User'}
+                          onClick={() => item.user && onShowProfile?.(item.user)}
+                        />
+                        <div>
+                          <div className="font-semibold text-heading">{item.user?.username || (item.kind === 'product' ? 'Seller' : 'Organizer')}</div>
+                          {item.createdAt && (
+                            <div className="text-xs text-theme-secondary">{dayjs(item.createdAt).fromNow()}</div>
+                          )}
+                        </div>
+                      </div>
+                      {item.kind === 'event' && item.dateHint && (
+                        <div className="text-xs px-2 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border" style={{ borderColor: 'var(--border)' }}>
+                          {item.dateHint}
+                        </div>
+                      )}
+                      {item.kind !== 'event' && item.priceHint && (
+                        <div className="text-xs px-2 py-1 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border" style={{ borderColor: 'var(--border)' }}>
+                          {item.priceHint}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Media */}
+                    {item.imageUrl && (
+                      <div className="w-full h-56 sm:h-64 overflow-hidden">
+                        <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                      </div>
+                    )}
+
+                    {/* Body */}
+                    <div className="p-3 space-y-2">
+                      <div className="text-lg font-bold text-heading">{item.title}</div>
+                      {item.subtitle && <div className="text-sm text-theme-secondary">{item.subtitle}</div>}
+                      <div className="pt-2 flex items-center gap-2 border-t" style={{ borderColor: 'var(--border)' }}>
+                        {item.kind === 'event' ? (
+                          <button
+                            className="btn px-3 py-1.5 text-sm"
+                            onClick={() => {
+                              try { localStorage.setItem('auralink-highlight-event', item.id); } catch {}
+                              if (onNavigate) onNavigate('discover'); else window.location.href='/?view=discover';
+                            }}
+                          >
+                            Open in Discover
+                          </button>
+                        ) : item.kind === 'service' ? (
+                          <button
+                            className="btn px-3 py-1.5 text-sm"
+                            onClick={() => {
+                              try { localStorage.setItem('auralink-discover-category', 'services'); } catch {}
+                              if (onNavigate) onNavigate('discover'); else window.location.href='/?view=discover';
+                            }}
+                          >
+                            View Service
+                          </button>
+                        ) : (
+                          <button
+                            className="btn px-3 py-1.5 text-sm"
+                            onClick={() => {
+                              try { localStorage.setItem('auralink-discover-category', 'marketplace'); } catch {}
+                              if (onNavigate) onNavigate('discover'); else window.location.href='/?view=discover';
+                            }}
+                          >
+                            View Product
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {hasMoreEvents && (
+                  <div className="flex justify-center pt-2">
+                    <button
+                      className="px-4 py-2 rounded-xl border text-sm"
+                      style={{ borderColor: 'var(--border)' }}
+                      onClick={() => loadEventFeed(false)}
+                      disabled={eventsLoading}
+                    >
+                      {eventsLoading ? 'Loading…' : 'Load more'}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
 
