@@ -237,6 +237,12 @@ function UserCard({
   isProcessing,
   isCurrentUser,
 }: any) {
+  const statusText =
+    user.bio ||
+    (userStatus
+      ? `${userStatus.emoji ? userStatus.emoji + ' ' : ''}${userStatus.mood || 'Status set'}`
+      : 'No status');
+
   if (viewMode === 'list') {
     return (
       <div className="rounded-2xl p-3 hover:shadow-xl transition-all duration-300 hover:scale-[1.01] themed-card">
@@ -248,6 +254,26 @@ function UserCard({
             onClick={onViewProfile}
           />
 
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h3
+                className="font-semibold text-heading truncate cursor-pointer hover:text-teal-500 transition text-sm"
+                onClick={onViewProfile}
+              >
+                {user.username}
+              </h3>
+              {user.verified && (
+                <Star className="w-4 h-4 text-yellow-500 fill-yellow-500 shrink-0" />
+              )}
+            </div>
+            {user.sport && (
+              <p className="text-xs text-teal-600 dark:text-teal-400 font-medium truncate">{user.sport}</p>
+            )}
+            <p className="text-xs text-theme-secondary truncate" title={statusText}>
+              {statusText}
+            </p>
+          </div>
+
           {!isCurrentUser && (
             <div className="flex items-center gap-2 shrink-0">
               <button
@@ -258,7 +284,6 @@ function UserCard({
               >
                 <MessageCircle className="w-4 h-4 text-gray-700 dark:text-gray-300" />
               </button>
-
               <button
                 onClick={onFollow}
                 disabled={isProcessing}
@@ -277,76 +302,21 @@ function UserCard({
               </button>
             </div>
           )}
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3
-                className="font-semibold text-heading truncate cursor-pointer hover:text-teal-500 transition text-sm"
-                onClick={onViewProfile}
-              >
-                {user.username}
-              </h3>
-              {user.verified && (
-                <Star className="w-4 h-4 text-yellow-500 fill-yellow-500 shrink-0" />
-              )}
-            </div>
-            <p className="text-xs text-theme-secondary truncate">
-              {user.bio ||
-                (userStatus
-                  ? `${userStatus.emoji ? userStatus.emoji + ' ' : ''}${userStatus.mood || 'Status set'}`
-                  : 'No status')}
-            </p>
-          </div>
         </div>
-                <p className="text-xs text-theme-secondary truncate" title={user.bio || (userStatus ? `${userStatus.emoji ? userStatus.emoji + ' ' : ''}${userStatus.mood || 'Status set'}` : 'No status')}>
-                  {(() => {
-                    const text =
-                      user.bio ||
-                      (userStatus
-                        ? `${userStatus.emoji ? userStatus.emoji + ' ' : ''}${userStatus.mood || 'Status set'}`
-                        : 'No status');
-                    return text.length > 40 ? text.slice(0, 40) + '…' : text;
-                  })()}
-                </p>
-    <div className="rounded-2xl p-3 hover:shadow-xl transition-all duration-300 group hover:scale-[1.02] themed-card">
-      <div className="flex items-center gap-3">
+      </div>
+    );
+  }
+
+  // Grid card
+  return (
+    <div className="rounded-2xl p-4 hover:shadow-xl transition-all duration-300 hover:scale-[1.01] themed-card">
+      <div className="flex items-center gap-3 mb-2">
         <img
           src={avatarUrl}
           alt={user.username}
-          className="w-12 h-12 rounded-full object-cover ring-2 ring-teal-500/20 cursor-pointer group-hover:scale-110 transition-transform duration-300"
+          className="w-12 h-12 rounded-full object-cover ring-2 ring-teal-500/20 cursor-pointer"
           onClick={onViewProfile}
         />
-
-        {!isCurrentUser && (
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={onMessage}
-              disabled={isProcessing}
-              className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300 disabled:opacity-50"
-              title="Message"
-            >
-              <MessageCircle className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={onFollow}
-              disabled={isProcessing}
-              className={`p-2 rounded-xl transition-all duration-300 disabled:opacity-50 ${
-                user.isFollowed
-                  ? 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                  : 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-lg shadow-teal-500/30'
-              }`}
-              title={user.isFollowed ? 'Unfollow' : 'Follow'}
-            >
-              {user.isFollowed ? (
-                <UserMinus className="w-4 h-4" />
-              ) : (
-                <UserPlus className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-        )}
-
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3
@@ -357,19 +327,37 @@ function UserCard({
             </h3>
             {user.verified && <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />}
           </div>
-
           {user.sport && (
             <p className="text-xs text-teal-600 dark:text-teal-400 font-medium truncate">{user.sport}</p>
           )}
-
-          <p className="text-xs text-theme-secondary truncate">
-            {user.bio ||
-              (userStatus
-                ? `${userStatus.emoji ? userStatus.emoji + ' ' : ''}${userStatus.mood || 'Status set'}`
-                : 'No status')}
-          </p>
+          <p className="text-xs text-theme-secondary truncate" title={statusText}>{statusText}</p>
         </div>
       </div>
+      {!isCurrentUser && (
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onMessage}
+            disabled={isProcessing}
+            className="flex-1 p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 disabled:opacity-50"
+            title="Message"
+          >
+            <MessageCircle className="w-4 h-4 inline mr-1 text-gray-700 dark:text-gray-300" />
+            <span className="text-sm">Message</span>
+          </button>
+          <button
+            onClick={onFollow}
+            disabled={isProcessing}
+            className={`p-2 rounded-xl transition-all duration-300 disabled:opacity-50 ${
+              user.isFollowed
+                ? 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                : 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-lg shadow-teal-500/30'
+            }`}
+            title={user.isFollowed ? 'Unfollow' : 'Follow'}
+          >
+            {user.isFollowed ? <UserMinus className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
