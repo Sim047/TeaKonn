@@ -18,6 +18,7 @@ import {
   Briefcase,
   Tag as TagIcon,
   MapPin,
+  RefreshCcw,
 } from 'lucide-react';
 import Avatar from '../components/Avatar';
 import dayjs from 'dayjs';
@@ -1133,56 +1134,61 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
     <div className="min-h-screen themed-page p-4 sm:p-6">
       <div className="max-w-3xl lg:max-w-4xl mx-auto">
         {/* Header + Tabs */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
             Feed
           </h1>
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex rounded-md border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
-              <button
-                className={`px-2 py-1 text-xs ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
-                onClick={() => setSortMode(sortMode === 'prioritized' ? 'random' : 'prioritized')}
-                aria-pressed={sortMode === 'prioritized'}
-              >
-                Prioritized
-              </button>
-              <button
-                className={`px-2 py-1 text-xs ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
-                onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
-                aria-pressed={sortMode === 'newest'}
-              >
-                Newest
-              </button>
-            </div>
-            <input
-              type="text"
-              className="input w-48 sm:w-64"
-              placeholder="Search posts & events"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-            />
-          {tab === 'posts' ? (
-            <button
-              onClick={() => setCreateModalOpen(true)}
-              aria-label="Create post"
-              className="p-2 rounded-full themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all"
+          <div className="flex items-center">
+            <div
+              className="flex items-center gap-2 rounded-full border themed-card px-2 py-1 overflow-x-auto whitespace-nowrap"
               style={{ borderColor: 'var(--border)' }}
-              title="Create post"
             >
-              <Plus className="w-5 h-5 text-theme-secondary" />
-            </button>
-          ) : (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => loadEventFeed(true)}
-                className="px-3 py-2 rounded-xl border text-sm"
-                style={{ borderColor: 'var(--border)' }}
-                disabled={eventsLoading}
-              >
-                {eventsLoading ? 'Refreshing…' : 'Refresh'}
-              </button>
+              <div className="flex rounded-full border overflow-hidden flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
+                <button
+                  className={`px-2 py-1 text-xs ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                  onClick={() => setSortMode(sortMode === 'prioritized' ? 'random' : 'prioritized')}
+                  aria-pressed={sortMode === 'prioritized'}
+                >
+                  Prioritized
+                </button>
+                <button
+                  className={`px-2 py-1 text-xs ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                  onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
+                  aria-pressed={sortMode === 'newest'}
+                >
+                  Newest
+                </button>
+              </div>
+              <input
+                type="text"
+                className="input h-8 text-xs w-32 sm:w-56 min-w-0 flex-shrink"
+                placeholder="Search posts & events"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+              {tab === 'posts' ? (
+                <button
+                  onClick={() => setCreateModalOpen(true)}
+                  aria-label="Create post"
+                  className="p-2 rounded-full themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all flex-shrink-0"
+                  style={{ borderColor: 'var(--border)' }}
+                  title="Create post"
+                >
+                  <Plus className="w-5 h-5 text-theme-secondary" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => loadEventFeed(true)}
+                  aria-label="Refresh events"
+                  className="p-2 rounded-full themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all flex-shrink-0"
+                  style={{ borderColor: 'var(--border)' }}
+                  disabled={eventsLoading}
+                  title="Refresh"
+                >
+                  <RefreshCcw className="w-5 h-5 text-theme-secondary" />
+                </button>
+              )}
             </div>
-          )}
           </div>
         </div>
         <div className="flex items-center gap-2 mb-6" role="tablist" aria-label="Feed Tabs">
