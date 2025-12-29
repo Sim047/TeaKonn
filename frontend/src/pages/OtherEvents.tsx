@@ -88,17 +88,11 @@ export default function OtherEvents({ token, onBack, onNavigate }: any) {
 
         {/* Search */}
         <div className="mb-6 max-w-xl">
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-theme-secondary" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by title or location"
-              className="w-full pr-4 py-2 rounded-lg input has-leading-icon"
-              maxLength={100}
-              inputMode="search"
-            />
-          </div>
+          <SearchBar
+            value={search}
+            onChange={(v) => setSearch(v)}
+            placeholder="Search by title or location"
+          />
         </div>
 
         {/* Content */}

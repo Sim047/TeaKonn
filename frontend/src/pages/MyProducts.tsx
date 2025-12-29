@@ -88,15 +88,14 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
             <p className="text-sm text-theme-secondary">Manage your products</p>
           </div>
           <div className="flex flex-wrap sm:flex-nowrap gap-2 sm:justify-end w-full sm:w-auto">
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search products by title, category, location"
-              className="input w-full sm:w-80"
-              aria-label="Search products"
-              maxLength={100}
-              inputMode="search"
-            />
+            <div className="w-full sm:w-80">
+              <SearchBar
+                value={query}
+                onChange={(v) => setQuery(v)}
+                placeholder="Search products by title, category, location"
+                ariaLabel="Search products"
+              />
+            </div>
             <button className="inline-flex items-center px-4 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => onNavigate && onNavigate('my-activities')}>Back</button>
             <button className="btn w-full sm:w-auto" onClick={() => setOpenCreate(true)}>Create Product</button>
           </div>

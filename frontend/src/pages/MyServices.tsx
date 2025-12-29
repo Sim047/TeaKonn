@@ -69,15 +69,14 @@ export default function MyServices({ token, onNavigate, onToast, onUpdated }: My
             <p className="text-sm text-theme-secondary">Manage your service offerings</p>
           </div>
           <div className="flex flex-wrap sm:flex-nowrap gap-2 sm:justify-end w-full sm:w-auto">
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search services by name, category, city"
-              className="input w-full sm:w-80"
-              aria-label="Search services"
-              maxLength={100}
-              inputMode="search"
-            />
+            <div className="w-full sm:w-80">
+              <SearchBar
+                value={query}
+                onChange={(v) => setQuery(v)}
+                placeholder="Search services by name, category, city"
+                ariaLabel="Search services"
+              />
+            </div>
             <button className="inline-flex items-center px-4 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => onNavigate && onNavigate('my-activities')}>Back</button>
             <button className="btn w-full sm:w-auto" onClick={() => setOpenCreate(true)}>Create Service</button>
           </div>

@@ -216,15 +216,11 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
 
         {/* Search */}
         <div className="mb-6 max-w-xl">
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-theme-secondary" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by title, sport, or location"
-              className="w-full pr-4 py-2 rounded-lg input has-leading-icon"
-            />
-          </div>
+          <SearchBar
+            value={search}
+            onChange={(v) => setSearch(v)}
+            placeholder="Search by title, sport, or location"
+          />
         </div>
         {/* Unified list — filters removed; shows all events including Other Events */}
 

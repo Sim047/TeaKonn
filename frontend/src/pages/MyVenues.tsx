@@ -264,16 +264,12 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
         </div>
 
         <div className="flex flex-col gap-3">
-          <div className="relative w-full sm:w-96">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
+          <div className="w-full sm:w-96">
+            <SearchBar
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(v) => setQuery(v)}
               placeholder="Search venues, requests, tokens"
-              aria-label="Search venues"
-              className="input pr-3 has-leading-icon"
-              maxLength={100}
-              inputMode="search"
+              ariaLabel="Search venues"
             />
           </div>
           <div className="flex flex-wrap gap-2" role="tablist" aria-label="Search Scope">

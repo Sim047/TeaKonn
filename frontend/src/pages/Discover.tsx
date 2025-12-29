@@ -971,15 +971,12 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
 
           {/* Search */}
           <div className="mb-6">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-theme-secondary" />
-              <input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by title, sport, or location"
-                className="w-full pr-4 py-2 rounded-xl input has-leading-icon"
-              />
-            </div>
+            <SearchBar
+              value={searchTerm}
+              onChange={(v) => setSearchTerm(v)}
+              placeholder="Search by title, sport, or location"
+              className=""
+            />
           </div>
 
           {/* Sport Filter */}
@@ -1264,15 +1261,12 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
 
           {/* Search */}
           <div className="mb-6">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-theme-secondary" />
-              <input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search services by name, category, or city"
-                className="w-full pr-4 py-2 rounded-lg input has-leading-icon"
-              />
-            </div>
+            <SearchBar
+              value={searchTerm}
+              onChange={(v) => setSearchTerm(v)}
+              placeholder="Search services by name, category, or city"
+              className=""
+            />
           </div>
 
           {/* Service Filter */}
@@ -1848,15 +1842,12 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
 
           {/* Search */}
           <div className="mb-6">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-theme-secondary" />
-              <input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search posts by caption, tag, or location"
-                className="w-full pr-4 py-2 rounded-lg input has-leading-icon"
-              />
-            </div>
+            <SearchBar
+              value={searchTerm}
+              onChange={(v) => setSearchTerm(v)}
+              placeholder="Search posts by caption, tag, or location"
+              className=""
+            />
           </div>
 
           {/* Posts Grid */}

@@ -570,14 +570,14 @@ export default function MyEvents({
               <div className="space-y-8">
                 {/* Search My Events */}
                 <div className="flex items-center justify-between gap-3">
-                  <input
-                    className="input w-full sm:w-80"
-                    placeholder="Search my events"
-                    value={eventSearch}
-                    onChange={(e) => setEventSearch(e.target.value)}
-                    maxLength={100}
-                    inputMode="search"
-                  />
+                  <div className="w-full sm:w-80">
+                    <SearchBar
+                      value={eventSearch}
+                      onChange={(v) => setEventSearch(v)}
+                      placeholder="Search my events"
+                      ariaLabel="Search my events"
+                    />
+                  </div>
                 </div>
                 {/* Events I Created */}
                 <div>
@@ -720,14 +720,14 @@ export default function MyEvents({
               <>
                 {/* Services Tab Content */}
                 <div className="flex items-center justify-between gap-3 mb-4">
-                  <input
-                    className="input w-full sm:w-80"
-                    placeholder="Search my services"
-                    value={serviceSearch}
-                    onChange={(e) => setServiceSearch(e.target.value)}
-                    maxLength={100}
-                    inputMode="search"
-                  />
+                  <div className="w-full sm:w-80">
+                    <SearchBar
+                      value={serviceSearch}
+                      onChange={(v) => setServiceSearch(v)}
+                      placeholder="Search my services"
+                      ariaLabel="Search my services"
+                    />
+                  </div>
                 </div>
                 {services.length === 0 ? (
                   <div className="rounded-3xl p-12 text-center themed-card">

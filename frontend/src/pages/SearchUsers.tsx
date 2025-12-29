@@ -61,14 +61,14 @@ export default function SearchUsers({
   return (
     <div>
       <div className="flex gap-2">
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search users..."
-          className="input flex-1"
-          maxLength={100}
-          inputMode="search"
-        />
+        <div className="flex-1">
+          <SearchBar
+            value={q}
+            onChange={(v) => setQ(v)}
+            placeholder="Search users..."
+            ariaLabel="Search users"
+          />
+        </div>
       </div>
 
       {loading && <div className="text-sm text-muted mt-2">Searching…</div>}

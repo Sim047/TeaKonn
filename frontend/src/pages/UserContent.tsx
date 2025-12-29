@@ -230,30 +230,22 @@ export default function UserContent({ token, onNavigate }: any) {
           </button>
 
           {/* Search */}
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+          <div className="flex-1 min-w-[220px]">
+            <SearchBar
+              value={search}
+              onChange={(v) => setSearch(v)}
+              onEnter={() => {
                 setItems([]);
                 setPage(1);
                 setHasMore(true);
+              }}
+              placeholder={
+                tab === 'events'
+                  ? 'Search events (title, sport, location)…'
+                  : 'Search posts (title, caption, tags)…'
               }
-            }}
-            placeholder={
-              tab === 'events'
-                ? 'Search events (title, sport, location)…'
-                : 'Search posts (title, caption, tags)…'
-            }
-            className="rounded-xl flex-1 min-w-[220px] px-3 py-2 border"
-            style={{
-              borderColor: 'var(--border)',
-              background: 'var(--card)',
-              color: 'var(--text)',
-            }}
-            maxLength={100}
-            inputMode="search"
-          />
+            />
+          </div>
           {/* Event filter removed */}
         </div>
 

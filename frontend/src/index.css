@@ -294,6 +294,7 @@ textarea,
     transform 0.15s ease,
     box-shadow 0.15s ease;
   border: 1px solid rgba(0, 0, 0, 0.08);
+  min-height: 2.75rem; /* ~44px touch target */
 }
 .btn:hover {
   transform: translateY(-1px);
@@ -307,6 +308,7 @@ textarea,
   padding: 0.7rem;
   border-radius: 0.6rem;
   caret-color: var(--text);
+  min-height: 2.75rem; /* ~44px touch target */
 }
 
 .input::placeholder {
@@ -329,6 +331,21 @@ textarea,
 /* small text utility */
 .text-muted {
   color: var(--muted);
+}
+
+/* Mobile-friendly sizing adjustments */
+@media (max-width: 640px) {
+  .input {
+    padding: 0.85rem 0.95rem;
+    font-size: 0.95rem;
+  }
+  .btn {
+    padding: 0.9rem 1rem;
+    font-size: 0.95rem;
+  }
+  .themed-card {
+    padding: 1rem !important;
+  }
 }
 
 /* =========================================================
