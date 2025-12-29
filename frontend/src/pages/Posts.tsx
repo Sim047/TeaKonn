@@ -1140,58 +1140,58 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
               Feed
             </h1>
           </div>
-          {/* Thin themed divider to minimize perceived margin */}
-          <div className="h-[1px] bg-gradient-to-r from-cyan-400 to-purple-500 opacity-50 -mx-4 sm:-mx-6" />
           <div className="mt-1 -mx-4 sm:-mx-6">
-            <div
-              className="flex items-center gap-2 border themed-card rounded-none sm:rounded-xl px-2 py-0.5 w-full"
-              style={{ borderColor: 'var(--border)' }}
-            >
-              <div className="flex rounded-md border overflow-hidden flex-none" style={{ borderColor: 'var(--border)' }}>
-                <button
-                  className={`px-1 py-0.5 text-[11px] ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
-                  onClick={() => setSortMode(sortMode === 'prioritized' ? 'random' : 'prioritized')}
-                  aria-pressed={sortMode === 'prioritized'}
-                >
-                  Prioritized
-                </button>
-                <button
-                  className={`px-1 py-0.5 text-[11px] ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
-                  onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
-                  aria-pressed={sortMode === 'newest'}
-                >
-                  Newest
-                </button>
+            <div className="p-[1px] bg-gradient-to-r from-cyan-400 to-purple-500 rounded-none sm:rounded-xl">
+              <div
+                className="flex items-center gap-1 themed-card rounded-none sm:rounded-xl px-2 py-0 w-full"
+                style={{ background: 'var(--card)' }}
+              >
+                <div className="flex rounded-md border overflow-hidden flex-none" style={{ borderColor: 'var(--border)' }}>
+                  <button
+                    className={`px-1 py-0 text-[11px] ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                    onClick={() => setSortMode(sortMode === 'prioritized' ? 'random' : 'prioritized')}
+                    aria-pressed={sortMode === 'prioritized'}
+                  >
+                    Prioritized
+                  </button>
+                  <button
+                    className={`px-1 py-0 text-[11px] ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                    onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
+                    aria-pressed={sortMode === 'newest'}
+                  >
+                    Newest
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  className="input h-9 text-sm flex-1 min-w-0"
+                  placeholder="Search posts & events"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                />
+                {tab === 'posts' ? (
+                  <button
+                    onClick={() => setCreateModalOpen(true)}
+                    aria-label="Create post"
+                    className="p-1 rounded-md themed-card border transition-all flex-none"
+                    style={{ borderColor: 'var(--border)' }}
+                    title="Create post"
+                  >
+                    <Plus className="w-4 h-4 text-theme-secondary" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => loadEventFeed(true)}
+                    aria-label="Refresh events"
+                    className="p-1 rounded-md themed-card border transition-all flex-none"
+                    style={{ borderColor: 'var(--border)' }}
+                    disabled={eventsLoading}
+                    title="Refresh"
+                  >
+                    <RefreshCcw className="w-4 h-4 text-theme-secondary" />
+                  </button>
+                )}
               </div>
-              <input
-                type="text"
-                className="input h-8 text-xs flex-1 min-w-0"
-                placeholder="Search posts & events"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-              />
-              {tab === 'posts' ? (
-                <button
-                  onClick={() => setCreateModalOpen(true)}
-                  aria-label="Create post"
-                  className="p-1 rounded-md themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all flex-none"
-                  style={{ borderColor: 'var(--border)' }}
-                  title="Create post"
-                >
-                  <Plus className="w-4 h-4 text-theme-secondary" />
-                </button>
-              ) : (
-                <button
-                  onClick={() => loadEventFeed(true)}
-                  aria-label="Refresh events"
-                  className="p-1 rounded-md themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all flex-none"
-                  style={{ borderColor: 'var(--border)' }}
-                  disabled={eventsLoading}
-                  title="Refresh"
-                >
-                  <RefreshCcw className="w-4 h-4 text-theme-secondary" />
-                </button>
-              )}
             </div>
           </div>
         </div>
