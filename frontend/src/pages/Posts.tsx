@@ -1147,8 +1147,13 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                 style={{ background: 'var(--card)' }}
               >
                 <button
-                  className="px-2 py-0.5 text-[12px] font-medium leading-tight rounded-md border themed-card flex-none"
-                  style={{ borderColor: 'var(--border)' }}
+                  className={`px-2 py-0.5 text-[12px] font-semibold leading-tight rounded-md flex-none border transition-colors ${
+                    sortMode === 'prioritized'
+                      ? 'bg-cyan-600 text-white border-cyan-500'
+                      : sortMode === 'newest'
+                        ? 'bg-purple-600 text-white border-purple-500'
+                        : 'bg-slate-700 text-white border-slate-600'
+                  }`}
                   onClick={() => setSortMode((m) => (m === 'prioritized' ? 'newest' : m === 'newest' ? 'random' : 'prioritized'))}
                   aria-label="Toggle sort"
                 >
@@ -1156,7 +1161,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                 </button>
                 <input
                   type="text"
-                  className="input h-8 text-sm flex-1 min-w-0"
+                  className="input h-8 text-sm flex-1 min-w-0 rounded-md bg-white/60 dark:bg-slate-800/60 focus:ring-2 focus:ring-cyan-400 focus:outline-none placeholder:text-theme-secondary"
                   placeholder="Search posts & events"
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
@@ -1165,22 +1170,20 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                   <button
                     onClick={() => setCreateModalOpen(true)}
                     aria-label="Create post"
-                    className="p-0.5 rounded-md themed-card border transition-all flex-none"
-                    style={{ borderColor: 'var(--border)' }}
+                    className="p-0.5 rounded-md transition-all flex-none bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20"
                     title="Create post"
                   >
-                    <Plus className="w-3.5 h-3.5 text-theme-secondary" />
+                    <Plus className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   </button>
                 ) : (
                   <button
                     onClick={() => loadEventFeed(true)}
                     aria-label="Refresh events"
-                    className="p-0.5 rounded-md themed-card border transition-all flex-none"
-                    style={{ borderColor: 'var(--border)' }}
+                    className="p-0.5 rounded-md transition-all flex-none bg-sky-500/10 border border-sky-500/30 hover:bg-sky-500/20"
                     disabled={eventsLoading}
                     title="Refresh"
                   >
-                    <RefreshCcw className="w-3.5 h-3.5 text-theme-secondary" />
+                    <RefreshCcw className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                   </button>
                 )}
               </div>
