@@ -141,7 +141,7 @@ export default function UserCard({
         {(() => {
           const subtitle = getUserSubtitle(user, userStatus);
           return subtitle ? (
-            <div className="text-xs card-text-muted truncate w-full mb-4">{subtitle}</div>
+            <div className="text-xs card-text-muted truncate w-full mb-4" title={subtitle}>{subtitle}</div>
           ) : (
             <div className="mb-4" />
           );
@@ -175,7 +175,7 @@ export default function UserCard({
         {(() => {
           const subtitle = getUserSubtitle(user, userStatus);
           return subtitle ? (
-            <div className="text-sm card-text-muted truncate">{subtitle}</div>
+            <div className="text-sm card-text-muted truncate" title={subtitle}>{subtitle}</div>
           ) : null;
         })()}
       </div>

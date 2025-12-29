@@ -298,12 +298,16 @@ function UserCard({
             </p>
           </div>
         </div>
-      </div>
-    );
-  }
-
-  // Grid view - actions inline beside avatar
-  return (
+                <p className="text-xs text-theme-secondary truncate" title={user.bio || (userStatus ? `${userStatus.emoji ? userStatus.emoji + ' ' : ''}${userStatus.mood || 'Status set'}` : 'No status')}>
+                  {(() => {
+                    const text =
+                      user.bio ||
+                      (userStatus
+                        ? `${userStatus.emoji ? userStatus.emoji + ' ' : ''}${userStatus.mood || 'Status set'}`
+                        : 'No status');
+                    return text.length > 40 ? text.slice(0, 40) + '…' : text;
+                  })()}
+                </p>
     <div className="rounded-2xl p-3 hover:shadow-xl transition-all duration-300 group hover:scale-[1.02] themed-card">
       <div className="flex items-center gap-3">
         <img
