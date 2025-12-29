@@ -88,7 +88,8 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<FeedTab>('events');
-  const [sortMode, setSortMode] = useState<'prioritized' | 'newest'>('prioritized');
+  const [sortMode, setSortMode] = useState<'prioritized' | 'newest' | 'random'>('prioritized');
+  const [searchText, setSearchText] = useState<string>('');
   // Restore sort mode from URL or localStorage
   useEffect(() => {
     try {
@@ -102,8 +103,20 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
         setSortMode('prioritized');
         return;
       }
-      const saved = localStorage.getItem('auralink-feed-sort');
-      if (saved === 'newest' || saved === 'prioritized') setSortMode(saved as any);
+      if (s === 'random') {
+        setSortMode('random');
+      } else {
+        const saved = localStorage.getItem('auralink-feed-sort');
+        if (saved === 'newest' || saved === 'prioritized' || saved === 'random') setSortMode(saved as any);
+      }
+      const q = params.get('q');
+      if (q) setSearchText(q);
+      else {
+        try {
+          const savedQ = localStorage.getItem('auralink-feed-q');
+          if (savedQ) setSearchText(savedQ);
+        } catch {}
+      }
     } catch {}
   }, []);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -149,17 +162,19 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
       const params = new URLSearchParams(window.location.search);
       if (tab === 'events') params.set('tab', 'events');
       else params.set('tab', 'posts');
-      // Persist sort mode in URL
-      params.set('sort', sortMode === 'newest' ? 'new' : 'prioritized');
+      // Persist sort mode and query in URL
+      params.set('sort', sortMode === 'newest' ? 'new' : sortMode === 'prioritized' ? 'prioritized' : 'random');
+      if (searchText && searchText.trim()) params.set('q', searchText.trim());
+      else params.delete('q');
       const qs = params.toString();
       const newUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
       const prevState = window.history.state || {};
       // Push a history entry so Back returns to previous tab/view
-      window.history.pushState({ ...prevState, tab, sort: sortMode }, '', newUrl);
+      window.history.pushState({ ...prevState, tab, sort: sortMode, q: searchText }, '', newUrl);
       // Persist last tab for next refresh alternation
       try { localStorage.setItem('auralink-last-feed-tab', tab); } catch {}
     } catch {}
-  }, [tab, sortMode]);
+  }, [tab, sortMode, searchText]);
   
   useEffect(() => {
     const onPop = () => {
@@ -171,6 +186,9 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
         const s = (params.get('sort') || '').toLowerCase();
         if (s === 'new' || s === 'newest') setSortMode('newest');
         else if (s === 'prioritized') setSortMode('prioritized');
+        else if (s === 'random') setSortMode('random');
+        const q = params.get('q') || '';
+        setSearchText(q);
       } catch {}
     };
     window.addEventListener('popstate', onPop);
@@ -181,6 +199,9 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
   useEffect(() => {
     try { localStorage.setItem('auralink-feed-sort', sortMode); } catch {}
   }, [sortMode]);
+  useEffect(() => {
+    try { localStorage.setItem('auralink-feed-q', searchText); } catch {}
+  }, [searchText]);
 
   // Detail modals state
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
@@ -1031,29 +1052,39 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
           <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
             Feed
           </h1>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <div className="flex rounded-md border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
               <button
                 className={`px-2 py-1 text-xs ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
-                onClick={() => setSortMode('prioritized')}
+                onClick={() => setSortMode(sortMode === 'prioritized' ? 'random' : 'prioritized')}
                 aria-pressed={sortMode === 'prioritized'}
               >
                 Prioritized
               </button>
               <button
                 className={`px-2 py-1 text-xs ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
-                onClick={() => setSortMode('newest')}
+                onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
                 aria-pressed={sortMode === 'newest'}
               >
                 Newest
               </button>
             </div>
+            <input
+              type="text"
+              className="input w-48 sm:w-64"
+              placeholder="Search posts & events"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
           {tab === 'posts' ? (
             <button
               onClick={() => setCreateModalOpen(true)}
-              className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
+              aria-label="Create post"
+              className="p-2 rounded-full themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all"
+              style={{ borderColor: 'var(--border)' }}
+              title="Create post"
             >
-              Create Post
+              <Plus className="w-5 h-5 text-theme-secondary" />
             </button>
           ) : (
             <div className="flex items-center gap-2">
@@ -1131,7 +1162,35 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                 </div>
               </div>
             )}
-            {posts.map((post) => (
+            {React.useMemo(() => {
+              const q = searchText.trim().toLowerCase();
+              const filtered = q
+                ? posts.filter((p) => {
+                    const text = [
+                      p.caption || '',
+                      p.author?.username || '',
+                      p.location || '',
+                      ...(p.tags || []),
+                    ].join(' ').toLowerCase();
+                    return text.includes(q);
+                  })
+                : posts;
+              const sorted =
+                sortMode === 'newest'
+                  ? [...filtered].sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf())
+                  : sortMode === 'prioritized'
+                    ? [...filtered].sort((a, b) => {
+                        const sa = scorePost(a);
+                        const sb = scorePost(b);
+                        if (sa !== sb) return sb - sa;
+                        const ta = dayjs(a.createdAt || 0).valueOf();
+                        const tb = dayjs(b.createdAt || 0).valueOf();
+                        if (ta !== tb) return tb - ta;
+                        return seededNoise(a._id) - seededNoise(b._id);
+                      })
+                    : [...filtered].sort((a, b) => seededNoise(a._id) - seededNoise(b._id));
+              return sorted;
+            }, [posts, sortMode, searchText]).map((post) => (
               <div
                 key={post._id}
                 id={`post-${post._id}`}
@@ -1755,7 +1814,51 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
               </div>
             ) : (
               <>
-                {eventFeed.map((item) => (
+                {React.useMemo(() => {
+                  const q = searchText.trim().toLowerCase();
+                  const filtered = q
+                    ? eventFeed.filter((i) => {
+                        const text = [
+                          i.title || '',
+                          i.subtitle || '',
+                          i.user?.username || '',
+                          i.priceHint || '',
+                          i.dateHint || '',
+                        ].join(' ').toLowerCase();
+                        return text.includes(q);
+                      })
+                    : eventFeed;
+                  const seed = (Date.now() ^ Math.floor(Math.random() * 0x7fffffff)) >>> 0;
+                  const sorted =
+                    sortMode === 'newest'
+                      ? [...filtered].sort((a, b) => {
+                          const ta = a.createdAt ? dayjs(a.createdAt).valueOf() : 0;
+                          const tb = b.createdAt ? dayjs(b.createdAt).valueOf() : 0;
+                          return tb - ta;
+                        })
+                      : sortMode === 'prioritized'
+                        ? [...filtered].sort((a, b) => {
+                            const ta = a.createdAt ? dayjs(a.createdAt).valueOf() : 0;
+                            const tb = b.createdAt ? dayjs(b.createdAt).valueOf() : 0;
+                            const ageA = Math.max(0, (Date.now() - ta) / (1000 * 60 * 60));
+                            const ageB = Math.max(0, (Date.now() - tb) / (1000 * 60 * 60));
+                            const recA = 1 / (1 + ageA / 24);
+                            const recB = 1 / (1 + ageB / 24);
+                            const fA = a.user?._id && followingIds.has(String(a.user._id)) ? 1 : 0;
+                            const fB = b.user?._id && followingIds.has(String(b.user._id)) ? 1 : 0;
+                            const kA = seededNoise('kind:' + a.kind, seed);
+                            const kB = seededNoise('kind:' + b.kind, seed);
+                            const iA = seededNoise(a.kind + ':' + a.id, seed);
+                            const iB = seededNoise(b.kind + ':' + b.id, seed);
+                            const sA = recA * 0.6 + fA * 0.25 + kA * 0.1 + iA * 0.05;
+                            const sB = recB * 0.6 + fB * 0.25 + kB * 0.1 + iB * 0.05;
+                            if (sA !== sB) return sB - sA;
+                            if (ta !== tb) return tb - ta;
+                            return seededNoise(a.kind + ':' + a.id, seed) - seededNoise(b.kind + ':' + b.id, seed);
+                          })
+                        : [...filtered].sort((a, b) => seededNoise(a.kind + ':' + a.id, seed) - seededNoise(b.kind + ':' + b.id, seed));
+                  return sorted;
+                }, [eventFeed, sortMode, searchText, followingIds]).map((item) => (
                   <div
                     key={`${item.kind}:${item.id}`}
                     className="rounded-2xl themed-card overflow-hidden border hover:shadow-xl hover:-translate-y-[2px] transition-all"
