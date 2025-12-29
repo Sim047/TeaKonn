@@ -236,6 +236,20 @@ export default function App() {
       const params = new URLSearchParams(window.location.search);
       params.set('view', view);
       if (view !== 'posts') params.delete('post');
+      // Ensure Posts tab param exists on initial load if missing, alternating each session
+      if (view === 'posts') {
+        const currentTab = params.get('tab');
+        if (!currentTab) {
+          try {
+            const last = localStorage.getItem('auralink-last-feed-tab');
+            const next = last === 'events' ? 'posts' : 'events';
+            params.set('tab', next);
+            localStorage.setItem('auralink-last-feed-tab', next);
+          } catch {}
+        }
+      } else {
+        params.delete('tab');
+      }
       const qs = params.toString();
       const newUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
       window.history.replaceState({ view }, '', newUrl);
@@ -251,6 +265,20 @@ export default function App() {
       const params = new URLSearchParams(window.location.search);
       params.set('view', newView);
       if (newView !== 'posts') params.delete('post');
+      // When navigating to posts explicitly, set tab if missing and alternate from last
+      if (newView === 'posts') {
+        const currentTab = params.get('tab');
+        if (!currentTab) {
+          try {
+            const last = localStorage.getItem('auralink-last-feed-tab');
+            const next = last === 'events' ? 'posts' : 'events';
+            params.set('tab', next);
+            localStorage.setItem('auralink-last-feed-tab', next);
+          } catch {}
+        }
+      } else {
+        params.delete('tab');
+      }
       const qs = params.toString();
       const newUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
       window.history.pushState({ view: newView }, '', newUrl);
