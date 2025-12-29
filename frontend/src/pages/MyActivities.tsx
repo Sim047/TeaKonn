@@ -202,67 +202,77 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           </div>
         </div>
 
-      <div className="flex flex-wrap gap-3 items-center mt-3" role="tablist" aria-label="My Activities Tabs">
-        <button
-          className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'events' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
-          onClick={() => setActiveTab('events')}
-          role="tab"
-          aria-selected={activeTab === 'events'}
-        >
-          My Events ({createdEvents.length})
-        </button>
-        <button
-          className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'venues' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
-          onClick={() => setActiveTab('venues')}
-          role="tab"
-          aria-selected={activeTab === 'venues'}
-        >
-          My Venues {venuesCount ? `(${venuesCount})` : ''}
-        </button>
-        <button
-          className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'services' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
-          onClick={() => setActiveTab('services')}
-          role="tab"
-          aria-selected={activeTab === 'services'}
-        >
-          My Services ({servicesCount})
-        </button>
-        <button
-          className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${activeTab === 'products' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
-          onClick={() => setActiveTab('products')}
-          role="tab"
-          aria-selected={activeTab === 'products'}
-        >
-          My Products ({productsCount})
-        </button>
+      {/* Main tabs (distinct segmented control) */}
+      <div className="mt-3">
+        <div className="rounded-xl border themed-card p-1 overflow-x-auto flex gap-1 sm:flex-wrap" role="tablist" aria-label="My Activities Tabs" style={{ borderColor: 'var(--border)' }}>
+          <button
+            className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg min-w-[140px] ${activeTab === 'events' ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+            onClick={() => setActiveTab('events')}
+            role="tab"
+            aria-selected={activeTab === 'events'}
+          >
+            <Calendar className="w-4 h-4" />
+            <span>My Events ({createdEvents.length})</span>
+          </button>
+          <button
+            className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg min-w-[140px] ${activeTab === 'venues' ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+            onClick={() => setActiveTab('venues')}
+            role="tab"
+            aria-selected={activeTab === 'venues'}
+          >
+            <MapPin className="w-4 h-4" />
+            <span>My Venues {venuesCount ? `(${venuesCount})` : ''}</span>
+          </button>
+          <button
+            className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg min-w-[140px] ${activeTab === 'services' ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+            onClick={() => setActiveTab('services')}
+            role="tab"
+            aria-selected={activeTab === 'services'}
+          >
+            <Trophy className="w-4 h-4" />
+            <span>My Services ({servicesCount})</span>
+          </button>
+          <button
+            className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg min-w-[140px] ${activeTab === 'products' ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+            onClick={() => setActiveTab('products')}
+            role="tab"
+            aria-selected={activeTab === 'products'}
+          >
+            <Users className="w-4 h-4" />
+            <span>My Products ({productsCount})</span>
+          </button>
+        </div>
       </div>
 
       {activeTab === 'events' && (
-        <div className="flex flex-wrap gap-2 mt-3" role="tablist" aria-label="Events Subtabs">
-          <button
-            className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${eventsSubTab === 'created' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
-            onClick={() => setEventsSubTab('created')}
-            role="tab"
-            aria-selected={eventsSubTab === 'created'}
-          >
-            Created ({createdEvents.length})
-          </button>
-          <button
-            className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${eventsSubTab === 'joined' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
-            onClick={() => setEventsSubTab('joined')}
-            role="tab"
-            aria-selected={eventsSubTab === 'joined'}
-          >
-            Joined ({joinedEvents.length})
-          </button>
-          <button
-            className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${eventsSubTab === 'past' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
-            onClick={() => setEventsSubTab('past')}
-            role="tab"
-            aria-selected={eventsSubTab === 'past'}
-          >
-            Past ({archivedEvents.length})
-          </button>
+        <div className="mt-3">
+          <div className="text-xs text-theme-secondary mb-1">Event tabs</div>
+          <div className="rounded-lg border themed-card p-1 overflow-x-auto flex gap-1 sm:flex-wrap" role="tablist" aria-label="Events Subtabs" style={{ borderColor: 'var(--border)' }}>
+            <button
+              className={`text-xs px-3 py-1.5 rounded-md min-w-[120px] ${eventsSubTab === 'created' ? 'bg-purple-600 text-white shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+              onClick={() => setEventsSubTab('created')}
+              role="tab"
+              aria-selected={eventsSubTab === 'created'}
+            >
+              Created ({createdEvents.length})
+            </button>
+            <button
+              className={`text-xs px-3 py-1.5 rounded-md min-w-[120px] ${eventsSubTab === 'joined' ? 'bg-purple-600 text-white shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+              onClick={() => setEventsSubTab('joined')}
+              role="tab"
+              aria-selected={eventsSubTab === 'joined'}
+            >
+              Joined ({joinedEvents.length})
+            </button>
+            <button
+              className={`text-xs px-3 py-1.5 rounded-md min-w-[120px] ${eventsSubTab === 'past' ? 'bg-purple-600 text-white shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+              onClick={() => setEventsSubTab('past')}
+              role="tab"
+              aria-selected={eventsSubTab === 'past'}
+            >
+              Past ({archivedEvents.length})
+            </button>
+          </div>
         </div>
       )}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
