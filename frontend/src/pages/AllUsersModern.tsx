@@ -2,17 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../config/api';
-import {
-  Search,
-  MessageCircle,
-  UserPlus,
-  UserMinus,
-  X,
-  Grid,
-  List,
-  Filter,
-  Star,
-} from 'lucide-react';
+import { MessageCircle, UserPlus, UserMinus, X, Grid, List, Star } from 'lucide-react';
 
 const API = API_URL.replace(/\/api$/, '');
 
@@ -147,10 +137,6 @@ export default function AllUsersModern({
             <h1 className="text-2xl font-bold text-heading">All Users</h1>
 
             <div className="flex items-center gap-2">
-              <button className="p-2 rounded-lg themed-card hover:opacity-90 transition">
-                <Filter className="w-5 h-5 text-theme-secondary" />
-              </button>
-
               <div className="flex rounded-lg p-1 themed-card">
                 <button
                   onClick={() => setViewMode('grid')}
@@ -170,13 +156,12 @@ export default function AllUsersModern({
 
           {/* Search Bar */}
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-theme-secondary pointer-events-none" />
             <input
               type="text"
               placeholder="Search users..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="input w-full pl-12 pr-4 py-3 rounded-xl"
+              className="input w-full pl-4 pr-10 py-3 rounded-xl"
             />
             {search && (
               <button
