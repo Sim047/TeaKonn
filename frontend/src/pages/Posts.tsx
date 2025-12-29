@@ -1143,19 +1143,19 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
           <div className="mt-1 -mx-4 sm:-mx-6">
             <div className="p-[1px] bg-gradient-to-r from-cyan-400 to-purple-500 rounded-none sm:rounded-xl">
               <div
-                className="flex items-center gap-1 themed-card rounded-none sm:rounded-xl px-2 py-0 w-full"
+                className="flex items-center gap-0.5 themed-card rounded-none sm:rounded-xl px-1 py-0 w-full"
                 style={{ background: 'var(--card)' }}
               >
                 <div className="flex rounded-md border overflow-hidden flex-none" style={{ borderColor: 'var(--border)' }}>
                   <button
-                    className={`px-1 py-0 text-[11px] ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                    className={`px-0.5 py-0 text-[11px] ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
                     onClick={() => setSortMode(sortMode === 'prioritized' ? 'random' : 'prioritized')}
                     aria-pressed={sortMode === 'prioritized'}
                   >
                     Prioritized
                   </button>
                   <button
-                    className={`px-1 py-0 text-[11px] ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                    className={`px-0.5 py-0 text-[11px] ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
                     onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
                     aria-pressed={sortMode === 'newest'}
                   >
@@ -1164,7 +1164,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                 </div>
                 <input
                   type="text"
-                  className="input h-9 text-sm flex-1 min-w-0"
+                  className="input h-8 text-sm flex-1 min-w-0"
                   placeholder="Search posts & events"
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
@@ -1173,22 +1173,22 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                   <button
                     onClick={() => setCreateModalOpen(true)}
                     aria-label="Create post"
-                    className="p-1 rounded-md themed-card border transition-all flex-none"
+                    className="p-0.5 rounded-md themed-card border transition-all flex-none"
                     style={{ borderColor: 'var(--border)' }}
                     title="Create post"
                   >
-                    <Plus className="w-4 h-4 text-theme-secondary" />
+                    <Plus className="w-3.5 h-3.5 text-theme-secondary" />
                   </button>
                 ) : (
                   <button
                     onClick={() => loadEventFeed(true)}
                     aria-label="Refresh events"
-                    className="p-1 rounded-md themed-card border transition-all flex-none"
+                    className="p-0.5 rounded-md themed-card border transition-all flex-none"
                     style={{ borderColor: 'var(--border)' }}
                     disabled={eventsLoading}
                     title="Refresh"
                   >
-                    <RefreshCcw className="w-4 h-4 text-theme-secondary" />
+                    <RefreshCcw className="w-3.5 h-3.5 text-theme-secondary" />
                   </button>
                 )}
               </div>
