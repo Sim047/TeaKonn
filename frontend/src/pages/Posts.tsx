@@ -1143,7 +1143,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
           <div className="mt-1 -mx-4 sm:-mx-6">
             <div className="p-[1px] bg-gradient-to-r from-cyan-400 to-purple-500 rounded-none sm:rounded-xl">
               <div
-                className="flex items-center gap-0.5 themed-card rounded-none sm:rounded-xl px-1 py-0 w-full"
+                className="flex items-center gap-0.5 themed-card rounded-none sm:rounded-xl px-1 py-0 w-full flex-nowrap"
                 style={{ background: 'var(--card)' }}
               >
                 <div className="flex rounded-md border overflow-hidden flex-none" style={{ borderColor: 'var(--border)' }}>
@@ -1152,14 +1152,16 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                     onClick={() => setSortMode(sortMode === 'prioritized' ? 'random' : 'prioritized')}
                     aria-pressed={sortMode === 'prioritized'}
                   >
-                    Prioritized
+                    <span className="hidden sm:inline">Prioritized</span>
+                    <span className="inline sm:hidden">Prio</span>
                   </button>
                   <button
                     className={`px-0.5 py-0 text-[11px] ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
                     onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
                     aria-pressed={sortMode === 'newest'}
                   >
-                    Newest
+                    <span className="hidden sm:inline">Newest</span>
+                    <span className="inline sm:hidden">New</span>
                   </button>
                 </div>
                 <input
