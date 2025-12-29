@@ -103,6 +103,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
   // EVENTS FEED STATE
   const [eventFeed, setEventFeed] = useState<UnifiedItem[]>([]);
   const [eventsLoading, setEventsLoading] = useState<boolean>(false);
+  const [eventPage, setEventPage] = useState<number>(1);
   const [svcPage, setSvcPage] = useState<number>(1);
   const [mktPage, setMktPage] = useState<number>(1);
   const [venuePage, setVenuePage] = useState<number>(1);
@@ -515,13 +516,13 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
     try {
       setEventsLoading(true);
       const headers = { Authorization: `Bearer ${token}` };
+      const nextEvent = initial ? 1 : eventPage + 1;
       const nextSvc = initial ? 1 : svcPage + 1;
       const nextMkt = initial ? 1 : mktPage + 1;
-
       const nextVenue = initial ? 1 : venuePage + 1;
 
       const [eventsRes, servicesRes, marketRes, venuesRes] = await Promise.all([
-        axios.get(`${API}/api/events`, { headers }),
+        axios.get(`${API}/api/events`, { headers, params: { page: initial ? 1 : nextEvent, limit: 10 } }),
         axios.get(`${API}/api/services`, {
           headers,
           params: { page: initial ? 1 : nextSvc, limit: 10 },
@@ -569,11 +570,15 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
         return seededNoise(a.kind + ':' + a.id, seed) - seededNoise(b.kind + ':' + b.id, seed);
       });
       setEventFeed(sorted);
+      const evDone = (eventsRes.data?.currentPage || 1) >= (eventsRes.data?.totalPages || 1);
       if (initial) {
+        setEventPage(1);
         setSvcPage(1);
         setMktPage(1);
-        setHasMoreEvents((servicesRes.data?.pagination?.pages || marketRes.data?.totalPages || venuesRes.data?.totalPages) ? true : true);
+        setVenuePage(1);
+        setHasMoreEvents(!(evDone));
       } else {
+        setEventPage(nextEvent);
         setSvcPage(nextSvc);
         setMktPage(nextMkt);
         setVenuePage(nextVenue);
@@ -581,7 +586,8 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
           servicesRes.data?.pagination?.page >= servicesRes.data?.pagination?.pages;
         const mktDone = marketRes.data?.currentPage >= marketRes.data?.totalPages;
         const vnsDone = (venuesRes.data?.page || 1) >= (venuesRes.data?.totalPages || 1);
-        if (svcDone && mktDone && vnsDone) setHasMoreEvents(false);
+        // Keep loading while any source still has more
+        setHasMoreEvents(!(evDone && svcDone && mktDone && vnsDone));
       }
     } catch (e) {
       console.error('Failed to load events feed', e);

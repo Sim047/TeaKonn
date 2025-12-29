@@ -44,14 +44,30 @@ router.get("/", async (req, res) => {
     }
     // Optional field selection to slim payloads in preview lists
     const fieldsParam = String(req.query.fields || "").trim();
-    const selectFields = fieldsParam ? fieldsParam.split(/[,\s]+/).filter(Boolean).join(" ") : null;
+    const selectFields = fieldsParam ? fieldsParam.split(/[\,\s]+/).filter(Boolean).join(" ") : null;
 
-    const eventsQuery = Event.find(q)
-      .sort({ startDate: 1 })
-      .limit(50);
-    if (selectFields) eventsQuery.select(selectFields);
-    const events = await eventsQuery.populate("organizer", "username avatar");
-    res.json({ events });
+    // Pagination params
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
+    const skip = (page - 1) * limit;
+
+    const baseQuery = Event.find(q)
+      .sort({ startDate: -1 })
+      .skip(skip)
+      .limit(limit);
+    if (selectFields) baseQuery.select(selectFields);
+
+    const [events, total] = await Promise.all([
+      baseQuery.populate("organizer", "username avatar"),
+      Event.countDocuments(q),
+    ]);
+
+    res.json({
+      events,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      total,
+    });
   } catch (err) {
     console.error("Get events error:", err);
     res.status(500).json({ error: "Failed to fetch events" });
