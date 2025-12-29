@@ -238,11 +238,46 @@ export default function App() {
       if (view !== 'posts') params.delete('post');
       const qs = params.toString();
       const newUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
-      window.history.replaceState({}, '', newUrl);
+      window.history.replaceState({ view }, '', newUrl);
     } catch (e) {
       console.warn('Failed to sync view to URL:', e);
     }
   }, [view]);
+
+  // Centralized navigation: push history entry and update view
+  function navigateTo(newView: typeof view) {
+    setView(newView);
+    try {
+      const params = new URLSearchParams(window.location.search);
+      params.set('view', newView);
+      if (newView !== 'posts') params.delete('post');
+      const qs = params.toString();
+      const newUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
+      window.history.pushState({ view: newView }, '', newUrl);
+    } catch (e) {
+      console.warn('Failed to push navigation state:', e);
+    }
+  }
+
+  // Handle browser back/forward: update view from history state or URL
+  useEffect(() => {
+    const onPop = () => {
+      try {
+        const stateView = (window.history.state && window.history.state.view) || null;
+        if (stateView) {
+          setView(stateView as any);
+          return;
+        }
+        const params = new URLSearchParams(window.location.search);
+        const v = params.get('view');
+        if (v) setView(v as any);
+      } catch (e) {
+        console.warn('popstate handler failed:', e);
+      }
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   // Handle deep-link query params (e.g., ?view=posts&post=ID)
   useEffect(() => {
@@ -1775,7 +1810,7 @@ export default function App() {
           myStatus={myStatus}
           isOnline={user?._id ? onlineUsers.has(user._id) : false}
           onNavigate={(v) => {
-            setView(v as any);
+            navigateTo(v as any);
             setInDM(false);
             setActiveConversation(null);
           }}
@@ -1825,7 +1860,7 @@ export default function App() {
         {view === 'dashboard' && (
           <Dashboard
             token={token}
-            onNavigate={(newView: string) => setView(newView as any)}
+            onNavigate={(newView: string) => navigateTo(newView as any)}
             onViewProfile={showProfile}
           />
         )}
@@ -1835,27 +1870,27 @@ export default function App() {
           <MyActivities
             token={token}
             onOpenConversation={openConversation}
-            onNavigate={(newView: string) => setView(newView as any)}
+            onNavigate={(newView: string) => navigateTo(newView as any)}
             onToast={(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => setToast({ message, type })}
           />
         )}
         {view === 'my-events' && (
           <MyEvents
             token={token as any}
-            onNavigate={(newView: string) => setView(newView as any)}
+            onNavigate={(newView: string) => navigateTo(newView as any)}
           />
         )}
         {view === 'my-services' && (
           <MyServices
             token={token as any}
-            onNavigate={(newView: string) => setView(newView as any)}
+            onNavigate={(newView: string) => navigateTo(newView as any)}
             onToast={(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => setToast({ message, type })}
           />
         )}
         {view === 'my-products' && (
           <MyProducts
             token={token as any}
-            onNavigate={(newView: string) => setView(newView as any)}
+            onNavigate={(newView: string) => navigateTo(newView as any)}
             onToast={(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => setToast({ message, type })}
           />
         )}
@@ -1876,8 +1911,8 @@ export default function App() {
         {view === 'past-events' && (
           <PastEvents
             token={token as any}
-            onBack={() => setView('dashboard')}
-            onNavigate={(v: string) => setView(v as any)}
+            onBack={() => navigateTo('dashboard')}
+            onNavigate={(v: string) => navigateTo(v as any)}
           />
         )}
 
@@ -1885,8 +1920,8 @@ export default function App() {
         {view === 'other-events' && (
           <OtherEvents
             token={token as any}
-            onBack={() => setView('dashboard')}
-            onNavigate={(v: string) => setView(v as any)}
+            onBack={() => navigateTo('dashboard')}
+            onNavigate={(v: string) => navigateTo(v as any)}
           />
         )}
 
@@ -1935,12 +1970,12 @@ export default function App() {
             token={token}
             currentUserId={user?._id}
             onShowProfile={(u: any) => showProfile(u)}
-            onNavigate={(v: string) => setView(v as any)}
+            onNavigate={(v: string) => navigateTo(v as any)}
           />
         )}
 
         {view === 'user-content' && (
-          <UserContent token={token} onNavigate={(v: string) => setView(v as any)} />
+          <UserContent token={token} onNavigate={(v: string) => navigateTo(v as any)} />
         )}
 
         {/* DIRECT MESSAGES PAGE */}
@@ -1966,7 +2001,7 @@ export default function App() {
               token={token}
               onOpenRoom={(rid: string) => {
                 try { localStorage.setItem('auralink-open-room', rid); } catch {}
-                setView('chat');
+                navigateTo('chat');
               }}
             />
           </div>
@@ -2432,7 +2467,7 @@ export default function App() {
           token={token}
           onOpenConversation={(u: any) => startConversationWithUser(u._id)}
           currentUserId={user?._id}
-          onNavigate={(v: string) => setView(v as any)}
+          onNavigate={(v: string) => navigateTo(v as any)}
         />
       )}
 
