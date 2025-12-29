@@ -255,13 +255,43 @@ function UserCard({
   if (viewMode === 'list') {
     return (
       <div className="rounded-2xl p-3 hover:shadow-xl transition-all duration-300 hover:scale-[1.01] themed-card">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <div className="flex items-center gap-3">
           <img
             src={avatarUrl}
             alt={user.username}
             className="w-12 h-12 rounded-full object-cover ring-2 ring-teal-500/20 cursor-pointer shrink-0"
             onClick={onViewProfile}
           />
+
+          {!isCurrentUser && (
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={onMessage}
+                disabled={isProcessing}
+                className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 disabled:opacity-50"
+                title="Message"
+              >
+                <MessageCircle className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+              </button>
+
+              <button
+                onClick={onFollow}
+                disabled={isProcessing}
+                className={`p-2 rounded-xl transition-all duration-300 disabled:opacity-50 ${
+                  user.isFollowed
+                    ? 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    : 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 shadow-lg shadow-teal-500/30'
+                }`}
+                title={user.isFollowed ? 'Unfollow' : 'Follow'}
+              >
+                {user.isFollowed ? (
+                  <UserMinus className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+                ) : (
+                  <UserPlus className="w-4 h-4 text-white" />
+                )}
+              </button>
+            </div>
+          )}
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -282,79 +312,28 @@ function UserCard({
                   : 'No status')}
             </p>
           </div>
-
-          {!isCurrentUser && (
-            <div className="flex gap-2 w-full sm:w-auto shrink-0">
-              <button
-                onClick={onMessage}
-                disabled={isProcessing}
-                className="flex-1 sm:flex-initial p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 disabled:opacity-50"
-                title="Send message"
-              >
-                <MessageCircle className="w-4 h-4 text-gray-700 dark:text-gray-300" />
-              </button>
-
-              <button
-                onClick={onFollow}
-                disabled={isProcessing}
-                className={`flex-1 sm:flex-initial p-2 rounded-xl transition-all duration-300 disabled:opacity-50 ${
-                  user.isFollowed
-                    ? 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700'
-                    : 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 shadow-lg shadow-teal-500/30'
-                }`}
-                title={user.isFollowed ? 'Unfollow' : 'Follow'}
-              >
-                {user.isFollowed ? (
-                  <UserMinus className="w-4 h-4 text-gray-700 dark:text-gray-300" />
-                ) : (
-                  <UserPlus className="w-4 h-4 text-white" />
-                )}
-              </button>
-            </div>
-          )}
         </div>
       </div>
     );
   }
 
-  // Grid view
+  // Grid view - actions inline beside avatar
   return (
     <div className="rounded-2xl p-3 hover:shadow-xl transition-all duration-300 group hover:scale-[1.02] themed-card">
-      <div className="flex flex-col items-center text-center">
+      <div className="flex items-center gap-3">
         <img
           src={avatarUrl}
           alt={user.username}
-          className="w-12 h-12 rounded-full object-cover ring-2 ring-teal-500/20 mb-2 cursor-pointer group-hover:scale-110 transition-transform duration-300"
+          className="w-12 h-12 rounded-full object-cover ring-2 ring-teal-500/20 cursor-pointer group-hover:scale-110 transition-transform duration-300"
           onClick={onViewProfile}
         />
 
-        <div className="flex items-center gap-2 mb-1">
-          <h3
-            className="font-semibold text-heading cursor-pointer hover:text-teal-500 transition text-sm"
-            onClick={onViewProfile}
-          >
-            {user.username}
-          </h3>
-          {user.verified && <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />}
-        </div>
-
-        {user.sport && (
-          <p className="text-xs text-teal-600 dark:text-teal-400 mb-2 font-medium">{user.sport}</p>
-        )}
-
-        <p className="text-xs text-theme-secondary mb-2 line-clamp-1">
-          {user.bio ||
-            (userStatus
-              ? `${userStatus.emoji ? userStatus.emoji + ' ' : ''}${userStatus.mood || 'Status set'}`
-              : 'No status')}
-        </p>
-
         {!isCurrentUser && (
-          <div className="flex gap-2 w-full">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={onMessage}
               disabled={isProcessing}
-              className="flex-1 p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300 disabled:opacity-50 flex items-center justify-center"
+              className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300 disabled:opacity-50"
               title="Message"
             >
               <MessageCircle className="w-4 h-4" />
@@ -363,7 +342,7 @@ function UserCard({
             <button
               onClick={onFollow}
               disabled={isProcessing}
-              className={`flex-1 p-2 rounded-xl transition-all duration-300 disabled:opacity-50 flex items-center justify-center ${
+              className={`p-2 rounded-xl transition-all duration-300 disabled:opacity-50 ${
                 user.isFollowed
                   ? 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                   : 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-lg shadow-teal-500/30'
@@ -378,6 +357,29 @@ function UserCard({
             </button>
           </div>
         )}
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h3
+              className="font-semibold text-heading truncate cursor-pointer hover:text-teal-500 transition text-sm"
+              onClick={onViewProfile}
+            >
+              {user.username}
+            </h3>
+            {user.verified && <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />}
+          </div>
+
+          {user.sport && (
+            <p className="text-xs text-teal-600 dark:text-teal-400 font-medium truncate">{user.sport}</p>
+          )}
+
+          <p className="text-xs text-theme-secondary truncate">
+            {user.bio ||
+              (userStatus
+                ? `${userStatus.emoji ? userStatus.emoji + ' ' : ''}${userStatus.mood || 'Status set'}`
+                : 'No status')}
+          </p>
+        </div>
       </div>
     </div>
   );
