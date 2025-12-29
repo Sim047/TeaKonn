@@ -65,7 +65,11 @@ router.get("/search", async (req, res) => {
     }
 
     const [venues, total] = await Promise.all([
-      Venue.find(q).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Venue.find(q)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('owner', 'username avatar'),
       Venue.countDocuments(q),
     ]);
 

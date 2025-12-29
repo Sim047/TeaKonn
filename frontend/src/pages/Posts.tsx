@@ -323,6 +323,90 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [rotationSeed, setRotationSeed] = useState<number>(() => Date.now());
 
+  // Derived, memoized display lists (avoid hooks inside conditionals)
+  const visiblePosts = React.useMemo(() => {
+    const q = searchText.trim().toLowerCase();
+    const filtered = q
+      ? posts.filter((p) => {
+          const text = [
+            p.caption || '',
+            p.author?.username || '',
+            p.location || '',
+            ...(p.tags || []),
+          ].join(' ').toLowerCase();
+          return text.includes(q);
+        })
+      : posts;
+    if (sortMode === 'newest') {
+      return [...filtered].sort(
+        (a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf(),
+      );
+    }
+    if (sortMode === 'prioritized') {
+      return [...filtered].sort((a, b) => {
+        const sa = scorePost(a);
+        const sb = scorePost(b);
+        if (sa !== sb) return sb - sa;
+        const ta = dayjs(a.createdAt || 0).valueOf();
+        const tb = dayjs(b.createdAt || 0).valueOf();
+        if (ta !== tb) return tb - ta;
+        return seededNoise(a._id) - seededNoise(b._id);
+      });
+    }
+    return [...filtered].sort((a, b) => seededNoise(a._id) - seededNoise(b._id));
+  }, [posts, sortMode, searchText, followingIds, rotationSeed]);
+
+  const visibleEvents = React.useMemo(() => {
+    const q = searchText.trim().toLowerCase();
+    const filtered = q
+      ? eventFeed.filter((i) => {
+          const text = [
+            i.title || '',
+            i.subtitle || '',
+            i.user?.username || '',
+            i.priceHint || '',
+            i.dateHint || '',
+          ].join(' ').toLowerCase();
+          return text.includes(q);
+        })
+      : eventFeed;
+    const seed = rotationSeed;
+    if (sortMode === 'newest') {
+      return [...filtered].sort((a, b) => {
+        const ta = a.createdAt ? dayjs(a.createdAt).valueOf() : 0;
+        const tb = b.createdAt ? dayjs(b.createdAt).valueOf() : 0;
+        return tb - ta;
+      });
+    }
+    if (sortMode === 'prioritized') {
+      return [...filtered].sort((a, b) => {
+        const ta = a.createdAt ? dayjs(a.createdAt).valueOf() : 0;
+        const tb = b.createdAt ? dayjs(b.createdAt).valueOf() : 0;
+        const ageA = Math.max(0, (Date.now() - ta) / (1000 * 60 * 60));
+        const ageB = Math.max(0, (Date.now() - tb) / (1000 * 60 * 60));
+        const recA = 1 / (1 + ageA / 24);
+        const recB = 1 / (1 + ageB / 24);
+        const fA = a.user?._id && followingIds.has(String(a.user._id)) ? 1 : 0;
+        const fB = b.user?._id && followingIds.has(String(b.user._id)) ? 1 : 0;
+        const kA = seededNoise('kind:' + a.kind, seed);
+        const kB = seededNoise('kind:' + b.kind, seed);
+        const iA = seededNoise(a.kind + ':' + a.id, seed);
+        const iB = seededNoise(b.kind + ':' + b.id, seed);
+        const sA = recA * 0.6 + fA * 0.25 + kA * 0.1 + iA * 0.05;
+        const sB = recB * 0.6 + fB * 0.25 + kB * 0.1 + iB * 0.05;
+        if (sA !== sB) return sB - sA;
+        if (ta !== tb) return tb - ta;
+        return (
+          seededNoise(a.kind + ':' + a.id, seed) - seededNoise(b.kind + ':' + b.id, seed)
+        );
+      });
+    }
+    return [...filtered].sort(
+      (a, b) =>
+        seededNoise(a.kind + ':' + a.id, seed) - seededNoise(b.kind + ':' + b.id, seed),
+    );
+  }, [eventFeed, sortMode, searchText, followingIds, rotationSeed]);
+
   // Load following once (used to prioritize followed authors)
   useEffect(() => {
     async function fetchFollowing() {
@@ -486,6 +570,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
 
   function makeUser(u: any) {
     if (!u) return undefined;
+    if (typeof u === 'string') return { _id: u, username: 'Owner' } as any;
     return { _id: u._id || u.id, username: u.username, avatar: u.avatar };
   }
 
@@ -563,7 +648,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
       subtitle,
       createdAt: v.createdAt,
       imageUrl,
-      user: undefined,
+      user: makeUser(v.owner),
       raw: v,
     };
   }
@@ -1162,35 +1247,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                 </div>
               </div>
             )}
-            {React.useMemo(() => {
-              const q = searchText.trim().toLowerCase();
-              const filtered = q
-                ? posts.filter((p) => {
-                    const text = [
-                      p.caption || '',
-                      p.author?.username || '',
-                      p.location || '',
-                      ...(p.tags || []),
-                    ].join(' ').toLowerCase();
-                    return text.includes(q);
-                  })
-                : posts;
-              const sorted =
-                sortMode === 'newest'
-                  ? [...filtered].sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf())
-                  : sortMode === 'prioritized'
-                    ? [...filtered].sort((a, b) => {
-                        const sa = scorePost(a);
-                        const sb = scorePost(b);
-                        if (sa !== sb) return sb - sa;
-                        const ta = dayjs(a.createdAt || 0).valueOf();
-                        const tb = dayjs(b.createdAt || 0).valueOf();
-                        if (ta !== tb) return tb - ta;
-                        return seededNoise(a._id) - seededNoise(b._id);
-                      })
-                    : [...filtered].sort((a, b) => seededNoise(a._id) - seededNoise(b._id));
-              return sorted;
-            }, [posts, sortMode, searchText]).map((post) => (
+            {visiblePosts.map((post) => (
               <div
                 key={post._id}
                 id={`post-${post._id}`}
@@ -1814,51 +1871,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
               </div>
             ) : (
               <>
-                {React.useMemo(() => {
-                  const q = searchText.trim().toLowerCase();
-                  const filtered = q
-                    ? eventFeed.filter((i) => {
-                        const text = [
-                          i.title || '',
-                          i.subtitle || '',
-                          i.user?.username || '',
-                          i.priceHint || '',
-                          i.dateHint || '',
-                        ].join(' ').toLowerCase();
-                        return text.includes(q);
-                      })
-                    : eventFeed;
-                  const seed = (Date.now() ^ Math.floor(Math.random() * 0x7fffffff)) >>> 0;
-                  const sorted =
-                    sortMode === 'newest'
-                      ? [...filtered].sort((a, b) => {
-                          const ta = a.createdAt ? dayjs(a.createdAt).valueOf() : 0;
-                          const tb = b.createdAt ? dayjs(b.createdAt).valueOf() : 0;
-                          return tb - ta;
-                        })
-                      : sortMode === 'prioritized'
-                        ? [...filtered].sort((a, b) => {
-                            const ta = a.createdAt ? dayjs(a.createdAt).valueOf() : 0;
-                            const tb = b.createdAt ? dayjs(b.createdAt).valueOf() : 0;
-                            const ageA = Math.max(0, (Date.now() - ta) / (1000 * 60 * 60));
-                            const ageB = Math.max(0, (Date.now() - tb) / (1000 * 60 * 60));
-                            const recA = 1 / (1 + ageA / 24);
-                            const recB = 1 / (1 + ageB / 24);
-                            const fA = a.user?._id && followingIds.has(String(a.user._id)) ? 1 : 0;
-                            const fB = b.user?._id && followingIds.has(String(b.user._id)) ? 1 : 0;
-                            const kA = seededNoise('kind:' + a.kind, seed);
-                            const kB = seededNoise('kind:' + b.kind, seed);
-                            const iA = seededNoise(a.kind + ':' + a.id, seed);
-                            const iB = seededNoise(b.kind + ':' + b.id, seed);
-                            const sA = recA * 0.6 + fA * 0.25 + kA * 0.1 + iA * 0.05;
-                            const sB = recB * 0.6 + fB * 0.25 + kB * 0.1 + iB * 0.05;
-                            if (sA !== sB) return sB - sA;
-                            if (ta !== tb) return tb - ta;
-                            return seededNoise(a.kind + ':' + a.id, seed) - seededNoise(b.kind + ':' + b.id, seed);
-                          })
-                        : [...filtered].sort((a, b) => seededNoise(a.kind + ':' + a.id, seed) - seededNoise(b.kind + ':' + b.id, seed));
-                  return sorted;
-                }, [eventFeed, sortMode, searchText, followingIds]).map((item) => (
+                {visibleEvents.map((item) => (
                   <div
                     key={`${item.kind}:${item.id}`}
                     className="rounded-2xl themed-card overflow-hidden border hover:shadow-xl hover:-translate-y-[2px] transition-all"
