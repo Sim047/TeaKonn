@@ -107,6 +107,41 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
   const [mktPage, setMktPage] = useState<number>(1);
   const [venuePage, setVenuePage] = useState<number>(1);
   const [hasMoreEvents, setHasMoreEvents] = useState<boolean>(true);
+  
+  // Persist tab across refresh and back/forward via URL query (?tab=events)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const t = params.get('tab');
+      if (t === 'events') setTab('events');
+    } catch {}
+  }, []);
+  
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (tab === 'events') params.set('tab', 'events');
+      else params.delete('tab');
+      const qs = params.toString();
+      const newUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
+      const prevState = window.history.state || {};
+      // Push a history entry so Back returns to previous tab/view
+      window.history.pushState({ ...prevState, tab }, '', newUrl);
+    } catch {}
+  }, [tab]);
+  
+  useEffect(() => {
+    const onPop = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get('tab');
+        if (t === 'events') setTab('events');
+        else setTab('posts');
+      } catch {}
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   // Detail modals state
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
