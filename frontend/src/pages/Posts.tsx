@@ -1134,25 +1134,27 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
     <div className="min-h-screen themed-page p-4 sm:p-6">
       <div className="max-w-3xl lg:max-w-4xl mx-auto">
         {/* Header + Tabs */}
-        <div className="flex items-center justify-between mb-3">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-            Feed
-          </h1>
-          <div className="flex items-center">
+        <div className="mb-2">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+              Feed
+            </h1>
+          </div>
+          <div className="mt-2">
             <div
-              className="flex items-center gap-2 rounded-full border themed-card px-2 py-1 overflow-x-auto whitespace-nowrap"
+              className="flex items-center gap-1.5 rounded-full border themed-card px-2 py-0.5 overflow-x-auto whitespace-nowrap"
               style={{ borderColor: 'var(--border)' }}
             >
               <div className="flex rounded-full border overflow-hidden flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
                 <button
-                  className={`px-2 py-1 text-xs ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                  className={`px-2 py-0.5 text-[11px] ${sortMode === 'prioritized' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
                   onClick={() => setSortMode(sortMode === 'prioritized' ? 'random' : 'prioritized')}
                   aria-pressed={sortMode === 'prioritized'}
                 >
                   Prioritized
                 </button>
                 <button
-                  className={`px-2 py-1 text-xs ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
+                  className={`px-2 py-0.5 text-[11px] ${sortMode === 'newest' ? 'bg-cyan-600 text-white' : 'themed-card'}`}
                   onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
                   aria-pressed={sortMode === 'newest'}
                 >
@@ -1161,7 +1163,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
               </div>
               <input
                 type="text"
-                className="input h-8 text-xs w-32 sm:w-56 min-w-0 flex-shrink"
+                className="input h-7 text-xs w-28 sm:w-56 min-w-0 flex-shrink"
                 placeholder="Search posts & events"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
@@ -1170,22 +1172,22 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                 <button
                   onClick={() => setCreateModalOpen(true)}
                   aria-label="Create post"
-                  className="p-2 rounded-full themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all flex-shrink-0"
+                  className="p-1.5 rounded-full themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all flex-shrink-0"
                   style={{ borderColor: 'var(--border)' }}
                   title="Create post"
                 >
-                  <Plus className="w-5 h-5 text-theme-secondary" />
+                  <Plus className="w-4 h-4 text-theme-secondary" />
                 </button>
               ) : (
                 <button
                   onClick={() => loadEventFeed(true)}
                   aria-label="Refresh events"
-                  className="p-2 rounded-full themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all flex-shrink-0"
+                  className="p-1.5 rounded-full themed-card border hover:shadow-md hover:-translate-y-[1px] transition-all flex-shrink-0"
                   style={{ borderColor: 'var(--border)' }}
                   disabled={eventsLoading}
                   title="Refresh"
                 >
-                  <RefreshCcw className="w-5 h-5 text-theme-secondary" />
+                  <RefreshCcw className="w-4 h-4 text-theme-secondary" />
                 </button>
               )}
             </div>
