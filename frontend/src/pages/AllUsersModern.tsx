@@ -319,12 +319,12 @@ function UserCard({
 
   // Grid view
   return (
-    <div className="rounded-2xl p-4 hover:shadow-xl transition-all duration-300 group hover:scale-[1.02] themed-card">
+    <div className="rounded-2xl p-3 hover:shadow-xl transition-all duration-300 group hover:scale-[1.02] themed-card">
       <div className="flex flex-col items-center text-center">
         <img
           src={avatarUrl}
           alt={user.username}
-          className="w-14 h-14 rounded-full object-cover ring-2 ring-teal-500/20 mb-3 cursor-pointer group-hover:scale-110 transition-transform duration-300"
+          className="w-12 h-12 rounded-full object-cover ring-2 ring-teal-500/20 mb-2 cursor-pointer group-hover:scale-110 transition-transform duration-300"
           onClick={onViewProfile}
         />
 
@@ -342,7 +342,7 @@ function UserCard({
           <p className="text-xs text-teal-600 dark:text-teal-400 mb-2 font-medium">{user.sport}</p>
         )}
 
-        <p className="text-sm text-theme-secondary mb-3 line-clamp-2 min-h-[24px]">
+        <p className="text-xs text-theme-secondary mb-2 line-clamp-1">
           {user.bio ||
             (userStatus
               ? `${userStatus.emoji ? userStatus.emoji + ' ' : ''}${userStatus.mood || 'Status set'}`
@@ -354,31 +354,26 @@ function UserCard({
             <button
               onClick={onMessage}
               disabled={isProcessing}
-              className="flex-1 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300 disabled:opacity-50 flex items-center justify-center"
+              title="Message"
             >
               <MessageCircle className="w-4 h-4" />
-              <span className="text-sm">Message</span>
             </button>
 
             <button
               onClick={onFollow}
               disabled={isProcessing}
-              className={`flex-1 px-3 py-1.5 rounded-xl font-medium transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2 ${
+              className={`flex-1 p-2 rounded-xl transition-all duration-300 disabled:opacity-50 flex items-center justify-center ${
                 user.isFollowed
                   ? 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                   : 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-lg shadow-teal-500/30'
               }`}
+              title={user.isFollowed ? 'Unfollow' : 'Follow'}
             >
               {user.isFollowed ? (
-                <>
-                  <UserMinus className="w-4 h-4" />
-                  <span className="text-sm">Unfollow</span>
-                </>
+                <UserMinus className="w-4 h-4" />
               ) : (
-                <>
-                  <UserPlus className="w-4 h-4" />
-                  <span className="text-sm">Follow</span>
-                </>
+                <UserPlus className="w-4 h-4" />
               )}
             </button>
           </div>
