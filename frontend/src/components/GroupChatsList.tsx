@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { Users2 } from 'lucide-react';
 import { API_URL } from '../config/api';
 import { socket } from '../socket';
 
@@ -135,10 +136,12 @@ export default function GroupChatsList({ token, onOpenRoom }: GroupChatsListProp
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-12 text-slate-600 dark:text-slate-400">
-          <div className="text-4xl mb-3">👥</div>
-          <div>No active group chats</div>
-          <div className="text-xs mt-2">Join events to see their chats here</div>
+        <div className="text-center py-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 dark:bg-slate-800/60 border border-white/20 text-cyan-400 shadow-sm mb-3">
+            <Users2 className="w-9 h-9" />
+          </div>
+          <div className="text-heading font-semibold">No active group chats</div>
+          <div className="text-xs text-theme-secondary mt-2">Join events to see their chats here</div>
         </div>
       ) : (
         filtered.map((ev: any) => {

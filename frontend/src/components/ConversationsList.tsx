@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { API_URL } from '../config/api';
 import Avatar from './Avatar';
-import { Trash2, MessageSquareOff } from 'lucide-react';
+import { Trash2, MessageSquareOff, MessageSquare } from 'lucide-react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { socket } from '../socket';
@@ -430,10 +430,12 @@ export default function ConversationsList({
           ))}
         </div>
       ) : conversations.length === 0 ? (
-        <div className="text-center py-12 text-slate-600 dark:text-slate-400">
-          <div className="text-4xl mb-3">💬</div>
-          <div>No conversations yet</div>
-          <div className="text-xs mt-2">Start chatting with users from the All Users page</div>
+        <div className="text-center py-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 dark:bg-slate-800/60 border border-white/20 text-cyan-400 shadow-sm mb-3">
+            <MessageSquare className="w-9 h-9" />
+          </div>
+          <div className="text-heading font-semibold">No conversations yet</div>
+          <div className="text-xs text-theme-secondary mt-2">Start chatting with users from the All Users page</div>
         </div>
       ) : (
         visible.map((c: any) => {
@@ -450,13 +452,13 @@ export default function ConversationsList({
               key={c._id}
               className={`
                 flex flex-col sm:flex-row sm:items-center sm:justify-between 
-                p-3 sm:p-4 rounded-lg 
+                p-3 sm:p-4 rounded-xl 
                 bg-white dark:bg-slate-800
-                border-2 transition-all
+                border transition-all
                 ${
                   unreadCount > 0
                     ? 'border-emerald-400 dark:border-emerald-500 shadow-md shadow-emerald-100 dark:shadow-emerald-900/30'
-                    : 'border-gray-200 dark:border-gray-700 hover:shadow-md'
+                    : 'border-gray-200 dark:border-gray-700 hover:shadow-lg hover:ring-1 hover:ring-cyan-400/30'
                 }
                 gap-3 relative
               `}
@@ -468,7 +470,7 @@ export default function ConversationsList({
             >
               {/* Unread Badge */}
               {unreadCount > 0 && (
-                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-emerald-500 to-indigo-600 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center shadow-lg animate-pulse">
+                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-emerald-500 to-indigo-600 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center shadow-lg">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </div>
               )}
