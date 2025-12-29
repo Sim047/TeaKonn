@@ -5,6 +5,7 @@ import CreateVenueModal from '../components/CreateVenueModal';
 import CreateEventModal from '../components/CreateEventModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { MapPin, Users, Search as SearchIcon } from 'lucide-react';
+import SearchBar from '../components/SearchBar';
 
 export default function MyVenues({ token, onToast, onNavigate, onCountChange, onUpdated, onOpenConversation }: { token: string | null, onToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void, onNavigate?: (view: string) => void, onCountChange?: (count: number) => void, onUpdated?: () => void, onOpenConversation?: (conv: any) => void }) {
   const btn = (variant: 'primary' | 'success' | 'danger' | 'outline' | 'warning' | 'ghost', size: 'sm' | 'md' = 'md') => {

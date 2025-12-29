@@ -3,6 +3,7 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { ArrowLeft, Calendar, MapPin, Users, Search, Loader } from 'lucide-react';
+import SearchBar from '../components/SearchBar';
 import { API_URL } from '../config/api';
 
 dayjs.extend(relativeTime);

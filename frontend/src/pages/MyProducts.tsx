@@ -4,6 +4,7 @@ import { API_URL } from '../config/api';
 import CreateProductModal from '../components/CreateProductModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { MapPin, Package, DollarSign, Tag } from 'lucide-react';
+import SearchBar from '../components/SearchBar';
 
 interface MyProductsProps {
   token: string | null;

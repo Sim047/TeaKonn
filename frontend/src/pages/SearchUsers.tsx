@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { getUserSubtitle } from '../utils/userDisplay';
 import axios from 'axios';
 import { API_URL } from '../config/api';
+import SearchBar from '../components/SearchBar';
 
 const API = API_URL.replace(/\/api$/, '');
 const PLACEHOLDER = 'https://placehold.co/48x48?text=U';

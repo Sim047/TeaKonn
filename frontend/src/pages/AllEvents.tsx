@@ -18,6 +18,7 @@ import {
   DollarSign,
   Search,
 } from 'lucide-react';
+import SearchBar from '../components/SearchBar';
 
 dayjs.extend(relativeTime);
 

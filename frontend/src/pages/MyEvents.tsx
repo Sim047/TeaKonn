@@ -27,6 +27,7 @@ import CreateServiceModal from '../components/CreateServiceModal';
 import CreateProductModal from '../components/CreateProductModal';
 import EventParticipantsModal from '../components/EventParticipantsModal';
 import NotificationToast from '../components/NotificationToast';
+import SearchBar from '../components/SearchBar';
 
 const API = API_URL.replace(/\/api$/, '');
 

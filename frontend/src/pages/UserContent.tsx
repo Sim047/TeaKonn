@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../config/api';
+import SearchBar from '../components/SearchBar';
 
 const API = API_URL.replace(/\/api$/, '');
 

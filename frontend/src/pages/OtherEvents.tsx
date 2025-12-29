@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Calendar, MapPin, ArrowLeft, Search, Users } from 'lucide-react';
 import EventDetailModal from '../components/EventDetailModal';
+import SearchBar from '../components/SearchBar';
 import { API_URL } from '../config/api';
 
 dayjs.extend(relativeTime);

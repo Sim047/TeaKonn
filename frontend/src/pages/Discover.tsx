@@ -38,6 +38,7 @@ import ServiceDetailModal from '../components/ServiceDetailModal';
 import ProductDetailModal from '../components/ProductDetailModal';
 import EventDetailModal from '../components/EventDetailModal';
 import EventParticipantsModal from '../components/EventParticipantsModal';
+import SearchBar from '../components/SearchBar';
 import NotificationToast from '../components/NotificationToast';
 
 dayjs.extend(relativeTime);

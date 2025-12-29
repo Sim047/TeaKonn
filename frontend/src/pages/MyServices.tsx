@@ -4,6 +4,7 @@ import { API_URL } from '../config/api';
 import CreateServiceModal from '../components/CreateServiceModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { MapPin, BadgeCheck, ClipboardList, DollarSign, Tag } from 'lucide-react';
+import SearchBar from '../components/SearchBar';
 
 interface MyServicesProps {
   token: string | null;
