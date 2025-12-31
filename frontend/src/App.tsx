@@ -1300,6 +1300,8 @@ export default function App() {
     }
 
     try {
+      // Show a quick toast while opening chat
+      setToast({ message: 'Opening chat…', type: 'info' });
       console.log('[App] Creating conversation with partnerId:', userId);
       const res = await axios.post(
         API + '/api/conversations',
@@ -1309,8 +1311,12 @@ export default function App() {
 
       console.log('[App] Conversation created/fetched:', res.data);
       openConversation(res.data);
+      // Optional success toast once chat is opened
+      setToast({ message: 'Chat opened', type: 'success' });
     } catch (e) {
       console.error('[App] Could not start conversation', e);
+      // Show error toast; keep alert for visibility
+      setToast({ message: 'Unable to start conversation', type: 'error' });
       alert('Unable to start conversation');
     }
   }
