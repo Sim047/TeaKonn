@@ -5,6 +5,8 @@ import User from "../models/User.js";
 import auth from "../middleware/auth.js";
 
 const router = express.Router();
+// Enforce a server-side max length for replies to match frontend
+const REPLY_MAX = parseInt(process.env.REPLY_MAX || "200", 10);
 
 // Get all posts (feed) with pagination
 router.get("/", auth, async (req, res) => {
@@ -353,6 +355,9 @@ router.post("/:id/comment/:commentId/reply", auth, async (req, res) => {
     if (!text || text.trim() === "") {
       return res.status(400).json({ error: "Reply text is required" });
     }
+    if (text.trim().length > REPLY_MAX) {
+      return res.status(400).json({ error: `Reply exceeds maximum length (${REPLY_MAX})` });
+    }
 
     const post = await Post.findById(req.params.id);
 
@@ -402,6 +407,9 @@ router.put("/:id/comment/:commentId/reply/:replyId", auth, async (req, res) => {
 
     if (!text || text.trim() === "") {
       return res.status(400).json({ error: "Reply text is required" });
+    }
+    if (text.trim().length > REPLY_MAX) {
+      return res.status(400).json({ error: `Reply exceeds maximum length (${REPLY_MAX})` });
     }
 
     const post = await Post.findById(req.params.id);
