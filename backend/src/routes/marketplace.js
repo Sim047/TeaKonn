@@ -162,6 +162,10 @@ router.post("/", auth, async (req, res) => {
     res.status(201).json(item);
   } catch (err) {
     console.error("Create marketplace item error:", err);
+    if (err?.name === 'ValidationError') {
+      const details = Object.values(err.errors || {}).map((e) => e.message);
+      return res.status(400).json({ error: 'Validation failed', details });
+    }
     res.status(500).json({ error: "Failed to create item" });
   }
 });
@@ -224,6 +228,10 @@ router.put("/:id", auth, async (req, res) => {
     res.json(item);
   } catch (err) {
     console.error("Update marketplace item error:", err);
+    if (err?.name === 'ValidationError') {
+      const details = Object.values(err.errors || {}).map((e) => e.message);
+      return res.status(400).json({ error: 'Validation failed', details });
+    }
     res.status(500).json({ error: "Failed to update item" });
   }
 });

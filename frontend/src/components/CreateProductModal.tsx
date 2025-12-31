@@ -93,6 +93,17 @@ export default function CreateProductModal({
     setLoading(true);
 
     try {
+      // Frontend validation for required selections not covered by HTML attributes
+      if (!formData.category) {
+        setError('Please select a category');
+        setLoading(false);
+        return;
+      }
+      if (!formData.location || !formData.location.trim()) {
+        setError('Please provide a location');
+        setLoading(false);
+        return;
+      }
       const productData = {
         title: formData.title,
         description: formData.description,
@@ -368,6 +379,7 @@ export default function CreateProductModal({
                 value={formData.location}
                 onChange={handleChange}
                 placeholder="e.g., Nairobi, Lagos"
+                required
                 className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-green-400/50"
               />
             </div>
