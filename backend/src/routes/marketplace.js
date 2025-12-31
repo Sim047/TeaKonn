@@ -99,6 +99,7 @@ router.post("/", auth, async (req, res) => {
       description,
       category,
       price,
+      currency,
       condition,
       images,
       location,
@@ -112,18 +113,35 @@ router.post("/", auth, async (req, res) => {
       contactPreference
     } = req.body;
 
+    // Basic validation to return clear 400s instead of generic 500s
+    const missing = [];
+    if (!title || !String(title).trim()) missing.push("title");
+    if (!description || !String(description).trim()) missing.push("description");
+    if (!category || !String(category).trim()) missing.push("category");
+    if (price === undefined || price === null || isNaN(Number(price))) missing.push("price");
+    if (!condition || !String(condition).trim()) missing.push("condition");
+    if (!location || !String(location).trim()) missing.push("location");
+
+    if (missing.length) {
+      return res.status(400).json({
+        error: `Missing or invalid fields: ${missing.join(", ")}`,
+        fields: missing,
+      });
+    }
+
     const item = new Marketplace({
       seller: req.user.id,
       title,
       description,
       category,
-      price,
+      price: Number(price),
+      currency: currency || "USD",
       condition,
       images: images || [],
       location,
-      shippingAvailable: shippingAvailable || false,
-      shippingCost: shippingCost || 0,
-      quantity: quantity || 1,
+      shippingAvailable: !!shippingAvailable,
+      shippingCost: shippingAvailable ? Number(shippingCost || 0) : 0,
+      quantity: quantity !== undefined ? Number(quantity) : 1,
       brand,
       size,
       color,
@@ -167,6 +185,7 @@ router.put("/:id", auth, async (req, res) => {
       description,
       category,
       price,
+      currency,
       condition,
       images,
       location,
@@ -184,13 +203,14 @@ router.put("/:id", auth, async (req, res) => {
     if (title) item.title = title;
     if (description) item.description = description;
     if (category) item.category = category;
-    if (price !== undefined) item.price = price;
+    if (price !== undefined) item.price = Number(price);
+    if (currency) item.currency = currency;
     if (condition) item.condition = condition;
     if (images) item.images = images;
     if (location) item.location = location;
     if (shippingAvailable !== undefined) item.shippingAvailable = shippingAvailable;
-    if (shippingCost !== undefined) item.shippingCost = shippingCost;
-    if (quantity !== undefined) item.quantity = quantity;
+    if (shippingCost !== undefined) item.shippingCost = Number(shippingCost);
+    if (quantity !== undefined) item.quantity = Number(quantity);
     if (brand) item.brand = brand;
     if (size) item.size = size;
     if (color) item.color = color;
