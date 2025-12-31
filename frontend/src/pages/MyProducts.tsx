@@ -157,7 +157,15 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
                     </div>
                     <div className="mt-2 flex items-center gap-2 text-sm text-theme-secondary">
                       <DollarSign className="w-4 h-4 text-[var(--accent-amber)]" />
-                      <span>{p.price !== undefined ? `${p.currency || 'USD'} ${p.price}` : 'N/A'}</span>
+                      <span>
+                        {p.price !== undefined
+                          ? new Intl.NumberFormat(undefined, {
+                              style: 'currency',
+                              currency: p.currency || 'USD',
+                              maximumFractionDigits: 2,
+                            }).format(Number(p.price || 0))
+                          : 'N/A'}
+                      </span>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button className="btn inline-flex items-center px-3 py-2 w-full sm:w-auto" onClick={() => { setEditingProduct(p); setOpenCreate(true); }}>
@@ -198,7 +206,16 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
             <div className="p-4 space-y-2 text-sm text-gray-700 dark:text-gray-200">
               <div>Location: {selectedProduct.location || 'N/A'}</div>
               <div>Status: {selectedProduct.status}</div>
-              <div>Price: {selectedProduct.price !== undefined ? selectedProduct.price : 'N/A'}</div>
+              <div>
+                Price:{' '}
+                {selectedProduct.price !== undefined
+                  ? new Intl.NumberFormat(undefined, {
+                      style: 'currency',
+                      currency: selectedProduct.currency || 'USD',
+                      maximumFractionDigits: 2,
+                    }).format(Number(selectedProduct.price || 0))
+                  : 'N/A'}
+              </div>
               {selectedProduct.description && <div className="mt-2 text-gray-700 dark:text-gray-200">{selectedProduct.description}</div>}
             </div>
             <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex gap-2 justify-end">

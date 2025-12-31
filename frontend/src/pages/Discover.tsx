@@ -1530,8 +1530,11 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
 
                     <div className="flex items-center justify-between mb-3">
                       <div className="text-2xl font-bold text-heading">
-                        ${item.price}
-                        <span className="text-xs text-theme-secondary ml-1">{item.currency}</span>
+                        {new Intl.NumberFormat(undefined, {
+                          style: 'currency',
+                          currency: item.currency || 'USD',
+                          maximumFractionDigits: 2,
+                        }).format(Number(item.price || 0))}
                       </div>
                       <button
                         onClick={(e) => {

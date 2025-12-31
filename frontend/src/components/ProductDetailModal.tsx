@@ -165,8 +165,11 @@ export default function ProductDetailModal({
               {/* Price */}
               <div className="bg-gradient-to-br from-green-500/10 to-emerald-600/10 backdrop-blur rounded-xl p-5 border border-green-500/30">
                 <p className="text-4xl font-bold text-green-400">
-                  ${product.price}
-                  <span className="text-lg text-gray-400 ml-2">{product.currency}</span>
+                  {new Intl.NumberFormat(undefined, {
+                    style: 'currency',
+                    currency: product.currency || 'USD',
+                    maximumFractionDigits: 2,
+                  }).format(Number(product.price || 0))}
                 </p>
               </div>
 
@@ -272,7 +275,13 @@ export default function ProductDetailModal({
                   <p className="text-blue-400 font-semibold mb-1">✓ Shipping Available</p>
                   {product.shippingCost !== undefined && (
                     <p className="text-gray-300 text-sm">
-                      Shipping: ${product.shippingCost === 0 ? 'Free' : product.shippingCost}
+                      Shipping: {product.shippingCost === 0
+                        ? 'Free'
+                        : new Intl.NumberFormat(undefined, {
+                            style: 'currency',
+                            currency: product.currency || 'USD',
+                            maximumFractionDigits: 2,
+                          }).format(Number(product.shippingCost || 0))}
                     </p>
                   )}
                 </div>
