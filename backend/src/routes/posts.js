@@ -395,6 +395,86 @@ router.post("/:id/comment/:commentId/reply", auth, async (req, res) => {
   }
 });
 
+// Edit a reply on a comment
+router.put("/:id/comment/:commentId/reply/:replyId", auth, async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    if (!text || text.trim() === "") {
+      return res.status(400).json({ error: "Reply text is required" });
+    }
+
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+
+    const comment = post.comments.id(req.params.commentId);
+    if (!comment) return res.status(404).json({ error: "Comment not found" });
+
+    const reply = (comment.replies || []).find(
+      (r) => String(r._id) === String(req.params.replyId)
+    );
+    if (!reply) return res.status(404).json({ error: "Reply not found" });
+
+    // Only the reply author can edit
+    if (String(reply.user) !== String(req.user.id)) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    reply.text = text.trim();
+    await post.save();
+    await post.populate("author", "username avatar email");
+    await post.populate("comments.user", "username avatar");
+    await post.populate("comments.replies.user", "username avatar");
+
+    const io = req.app.get("io");
+    if (io) io.emit("comment_reply_edited", { postId: post._id, commentId: req.params.commentId, replyId: req.params.replyId });
+
+    res.json(post);
+  } catch (err) {
+    console.error("Edit reply error:", err);
+    res.status(500).json({ error: "Failed to edit reply" });
+  }
+});
+
+// Delete a reply on a comment
+router.delete("/:id/comment/:commentId/reply/:replyId", auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+
+    const comment = post.comments.id(req.params.commentId);
+    if (!comment) return res.status(404).json({ error: "Comment not found" });
+
+    const idx = (comment.replies || []).findIndex(
+      (r) => String(r._id) === String(req.params.replyId)
+    );
+    if (idx === -1) return res.status(404).json({ error: "Reply not found" });
+
+    const reply = comment.replies[idx];
+    // Reply author or post author can delete
+    if (
+      String(reply.user) !== String(req.user.id) &&
+      String(post.author) !== String(req.user.id)
+    ) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    comment.replies.splice(idx, 1);
+    await post.save();
+    await post.populate("author", "username avatar email");
+    await post.populate("comments.user", "username avatar");
+    await post.populate("comments.replies.user", "username avatar");
+
+    const io = req.app.get("io");
+    if (io) io.emit("comment_reply_deleted", { postId: post._id, commentId: req.params.commentId, replyId: req.params.replyId });
+
+    res.json(post);
+  } catch (err) {
+    console.error("Delete reply error:", err);
+    res.status(500).json({ error: "Failed to delete reply" });
+  }
+});
+
 // Add comment
 router.post("/:id/comment", auth, async (req, res) => {
   try {
