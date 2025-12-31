@@ -53,12 +53,14 @@ interface Post {
     text: string;
     likes?: string[];
     replies?: Array<{
+      _id?: string;
       user: {
         _id: string;
         username: string;
         avatar?: string;
       };
       text: string;
+      likes?: string[];
       createdAt: string;
     }>;
     createdAt: string;
@@ -308,6 +310,11 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const REPLY_MAX = 200;
+  const [editingReply, setEditingReply] = useState<{
+    commentId: string;
+    replyId: string;
+    text: string;
+  } | null>(null);
 
   // Scroll to top state
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -1091,6 +1098,83 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
     }
   }
 
+  function startEditReply(commentId: string, reply: any) {
+    const text = reply.text || '';
+    setEditingReply({ commentId, replyId: String(reply._id || ''), text });
+  }
+
+  async function handleSaveReply(postId: string) {
+    if (!editingReply) return;
+    const { commentId, replyId, text } = editingReply;
+    if (!text.trim()) return;
+
+    const prev = posts;
+    // Optimistic update
+    setPosts((list) =>
+      list.map((p) => {
+        if (p._id !== postId) return p;
+        return {
+          ...p,
+          comments: p.comments.map((c) => {
+            if (c._id !== commentId) return c;
+            return {
+              ...c,
+              replies: (c.replies || []).map((r: any) =>
+                String(r._id) === String(replyId) ? { ...r, text } : r,
+              ),
+            };
+          }),
+        };
+      }),
+    );
+
+    try {
+      const res = await axios.put(
+        `${API}/api/posts/${postId}/comment/${commentId}/reply/${replyId}`,
+        { text },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      setPosts((list) => list.map((p) => (p._id === postId ? res.data : p)));
+      setEditingReply(null);
+    } catch (err) {
+      console.error('Failed to edit reply:', err);
+      alert('Failed to edit reply');
+      setPosts(prev);
+    }
+  }
+
+  async function handleDeleteReply(postId: string, commentId: string, replyId: string) {
+    if (!confirm('Delete this reply?')) return;
+
+    const prev = posts;
+    // Optimistic remove
+    setPosts((list) =>
+      list.map((p) => {
+        if (p._id !== postId) return p;
+        return {
+          ...p,
+          comments: p.comments.map((c) =>
+            c._id === commentId
+              ? { ...c, replies: (c.replies || []).filter((r: any) => String(r._id) !== String(replyId)) }
+              : c,
+          ),
+        };
+      }),
+    );
+
+    try {
+      const res = await axios.delete(
+        `${API}/api/posts/${postId}/comment/${commentId}/reply/${replyId}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      setPosts((list) => list.map((p) => (p._id === postId ? res.data : p)));
+    } catch (err) {
+      console.error('Failed to delete reply:', err);
+      alert('Failed to delete reply');
+      setPosts(prev);
+    }
+  }
+
   function toggleComments(postId: string) {
     setExpandedComments((prev) => ({
       ...prev,
@@ -1695,54 +1779,112 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                                                   <span className="font-semibold text-xs text-heading mr-1">
                                                     {reply.user.username}
                                                   </span>
-                                                  <div className="text-xs text-theme-secondary">
-                                                    <div
-                                                      className="break-words whitespace-pre-wrap hyphens-auto max-w-full"
-                                                      style={{
-                                                        display: expandedReplyText[comment._id]?.[
-                                                          idx
-                                                        ]
-                                                          ? 'block'
-                                                          : '-webkit-box',
-                                                        WebkitLineClamp: expandedReplyText[
-                                                          comment._id
-                                                        ]?.[idx]
-                                                          ? undefined
-                                                          : 3,
-                                                        WebkitBoxOrient: 'vertical' as any,
-                                                        overflow: expandedReplyText[comment._id]?.[
-                                                          idx
-                                                        ]
-                                                          ? 'visible'
-                                                          : 'hidden',
-                                                      }}
-                                                    >
-                                                      {reply.text}
-                                                    </div>
-                                                    {reply.text && reply.text.length > 160 && (
-                                                      <button
-                                                        className="mt-0.5 text-[10px] text-cyan-600 dark:text-cyan-400 hover:opacity-80"
-                                                        onClick={() =>
-                                                          setExpandedReplyText((prev) => ({
-                                                            ...prev,
-                                                            [comment._id]: {
-                                                              ...(prev[comment._id] || {}),
-                                                              [idx]: !(prev[comment._id] || {})[
-                                                                idx
-                                                              ],
-                                                            },
-                                                          }))
+                                                  {editingReply?.replyId === String(reply._id) &&
+                                                  editingReply?.commentId === comment._id ? (
+                                                    <div className="mt-1 flex flex-col sm:flex-row gap-2 w-full">
+                                                      <input
+                                                        type="text"
+                                                        className="input w-full sm:flex-1 min-w-0 text-xs"
+                                                        value={editingReply.text}
+                                                        onChange={(e) =>
+                                                          setEditingReply({
+                                                            ...editingReply,
+                                                            text: e.target.value,
+                                                          })
                                                         }
-                                                      >
-                                                        {expandedReplyText[comment._id]?.[idx]
-                                                          ? 'See less'
-                                                          : 'See more'}
-                                                      </button>
-                                                    )}
-                                                  </div>
-                                                  <div className="text-xs text-theme-secondary mt-0.5">
-                                                    {formatTimestamp(reply.createdAt)}
-                                                  </div>
+                                                        maxLength={REPLY_MAX}
+                                                      />
+                                                      <div className="text-[10px] text-theme-secondary self-end sm:self-center">
+                                                        {editingReply.text.trim().length}/{REPLY_MAX}
+                                                      </div>
+                                                      <div className="flex gap-2">
+                                                        <button
+                                                          className="btn px-2.5 py-1.5 text-xs"
+                                                          onClick={() => handleSaveReply(post._id)}
+                                                        >
+                                                          <Send className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                          className="themed-card px-2.5 py-1.5 text-xs"
+                                                          onClick={() => setEditingReply(null)}
+                                                        >
+                                                          <X className="w-4 h-4" />
+                                                        </button>
+                                                      </div>
+                                                    </div>
+                                                  ) : (
+                                                    <>
+                                                      <div className="text-xs text-theme-secondary">
+                                                        <div
+                                                          className="break-words whitespace-pre-wrap hyphens-auto max-w-full"
+                                                          style={{
+                                                            display: expandedReplyText[comment._id]?.[idx]
+                                                              ? 'block'
+                                                              : '-webkit-box',
+                                                            WebkitLineClamp: expandedReplyText[comment._id]?.[idx]
+                                                              ? undefined
+                                                              : 3,
+                                                            WebkitBoxOrient: 'vertical' as any,
+                                                            overflow: expandedReplyText[comment._id]?.[idx]
+                                                              ? 'visible'
+                                                              : 'hidden',
+                                                          }}
+                                                        >
+                                                          {reply.text}
+                                                        </div>
+                                                        {reply.text && reply.text.length > 160 && (
+                                                          <button
+                                                            className="mt-0.5 text-[10px] text-cyan-600 dark:text-cyan-400 hover:opacity-80"
+                                                            onClick={() =>
+                                                              setExpandedReplyText((prev) => ({
+                                                                ...prev,
+                                                                [comment._id]: {
+                                                                  ...(prev[comment._id] || {}),
+                                                                  [idx]: !(prev[comment._id] || {})[idx],
+                                                                },
+                                                              }))
+                                                            }
+                                                          >
+                                                            {expandedReplyText[comment._id]?.[idx]
+                                                              ? 'See less'
+                                                              : 'See more'}
+                                                          </button>
+                                                        )}
+                                                      </div>
+                                                      <div className="flex items-center flex-wrap gap-3 mt-0.5 min-w-0">
+                                                        <span className="text-xs text-theme-secondary">
+                                                          {formatTimestamp(reply.createdAt)}
+                                                        </span>
+                                                        <button
+                                                          className="text-xs text-theme-secondary hover:text-cyan-500 font-medium"
+                                                          onClick={() => {
+                                                            setReplyingTo(comment._id);
+                                                            setReplyText(`@${reply.user.username} `);
+                                                          }}
+                                                        >
+                                                          Reply
+                                                        </button>
+                                                        {reply.user._id === currentUserId && (
+                                                          <button
+                                                            className="text-xs text-gray-500 dark:text-gray-400 hover:text-cyan-500 font-medium"
+                                                            onClick={() => startEditReply(comment._id, reply)}
+                                                          >
+                                                            Edit
+                                                          </button>
+                                                        )}
+                                                        {(post.author._id === currentUserId || reply.user._id === currentUserId) && (
+                                                          <button
+                                                            className="text-xs text-red-500 hover:text-red-600 font-medium"
+                                                            onClick={() =>
+                                                              handleDeleteReply(post._id, comment._id, String(reply._id))
+                                                            }
+                                                          >
+                                                            Delete
+                                                          </button>
+                                                        )}
+                                                      </div>
+                                                    </>
+                                                  )}
                                                 </div>
                                               </div>
                                             ))}
