@@ -4,7 +4,7 @@ import { API_URL } from '../config/api';
 import CreateVenueModal from '../components/CreateVenueModal';
 import CreateEventModal from '../components/CreateEventModal';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { MapPin, Users, Search as SearchIcon } from 'lucide-react';
+import { MapPin, Users, Search as SearchIcon, Send, Inbox, KeyRound, Shield } from 'lucide-react';
 import SearchBar from '../components/SearchBar';
 
 export default function MyVenues({ token, onToast, onNavigate, onCountChange, onUpdated, onOpenConversation }: { token: string | null, onToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void, onNavigate?: (view: string) => void, onCountChange?: (count: number) => void, onUpdated?: () => void, onOpenConversation?: (conv: any) => void }) {
@@ -30,6 +30,20 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
     if (s.includes('book')) return 'badge-amber';
     return '';
   };
+
+  const tabBtn = (active: boolean) =>
+    [
+      'w-full sm:w-auto inline-flex items-center gap-2 px-3 py-2 rounded-md border text-sm transition-all focus-visible:outline-none focus-visible:ring-2',
+      active
+        ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white border-transparent shadow-sm focus-visible:ring-indigo-400'
+        : 'bg-white dark:bg-gray-800 text-theme-secondary border hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:ring-indigo-400',
+    ].join(' ');
+
+  const countPill = (active: boolean) =>
+    [
+      'ml-2 px-2 py-0.5 rounded-full text-xs font-semibold',
+      active ? 'bg-white/20 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200',
+    ].join(' ');
 
   const [myVenues, setMyVenues] = useState<any[]>([]);
   const [showCreateVenue, setShowCreateVenue] = useState(false);
@@ -229,39 +243,53 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 mt-4" role="tablist" aria-label="Venues Subtabs">
-          <button
-            className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${venuesSubTab === 'sent' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
-            onClick={() => setVenuesSubTab('sent')}
-            role="tab"
-            aria-selected={venuesSubTab === 'sent'}
-          >
-            Sent Requests ({sentRequests.length})
-          </button>
-          <button
-            className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${venuesSubTab === 'received' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
-            onClick={() => setVenuesSubTab('received')}
-            role="tab"
-            aria-selected={venuesSubTab === 'received'}
-          >
-            Received Requests ({receivedRequests.length})
-          </button>
-          <button
-            className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${venuesSubTab === 'generated' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
-            onClick={() => setVenuesSubTab('generated')}
-            role="tab"
-            aria-selected={venuesSubTab === 'generated'}
-          >
-            Generated Tokens ({generatedTokens.length})
-          </button>
-          <button
-            className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${venuesSubTab === 'receivedTokens' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
-            onClick={() => setVenuesSubTab('receivedTokens')}
-            role="tab"
-            aria-selected={venuesSubTab === 'receivedTokens'}
-          >
-            Received Tokens ({receivedTokens.length})
-          </button>
+        <div className="sticky top-0 z-10 -mx-3 sm:mx-0 px-3 py-2 bg-[var(--bg)]/80 backdrop-blur border-b" style={{ borderColor: 'var(--border)' }}>
+          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Venues Subtabs">
+            <button
+              className={tabBtn(venuesSubTab === 'sent')}
+              onClick={() => setVenuesSubTab('sent')}
+              role="tab"
+              aria-selected={venuesSubTab === 'sent'}
+              title="Sent booking requests"
+            >
+              <Send className="w-4 h-4" />
+              <span>Sent Requests</span>
+              <span className={countPill(venuesSubTab === 'sent')}>{sentRequests.length}</span>
+            </button>
+            <button
+              className={tabBtn(venuesSubTab === 'received')}
+              onClick={() => setVenuesSubTab('received')}
+              role="tab"
+              aria-selected={venuesSubTab === 'received'}
+              title="Received booking requests"
+            >
+              <Inbox className="w-4 h-4" />
+              <span>Received Requests</span>
+              <span className={countPill(venuesSubTab === 'received')}>{receivedRequests.length}</span>
+            </button>
+            <button
+              className={tabBtn(venuesSubTab === 'generated')}
+              onClick={() => setVenuesSubTab('generated')}
+              role="tab"
+              aria-selected={venuesSubTab === 'generated'}
+              title="Tokens you generated"
+            >
+              <KeyRound className="w-4 h-4" />
+              <span>Generated Tokens</span>
+              <span className={countPill(venuesSubTab === 'generated')}>{generatedTokens.length}</span>
+            </button>
+            <button
+              className={tabBtn(venuesSubTab === 'receivedTokens')}
+              onClick={() => setVenuesSubTab('receivedTokens')}
+              role="tab"
+              aria-selected={venuesSubTab === 'receivedTokens'}
+              title="Tokens you received"
+            >
+              <Shield className="w-4 h-4" />
+              <span>Received Tokens</span>
+              <span className={countPill(venuesSubTab === 'receivedTokens')}>{receivedTokens.length}</span>
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-col gap-3">
@@ -275,20 +303,23 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
           </div>
           <div className="flex flex-wrap gap-2" role="tablist" aria-label="Search Scope">
             <button
-              className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${searchScope === 'mine' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+              className={tabBtn(searchScope === 'mine')}
               onClick={() => setSearchScope('mine')}
               role="tab"
               aria-selected={searchScope === 'mine'}
             >
-              My Venues ({myVenues.length})
+              <Inbox className="w-4 h-4" />
+              <span>My Venues</span>
+              <span className={countPill(searchScope === 'mine')}>{myVenues.length}</span>
             </button>
             <button
-              className={`w-full sm:w-auto text-sm px-3 py-2 rounded-md border bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${searchScope === 'all' ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400' : ''}`}
+              className={tabBtn(searchScope === 'all')}
               onClick={() => setSearchScope('all')}
               role="tab"
               aria-selected={searchScope === 'all'}
             >
-              All Venues
+              <SearchIcon className="w-4 h-4" />
+              <span>All Venues</span>
             </button>
           </div>
         </div>
