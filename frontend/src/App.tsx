@@ -1315,6 +1315,18 @@ export default function App() {
     }
   }
 
+  // OPEN DM WHEN COMING FROM OTHER VIEWS VIA localStorage KEY -----
+  useEffect(() => {
+    try {
+      const pending = localStorage.getItem('auralink-open-chat-with');
+      if (pending && token) {
+        // Clear before starting to avoid repeated triggers
+        localStorage.removeItem('auralink-open-chat-with');
+        startConversationWithUser(String(pending));
+      }
+    } catch {}
+  }, [view, token]);
+
   // SCROLL TO BOTTOM ---------------------------------------------
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const element = e.currentTarget;
