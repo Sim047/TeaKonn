@@ -175,6 +175,8 @@ body {
   transition:
     background 0.15s ease,
     transform 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .reaction-btn:hover {
   background: rgba(148, 163, 184, 0.14);
@@ -195,6 +197,7 @@ body {
   padding: 0.35rem 0.5rem;
   box-shadow: 0 12px 34px rgba(2, 6, 23, 0.18);
   z-index: 15;
+  max-width: min(22rem, 100%);
 }
 
 /* Inline, in-bubble reaction bar */
@@ -204,6 +207,12 @@ body {
   border-radius: 0.6rem;
   padding: 0.25rem 0.4rem;
   margin-top: 0.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  max-width: 100%;
+  overflow-x: hidden;
+  align-items: center;
 }
 .reaction-option {
   padding: 0.35rem 0.55rem;
@@ -227,6 +236,9 @@ body {
   border: 1px solid var(--border);
   background: rgba(148, 163, 184, 0.1);
   font-size: 0.8rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .reaction-chip.mine {
   outline: 2px solid rgba(124, 58, 237, 0.35);

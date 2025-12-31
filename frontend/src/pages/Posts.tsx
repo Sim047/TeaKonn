@@ -1256,8 +1256,8 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
               <div
                 key={post._id}
                 id={`post-${post._id}`}
-                className="rounded-2xl shadow-md themed-card"
-                style={{ overflow: 'visible' }}
+                className="rounded-2xl shadow-md themed-card overflow-hidden"
+                style={{}}
                 onMouseDown={() => startPostPress(post._id)}
                 onMouseUp={cancelPostPress}
                 onMouseLeave={cancelPostPress}
@@ -1267,7 +1267,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                 {/* Post Header */}
                 <div
                   className="flex items-center justify-between p-3 relative z-10"
-                  style={{ overflow: 'visible' }}
+                  style={{}}
                 >
                   <div className="flex items-center gap-3">
                     <Avatar
@@ -1300,8 +1300,8 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                     </button>
                     {post.author._id === currentUserId && longPressPostId === post._id && (
                       <div
-                        className="absolute right-0 top-10 z-20 w-56 rounded-lg shadow-2xl themed-menu"
-                        style={{ overflow: 'visible' }}
+                        className="absolute right-2 top-10 z-20 w-56 max-w-[calc(100%-1rem)] rounded-lg shadow-2xl themed-menu"
+                        style={{}}
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button
@@ -1570,6 +1570,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                                           </span>
                                           <div className="text-sm text-theme-secondary">
                                             <div
+                                              className="break-words whitespace-pre-wrap hyphens-auto max-w-full"
                                               style={{
                                                 display: expandedCommentText[comment._id]
                                                   ? 'block'
@@ -1601,7 +1602,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                                               </button>
                                             )}
                                           </div>
-                                          <div className="flex items-center gap-3 mt-1">
+                                          <div className="flex items-center flex-wrap gap-3 mt-1 min-w-0">
                                             <span className="text-xs text-theme-secondary">
                                               {formatTimestamp(comment.createdAt)}
                                             </span>
@@ -1669,7 +1670,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
 
                                   {comment.replies && comment.replies.length > 0 && (
                                     <div
-                                      className="ml-4 mt-2 border-l-2 pl-3"
+                                      className="ml-4 mt-2 border-l-2 pl-3 max-w-full overflow-x-hidden"
                                       style={{ borderColor: 'var(--border)' }}
                                     >
                                       {!expandedReplies[comment._id] ? (
@@ -1689,12 +1690,13 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                                                   className="w-5 h-5 rounded-full object-cover flex-shrink-0"
                                                   alt={reply.user.username}
                                                 />
-                                                <div>
+                                                <div className="min-w-0 max-w-full">
                                                   <span className="font-semibold text-xs text-heading mr-1">
                                                     {reply.user.username}
                                                   </span>
                                                   <div className="text-xs text-theme-secondary">
                                                     <div
+                                                      className="break-words whitespace-pre-wrap hyphens-auto max-w-full"
                                                       style={{
                                                         display: expandedReplyText[comment._id]?.[
                                                           idx
@@ -1756,11 +1758,11 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                                   )}
 
                                   {replyingTo === comment._id && (
-                                    <div className="ml-4 mt-2 flex gap-2">
+                                    <div className="ml-4 mt-2 flex flex-col sm:flex-row items-stretch gap-2 w-full max-w-full">
                                       <input
                                         type="text"
                                         placeholder="Write a reply..."
-                                        className="input flex-1 text-xs"
+                                        className="input w-full sm:flex-1 min-w-0 text-xs"
                                         value={replyText}
                                         onChange={(e) => setReplyText(e.target.value)}
                                         onKeyPress={(e) => {
@@ -1771,21 +1773,23 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                                         maxLength={300}
                                         autoFocus
                                       />
-                                      <button
-                                        onClick={() => handleReplyToComment(post._id, comment._id)}
-                                        className="btn px-3 py-1.5 text-xs"
-                                      >
-                                        Send
-                                      </button>
-                                      <button
-                                        onClick={() => {
-                                          setReplyingTo(null);
-                                          setReplyText('');
-                                        }}
-                                        className="themed-card px-3 py-1.5 text-xs"
-                                      >
-                                        Cancel
-                                      </button>
+                                      <div className="flex sm:flex-row flex-row gap-2 sm:items-center w-full sm:w-auto">
+                                        <button
+                                          onClick={() => handleReplyToComment(post._id, comment._id)}
+                                          className="btn px-3 py-1.5 text-xs shrink-0"
+                                        >
+                                          Send
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            setReplyingTo(null);
+                                            setReplyText('');
+                                          }}
+                                          className="themed-card px-3 py-1.5 text-xs shrink-0"
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
                                     </div>
                                   )}
                                 </div>
