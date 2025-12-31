@@ -54,6 +54,13 @@ export default function ServiceDetailModal({
   if (!service) return null;
 
   const isLiked = currentUserId && service.likes && service.likes.includes(currentUserId);
+  const currencyCode = service.pricing?.currency || 'USD';
+  const amountNumber = Number(service.pricing?.amount || 0);
+  const amountFormatted = new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: currencyCode,
+    maximumFractionDigits: 2,
+  }).format(amountNumber);
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -146,7 +153,7 @@ export default function ServiceDetailModal({
                 <span className="font-semibold">Pricing</span>
               </div>
               <p className="text-2xl font-bold text-white">
-                ${service.pricing.amount}
+                {amountFormatted}
                 <span className="text-sm text-gray-400 ml-2">/ {service.pricing.type}</span>
               </p>
             </div>

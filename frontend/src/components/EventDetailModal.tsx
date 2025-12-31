@@ -100,6 +100,14 @@ export default function EventDetailModal({
   const isOrganizer = String(event.organizer?._id) === String(currentUserId);
   const isFull = (event.participants?.length || 0) >= (event.capacity?.max || 0);
   const isArchived = !!(event as any).archivedAt;
+  const showPrice = !!event.pricing && event.pricing.type === 'paid' && Number(event.pricing.amount || 0) > 0;
+  const eventCurrency = (event.pricing && event.pricing.currency) ? event.pricing.currency : 'USD';
+  const eventAmount = Number(event.pricing?.amount || 0);
+  const eventAmountFormatted = new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: eventCurrency,
+    maximumFractionDigits: 2,
+  }).format(eventAmount);
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -124,7 +132,12 @@ export default function EventDetailModal({
                   Past Event
                 </span>
               )}
-              {/* Price removed: all events are free */}
+              {showPrice && (
+                <span className="bg-white/20 px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                  <DollarSign className="w-4 h-4" />
+                  {eventAmountFormatted}
+                </span>
+              )}
             </div>
           </div>
           <button
@@ -257,6 +270,19 @@ export default function EventDetailModal({
                   </div>
                 </div>
               </div>
+              {showPrice && (
+                <div className="bg-white/10 backdrop-blur rounded-lg p-4">
+                  <div className="flex items-center gap-3 text-gray-300">
+                    <div className="bg-emerald-500/20 p-2 rounded-lg">
+                      <DollarSign className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400">Price</p>
+                      <p className="text-white font-semibold">{eventAmountFormatted}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Approval removed: immediate join */}

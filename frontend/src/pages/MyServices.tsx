@@ -138,7 +138,15 @@ export default function MyServices({ token, onNavigate, onToast, onUpdated }: My
                     </div>
                     <div className="mt-2 flex items-center gap-2 text-sm text-theme-secondary">
                       <DollarSign className="w-4 h-4 text-[var(--accent-amber)]" />
-                      <span>{s.pricing?.amount ? `${s.pricing?.currency || 'USD'} ${s.pricing?.amount}` : 'Free'}</span>
+                      <span>
+                        {s.pricing?.amount
+                          ? new Intl.NumberFormat(undefined, {
+                              style: 'currency',
+                              currency: s.pricing?.currency || 'USD',
+                              maximumFractionDigits: 2,
+                            }).format(Number(s.pricing?.amount || 0))
+                          : 'Free'}
+                      </span>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button className="btn inline-flex items-center px-3 py-2 w-full sm:w-auto" onClick={() => { setEditingService(s); setOpenCreate(true); }}>
@@ -179,7 +187,16 @@ export default function MyServices({ token, onNavigate, onToast, onUpdated }: My
             <div className="p-4 space-y-2 text-sm text-gray-700 dark:text-gray-200">
               <div>Location: {selectedService.location?.city || selectedService.location?.name || 'N/A'}</div>
               <div>Status: {selectedService.active ? 'Active' : 'Inactive'}</div>
-              <div>Price: {selectedService.pricing?.amount ? `${selectedService.pricing?.currency || 'USD'} ${selectedService.pricing?.amount}` : 'Free'}</div>
+              <div>
+                Price:{' '}
+                {selectedService.pricing?.amount
+                  ? new Intl.NumberFormat(undefined, {
+                      style: 'currency',
+                      currency: selectedService.pricing?.currency || 'USD',
+                      maximumFractionDigits: 2,
+                    }).format(Number(selectedService.pricing?.amount || 0))
+                  : 'Free'}
+              </div>
               {selectedService.description && <div className="mt-2 text-gray-700 dark:text-gray-200">{selectedService.description}</div>}
             </div>
             <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex gap-2 justify-end">
