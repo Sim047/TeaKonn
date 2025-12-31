@@ -307,6 +307,7 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
   // Reply state
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
+  const REPLY_MAX = 200;
 
   // Scroll to top state
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -1770,24 +1771,31 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
                                             handleReplyToComment(post._id, comment._id);
                                           }
                                         }}
-                                        maxLength={300}
+                                        maxLength={REPLY_MAX}
                                         autoFocus
                                       />
+                                      <div className="text-[10px] text-theme-secondary self-end sm:self-center">
+                                        {replyText.trim().length}/{REPLY_MAX}
+                                      </div>
                                       <div className="flex sm:flex-row flex-row gap-2 sm:items-center w-full sm:w-auto">
                                         <button
                                           onClick={() => handleReplyToComment(post._id, comment._id)}
-                                          className="btn px-3 py-1.5 text-xs shrink-0"
+                                          className="btn px-2.5 py-1.5 text-xs shrink-0"
+                                          aria-label="Send reply"
+                                          title="Send"
                                         >
-                                          Send
+                                          <Send className="w-4 h-4" />
                                         </button>
                                         <button
                                           onClick={() => {
                                             setReplyingTo(null);
                                             setReplyText('');
                                           }}
-                                          className="themed-card px-3 py-1.5 text-xs shrink-0"
+                                          className="themed-card px-2.5 py-1.5 text-xs shrink-0"
+                                          aria-label="Cancel reply"
+                                          title="Cancel"
                                         >
-                                          Cancel
+                                          <X className="w-4 h-4" />
                                         </button>
                                       </div>
                                     </div>
