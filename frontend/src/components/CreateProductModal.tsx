@@ -140,7 +140,10 @@ export default function CreateProductModal({
       onProductCreated();
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create product');
+      const data = err?.response?.data;
+      const baseMsg = data?.error || 'Failed to create product';
+      const details = Array.isArray(data?.details) ? data.details : undefined;
+      setError(details && details.length ? `${baseMsg}: ${details.join('; ')}` : baseMsg);
     } finally {
       setLoading(false);
     }
