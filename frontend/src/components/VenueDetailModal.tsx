@@ -79,16 +79,16 @@ export default function VenueDetailModal({ venue, onClose, token }: VenueDetailM
             </div>
           )}
 
-          <div className="pt-2 border-t flex items-center gap-2" style={{ borderColor: 'var(--border)' }}>
+          <div className="pt-2 border-t flex flex-wrap items-center gap-2" style={{ borderColor: 'var(--border)' }}>
             <button
-              className="btn px-3 py-2 text-sm"
+              className="btn px-3 py-2 text-sm w-full sm:w-auto"
               onClick={requestBooking}
               disabled={!token || submitting}
             >
               {submitting ? 'Sending…' : 'Request Booking'}
             </button>
             <button
-              className="themed-card px-3 py-2 text-sm flex items-center gap-2"
+              className="themed-card px-3 py-2 text-sm flex items-center gap-2 w-full sm:w-auto"
               onClick={() => {
                 if (venue.owner) {
                   try { localStorage.setItem('auralink-open-chat-with', String(venue.owner)); } catch {}

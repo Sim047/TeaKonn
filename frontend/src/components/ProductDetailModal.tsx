@@ -172,8 +172,8 @@ export default function ProductDetailModal({
 
               {/* Seller Info */}
               <div className="bg-white/5 backdrop-blur rounded-xl p-4 border border-white/10">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <img
                       src={
                         product.seller.avatar ||
@@ -197,7 +197,7 @@ export default function ProductDetailModal({
                       console.log('[ProductDetailModal] onMessage function:', onMessage);
                       onMessage(product.seller._id);
                     }}
-                    className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all shadow-lg"
+                    className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all shadow-lg w-full sm:w-auto mt-2 sm:mt-0 shrink-0"
                   >
                     <MessageCircle className="w-4 h-4" />
                     Contact

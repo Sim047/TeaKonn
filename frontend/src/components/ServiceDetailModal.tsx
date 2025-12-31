@@ -87,8 +87,8 @@ export default function ServiceDetailModal({
 
           {/* Provider Info */}
           <div className="bg-white/5 backdrop-blur rounded-xl p-4 border border-white/10">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
                 <img
                   src={
                     service.provider.avatar ||
@@ -112,7 +112,7 @@ export default function ServiceDetailModal({
                   console.log('[ServiceDetailModal] onMessage function:', onMessage);
                   onMessage(service.provider._id);
                 }}
-                className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all shadow-lg"
+                className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all shadow-lg w-full sm:w-auto mt-2 sm:mt-0 shrink-0"
               >
                 <MessageCircle className="w-4 h-4" />
                 Message
