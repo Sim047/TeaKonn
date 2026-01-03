@@ -108,15 +108,19 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl w-full max-w-lg border border-cyan-600/30 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--border)' }}>
+      <div
+        className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl w-full max-w-lg border border-cyan-600/30 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+        style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}
+      >
+        <div className="flex items-center justify-between p-4 border-b sticky top-0 z-10" style={{ borderColor: 'var(--border)', background: 'linear-gradient(to bottom, rgba(15,23,42,1), rgba(15,23,42,0.95))' }}>
           <h3 className="text-lg font-bold" style={{ color: 'var(--text)' }}>Edit Profile</h3>
           <button className="p-2 rounded-lg hover:bg-white/10" onClick={onClose} title="Close">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ WebkitOverflowScrolling: 'touch' }}>
           {error && <div className="text-red-400 text-sm">{error}</div>}
 
           <div>
@@ -187,7 +191,7 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
           </div>
         </div>
 
-        <div className="p-4 border-t flex gap-2" style={{ borderColor: 'var(--border)' }}>
+        <div className="p-4 border-t flex gap-2 sticky bottom-0 z-10" style={{ borderColor: 'var(--border)', background: 'linear-gradient(to top, rgba(15,23,42,1), rgba(15,23,42,0.95))' }}>
           <button className="flex-1 btn" onClick={saveProfile} disabled={saving}>{saving ? 'Saving…' : 'Save Changes'}</button>
           <button className="flex-1 px-4 py-2 rounded-lg themed-card" onClick={onClose}>Cancel</button>
         </div>
