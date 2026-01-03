@@ -26,6 +26,8 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
 
   useEffect(() => {
     setName(user?.name || '');
@@ -101,6 +103,22 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
       setPasswordError(e?.response?.data?.message || e?.message || 'Failed to change password');
     } finally {
       setPasswordSaving(false);
+    }
+  }
+
+  async function deleteAccount() {
+    try {
+      setError(null);
+      const ok = deleteConfirm.trim().toUpperCase() === 'DELETE';
+      if (!ok) {
+        setError('Please type DELETE to confirm');
+        return;
+      }
+      await api.delete('/users/me', { data: { currentPassword: deletePassword || undefined } });
+      try { localStorage.clear(); } catch {}
+      window.location.reload();
+    } catch (e: any) {
+      setError(e?.response?.data?.message || e?.message || 'Failed to delete account');
     }
   }
 
@@ -190,6 +208,25 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
               <button className="px-4 py-2 rounded-lg themed-card" onClick={() => { setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); setPasswordError(null); setPasswordSuccess(null); }}>Clear</button>
             </div>
             <p className="text-xs text-theme-secondary mt-2">Minimum 8 characters. If your account was created via Google, you can set a password here.</p>
+          </div>
+
+          {/* Danger zone: Delete account */}
+          <div className="mt-4 p-4 rounded-xl border border-red-500/40 bg-red-900/10">
+            <h4 className="text-sm font-semibold text-red-300">Delete Account</h4>
+            <p className="text-xs text-red-200 mt-1">This action is permanent. Your profile will be removed and you will be signed out.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+              <div>
+                <label className="text-xs text-theme-secondary">Type DELETE to confirm</label>
+                <input className="input w-full mt-1" value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-xs text-theme-secondary">Current Password (if set)</label>
+                <input className="input w-full mt-1" type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} />
+              </div>
+            </div>
+            <div className="mt-3 flex gap-2">
+              <button className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white" onClick={deleteAccount}>Delete Account</button>
+            </div>
           </div>
         </div>
 

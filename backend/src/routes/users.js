@@ -193,6 +193,30 @@ router.put("/me", auth, async (req, res) => {
   }
 });
 
+// Delete my account
+router.delete("/me", auth, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { currentPassword } = req.body || {};
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // If password exists, require correct current password
+    if (user.password) {
+      if (!currentPassword) return res.status(400).json({ message: "Current password required" });
+      const ok = await (await import('bcrypt')).default.compare(currentPassword, user.password);
+      if (!ok) return res.status(400).json({ message: "Invalid current password" });
+    }
+
+    await User.deleteOne({ _id: userId });
+    // Note: related content (messages, events) are not removed here
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('[users/delete] ', err);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
 /* ---------------------------------------------
    CHANGE PASSWORD
    Requires: currentPassword (if existing), newPassword

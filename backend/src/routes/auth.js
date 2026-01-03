@@ -110,18 +110,21 @@ router.post('/google', async (req, res) => {
         candidate = `${base}${suffix}`;
       }
       user = await User.create({
+        name: String(name || '').trim(),
         username: candidate,
         email,
         avatar: picture,
       });
-    } else if (!user.avatar && picture) {
-      // Optionally enrich avatar on first Google login
-      user.avatar = picture;
-      await user.save();
+    } else {
+      // Update name/avatar if missing on existing Google login
+      let changed = false;
+      if (!user.name && name) { user.name = String(name).trim(); changed = true; }
+      if (!user.avatar && picture) { user.avatar = picture; changed = true; }
+      if (changed) await user.save();
     }
 
     const token = jwt.sign({ id: user._id, username: user.username, role: user.role }, process.env.JWT_SECRET);
-    return res.json({ user: { _id: user._id, username: user.username, email: user.email, avatar: user.avatar, role: user.role }, token });
+    return res.json({ user: { _id: user._id, name: user.name, username: user.username, email: user.email, avatar: user.avatar, role: user.role }, token });
   } catch (err) {
     console.error('[auth/google] ', err);
     return res.status(500).json({ message: 'Server error' });
