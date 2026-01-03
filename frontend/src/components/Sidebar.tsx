@@ -329,6 +329,37 @@ export default function Sidebar({
 
       {/* Navigation Menu */}
       <div className="p-2 space-y-2">
+        {/* Priority: Posts, Direct Messages, Group Chats */}
+        <NavButton
+          icon={TrendingUp}
+          label="Posts"
+          isCollapsed={isCollapsed}
+          onClick={() => {
+            onNavigate?.('posts');
+            setIsMobileOpen(false);
+          }}
+        />
+        <NavButton
+          icon={MessageCircle}
+          label="Direct Messages"
+          badge={totalUnreadMessages}
+          isCollapsed={isCollapsed}
+          onClick={() => {
+            onNavigate?.('direct-messages');
+            setIsMobileOpen(false);
+          }}
+        />
+        <NavButton
+          icon={Users}
+          label="Group Chats"
+          isCollapsed={isCollapsed}
+          onClick={() => {
+            onNavigate?.('group-chats');
+            setIsMobileOpen(false);
+          }}
+        />
+
+        {/* Other sections */}
         <NavButton
           icon={Home}
           label="Dashboard"
@@ -371,34 +402,6 @@ export default function Sidebar({
           isCollapsed={isCollapsed}
           onClick={() => {
             onNavigate?.('all-users');
-            setIsMobileOpen(false);
-          }}
-        />
-        <NavButton
-          icon={TrendingUp}
-          label="Posts"
-          isCollapsed={isCollapsed}
-          onClick={() => {
-            onNavigate?.('posts');
-            setIsMobileOpen(false);
-          }}
-        />
-        <NavButton
-          icon={MessageCircle}
-          label="Direct Messages"
-          badge={totalUnreadMessages}
-          isCollapsed={isCollapsed}
-          onClick={() => {
-            onNavigate?.('direct-messages');
-            setIsMobileOpen(false);
-          }}
-        />
-        <NavButton
-          icon={Users}
-          label="Group Chats"
-          isCollapsed={isCollapsed}
-          onClick={() => {
-            onNavigate?.('group-chats');
             setIsMobileOpen(false);
           }}
         />
