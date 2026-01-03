@@ -3,7 +3,7 @@
     "name": "TeaKonn Native",
     "slug": "teakonn-native",
     "scheme": "teakonn",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "sdkVersion": "51.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StatusBar } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { SafeAreaView, StatusBar, BackHandler, ToastAndroid } from 'react-native';
 import Login from './screens/Login';
 import Chats from './screens/Chats';
 import { saveToken, getToken, clearToken } from './storage';
@@ -31,6 +31,27 @@ export default function App() {
     await clearToken();
     setToken(null);
   };
+
+  // Guard Android hardware back to avoid accidental app exit
+  const lastBackRef = useRef<number>(0);
+  useEffect(() => {
+    const onBackPress = () => {
+      // If not authenticated, let default behavior occur
+      if (!token) return false;
+      const now = Date.now();
+      if (now - lastBackRef.current < 1500) {
+        // Double press: allow exit
+        return false;
+      }
+      lastBackRef.current = now;
+      try {
+        ToastAndroid.show('Press back again to exit', ToastAndroid.SHORT);
+      } catch {}
+      return true; // consume first back
+    };
+    BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+  }, [token]);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
