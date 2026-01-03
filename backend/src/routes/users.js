@@ -142,6 +142,44 @@ router.get("/me", auth, async (req, res) => {
 });
 
 /* ---------------------------------------------
+   UPDATE LOGGED-IN USER PROFILE
+   Allowed fields: username, bio, about, location
+--------------------------------------------- */
+router.put("/me", auth, async (req, res) => {
+  try {
+    const { username, bio, about, location } = req.body || {};
+    const update = {};
+    if (typeof username === 'string' && username.trim()) update.username = username.trim();
+    if (typeof bio === 'string') update.bio = bio;
+    if (typeof about === 'string') update.about = about;
+    if (typeof location === 'string') update.location = location;
+
+    if (Object.keys(update).length === 0) {
+      return res.status(400).json({ message: "No valid fields to update" });
+    }
+
+    // Enforce reasonable username format
+    if (update.username) {
+      const clean = update.username.toLowerCase().replace(/[^a-z0-9_\.\-]/g, '');
+      update.username = clean || update.username;
+      // Ensure uniqueness
+      const exists = await User.findOne({ username: update.username, _id: { $ne: req.user.id } });
+      if (exists) return res.status(400).json({ message: "Username already taken" });
+    }
+
+    const updated = await User.findByIdAndUpdate(req.user.id, update, { new: true })
+      .select("_id username email avatar role bio about location favoriteSports followers following");
+
+    if (!updated) return res.status(404).json({ message: "User not found" });
+
+    return res.json({ user: updated });
+  } catch (err) {
+    console.error("PUT /api/users/me error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
+/* ---------------------------------------------
    4) GET PROFILE BY ID (FULL FIX)
 --------------------------------------------- */
 router.get("/:id", auth, async (req, res) => {

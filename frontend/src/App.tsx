@@ -37,6 +37,7 @@ import AssistantWidget from './components/AssistantWidget';
 import tkLogo from './assets/teakonn-logo.png';
 import { API_URL } from './config/api';
 import UserProfileModal from './components/UserProfileModal';
+import ProfileEditModal from './components/ProfileEditModal';
 import NotificationToast from './components/NotificationToast';
 
 dayjs.extend(localizedFormat);
@@ -126,6 +127,7 @@ export default function App() {
 
   // ONLINE USERS ------------------------------
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
 
   // UI refs
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -1213,6 +1215,10 @@ export default function App() {
       setProfileLoading(false);
     }
   }
+
+  function editMyProfile() {
+    setEditProfileOpen(true);
+  }
   // FOLLOW / UNFOLLOW --------------------------------------------
   async function toggleFollowProfile() {
     if (!profileUser || !token) return;
@@ -1864,6 +1870,7 @@ export default function App() {
           onLogout={logout}
           onStatusUpdated={onMyStatusUpdated}
           onShowProfile={showProfile}
+          onEditProfile={editMyProfile}
           onOpenConversation={openConversation}
           onAvatarUpload={uploadAvatarDirect}
           onAvatarSave={saveAvatar}
@@ -2514,6 +2521,18 @@ export default function App() {
           onOpenConversation={(u: any) => startConversationWithUser(u._id)}
           currentUserId={user?._id}
           onNavigate={(v: string) => navigateTo(v as any)}
+        />
+      )}
+
+      {editProfileOpen && user && (
+        <ProfileEditModal
+          visible={editProfileOpen}
+          user={user}
+          onClose={() => setEditProfileOpen(false)}
+          onUpdated={(u) => {
+            setUser(u);
+            try { localStorage.setItem('user', JSON.stringify(u)); } catch {}
+          }}
         />
       )}
 

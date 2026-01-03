@@ -42,6 +42,7 @@ interface SidebarProps {
   onLogout: () => void;
   onStatusUpdated: (status: any) => void;
   onShowProfile: (user: any) => void;
+  onEditProfile?: (user: any) => void;
   onOpenConversation: (conversation: any) => void;
   onAvatarUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAvatarSave: () => void;
@@ -62,6 +63,7 @@ export default function Sidebar({
   onLogout,
   onStatusUpdated,
   onShowProfile,
+  onEditProfile,
   onOpenConversation,
   onAvatarUpload,
   onAvatarSave,
@@ -294,11 +296,17 @@ export default function Sidebar({
       {!isCollapsed && (
         <div className="p-4 border-b" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-3 mb-3">
-            <Avatar
-              src={makeAvatarUrl(user?.avatar)}
-              className="w-12 h-12 rounded-lg object-cover"
-              alt={user?.username || "User"}
-            />
+            <button
+              onClick={() => onEditProfile ? onEditProfile(user) : onShowProfile(user)}
+              className="rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              title="Edit Profile"
+            >
+              <Avatar
+                src={makeAvatarUrl(user?.avatar)}
+                className="w-12 h-12 rounded-lg object-cover hover:opacity-90 transition"
+                alt={user?.username || "User"}
+              />
+            </button>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <div className="font-bold truncate" style={{ color: 'var(--text)' }}>{user?.username}</div>
@@ -326,7 +334,7 @@ export default function Sidebar({
           {/* Improved Avatar Upload Section */}
           <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
             <label className="block text-xs font-semibold mb-3 text-slate-300">
-              Profile Picture
+                Profile Picture
             </label>
             
             {selectedAvatar && (
