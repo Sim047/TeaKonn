@@ -14,7 +14,6 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
   const [name, setName] = useState(user?.name || '');
   const [username, setUsername] = useState(user?.username || '');
   const [email, setEmail] = useState(user?.email || '');
-  const [about, setAbout] = useState(user?.about || '');
   const [location, setLocation] = useState(user?.location || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +33,6 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
     setName(user?.name || '');
     setUsername(user?.username || '');
     setEmail(user?.email || '');
-    setAbout(user?.about || '');
     setLocation(user?.location || '');
     setError(null);
     setAvatarFile(null);
@@ -52,7 +50,7 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
       setError(null);
 
       // Update text fields
-      const { data } = await api.put('/users/me', { name, username, email, about, location });
+      const { data } = await api.put('/users/me', { name, username, email, location });
       let updatedUser = data?.user || user;
 
       // Optional avatar upload
@@ -224,15 +222,9 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
             <p className="text-xs text-theme-secondary mt-1">3–30 chars. Allowed: letters, numbers, dot, dash, underscore. Must be unique.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs text-theme-secondary">About</label>
-              <input className="input w-full mt-1" value={about} onChange={(e) => setAbout(e.target.value)} maxLength={120} />
-            </div>
-            <div>
-              <label className="text-xs text-theme-secondary">Location</label>
-              <input className="input w-full mt-1" value={location} onChange={(e) => setLocation(e.target.value)} maxLength={120} />
-            </div>
+          <div>
+            <label className="text-xs text-theme-secondary">Location</label>
+            <input className="input w-full mt-1" value={location} onChange={(e) => setLocation(e.target.value)} maxLength={120} />
           </div>
 
           <div className="mt-2">
