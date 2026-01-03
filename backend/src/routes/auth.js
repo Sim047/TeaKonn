@@ -8,14 +8,26 @@ const router = express.Router();
 
 router.post('/register', async (req,res)=>{
   try{
-    const { username, email, password } = req.body;
-    if (!username || !email || !password) return res.status(400).json({ message: 'Missing fields' });
-    const exists = await User.findOne({ $or: [{ username }, { email }] });
-    if (exists) return res.status(400).json({ message: 'User exists' });
+    const { name, email, password } = req.body || {};
+    if (!name || !email || !password) return res.status(400).json({ message: 'Missing fields' });
+    const emailExists = await User.findOne({ email });
+    if (emailExists) return res.status(400).json({ message: 'Email already in use' });
+
+    // Generate a unique username handle from name (fallback to email local part)
+    const baseFromName = String(name).toLowerCase().replace(/[^a-z0-9_\.\-]/g, '').slice(0, 20);
+    const emailLocal = (String(email).split('@')[0] || 'user').toLowerCase().replace(/[^a-z0-9_\.\-]/g, '');
+    const base = baseFromName || emailLocal || 'user';
+    let candidate = base.length < 3 ? (base + 'user').slice(0, 30) : base;
+    let suffix = 0;
+    while (await User.findOne({ username: candidate })) {
+      suffix += 1;
+      candidate = `${base}${suffix}`.slice(0, 30);
+    }
+
     const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({ username, email, password: hash });
+    const user = await User.create({ name, username: candidate, email, password: hash });
     const token = jwt.sign({ id: user._id, username: user.username, role: user.role }, process.env.JWT_SECRET);
-    res.json({ user: { _id: user._id, username: user.username, email: user.email, avatar: user.avatar, role: user.role }, token });
+    res.json({ user: { _id: user._id, name: user.name, username: user.username, email: user.email, avatar: user.avatar, role: user.role }, token });
   }catch(err){
     console.error('[auth/register] ', err);
     res.status(500).json({ message: 'Server error' });
@@ -42,7 +54,7 @@ router.post('/login', async (req,res)=>{
 router.get('/me', auth, async (req, res) => {
   try {
     const id = req.user?.id;
-    const user = await User.findById(id).select('username email avatar role');
+    const user = await User.findById(id).select('name username email avatar role');
     if (!user) return res.status(404).json({ message: 'User not found' });
     return res.json({ user });
   } catch (err) {

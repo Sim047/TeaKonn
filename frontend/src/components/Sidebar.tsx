@@ -299,9 +299,9 @@ export default function Sidebar({
                 alt={user?.username || "User"}
               />
             </button>
-            <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <div className="font-bold truncate" style={{ color: 'var(--text)' }}>{user?.username}</div>
+                <div className="font-bold truncate" style={{ color: 'var(--text)' }}>{user?.name || user?.username}</div>
                 {isOnline && (
                   <div className="flex-shrink-0 w-2.5 h-2.5 bg-green-500 rounded-full" title="Online"></div>
                 )}

@@ -148,11 +148,11 @@ router.get("/me", auth, async (req, res) => {
 --------------------------------------------- */
 router.put("/me", auth, async (req, res) => {
   try {
-    const { username, email, bio, about, location } = req.body || {};
+    const { name, username, email, about, location } = req.body || {};
     const update = {};
+    if (typeof name === 'string') update.name = name.trim();
     if (typeof username === 'string' && username.trim()) update.username = username.trim();
     if (typeof email === 'string' && email.trim()) update.email = email.trim().toLowerCase();
-    if (typeof bio === 'string') update.bio = bio;
     if (typeof about === 'string') update.about = about;
     if (typeof location === 'string') update.location = location;
 
@@ -160,11 +160,13 @@ router.put("/me", auth, async (req, res) => {
       return res.status(400).json({ message: "No valid fields to update" });
     }
 
-    // Enforce reasonable username format (preserve case for display)
+    // Enforce username handle constraints (preserve case for display)
     if (update.username) {
       function escapeRegExp(str) { return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
       const clean = update.username.replace(/[^a-zA-Z0-9_\.\-]/g, '');
       update.username = clean || update.username;
+      const lengthOk = clean.length >= 3 && clean.length <= 30;
+      if (!lengthOk) return res.status(400).json({ message: "Username must be 3-30 characters" });
       // Case-insensitive uniqueness check
       const exists = await User.findOne({
         username: { $regex: '^' + escapeRegExp(update.username) + '$', $options: 'i' },

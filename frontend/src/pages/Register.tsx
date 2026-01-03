@@ -6,7 +6,7 @@ import Logo from '../assets/teakonn-logo.png';
 // Use centralized axios instance with normalized baseURL
 
 export default function Register({ onSuccess, switchToLogin }) {
-  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -18,7 +18,7 @@ export default function Register({ onSuccess, switchToLogin }) {
 
     try {
       const res = await api.post('/auth/register', {
-        username,
+        name,
         email,
         password,
       });
@@ -51,25 +51,25 @@ export default function Register({ onSuccess, switchToLogin }) {
         {error && <div className="text-red-400 text-center mb-4">{error}</div>}
 
         <form onSubmit={handleRegister} className="flex flex-col gap-6">
-          {/* USERNAME */}
+          {/* NAME */}
           <div className="relative">
             <input
-              id="reg-username"
+              id="reg-name"
               className="input w-full pt-6 peer"
               placeholder=" "
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              maxLength={30}
-              autoComplete="username"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={60}
+              autoComplete="name"
             />
             <label
-              htmlFor="reg-username"
+              htmlFor="reg-name"
               className="absolute left-3 top-3 text-theme-secondary transition-all duration-200 pointer-events-none
                 peer-placeholder-shown:top-3 peer-placeholder-shown:text-base
                 peer-focus:-top-2 peer-focus:text-xs
                 peer-[&:not(:placeholder-shown)]:-top-2 peer-[&:not(:placeholder-shown)]:text-xs"
             >
-              Username
+              Name
             </label>
           </div>
 

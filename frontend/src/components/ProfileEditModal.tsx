@@ -11,6 +11,7 @@ type Props = {
 };
 
 export default function ProfileEditModal({ visible, onClose, user, onUpdated }: Props) {
+  const [name, setName] = useState(user?.name || '');
   const [username, setUsername] = useState(user?.username || '');
   const [email, setEmail] = useState(user?.email || '');
   const [about, setAbout] = useState(user?.about || '');
@@ -27,6 +28,7 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
 
   useEffect(() => {
+    setName(user?.name || '');
     setUsername(user?.username || '');
     setEmail(user?.email || '');
     setAbout(user?.about || '');
@@ -47,7 +49,7 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
       setError(null);
 
       // Update text fields
-      const { data } = await api.put('/users/me', { username, email, about, location });
+      const { data } = await api.put('/users/me', { name, username, email, about, location });
       let updatedUser = data?.user || user;
 
       // Optional avatar upload
@@ -122,9 +124,9 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
           {error && <div className="text-red-400 text-sm">{error}</div>}
 
           <div>
-            <label className="text-xs text-theme-secondary">Username</label>
-            <input className="input w-full mt-1" value={username} onChange={(e) => setUsername(e.target.value)} maxLength={30} />
-            <p className="text-xs text-theme-secondary mt-1">Allowed: letters, numbers, dot, dash, underscore.</p>
+            <label className="text-xs text-theme-secondary">Name</label>
+            <input className="input w-full mt-1" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} />
+            <p className="text-xs text-theme-secondary mt-1">Your display name.</p>
           </div>
 
           <div>
@@ -132,7 +134,12 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
             <input className="input w-full mt-1" type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} />
           </div>
 
-          {/* Bio removed per request */}
+          {/* Username (unique handle) */}
+          <div>
+            <label className="text-xs text-theme-secondary">Username</label>
+            <input className="input w-full mt-1" value={username} onChange={(e) => setUsername(e.target.value)} maxLength={30} />
+            <p className="text-xs text-theme-secondary mt-1">3–30 chars. Allowed: letters, numbers, dot, dash, underscore. Must be unique.</p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
