@@ -174,6 +174,13 @@ export default function Posts({ token, currentUserId, onShowProfile, onNavigate 
       const prevState = window.history.state || {};
       // Push a history entry so Back returns to previous tab/view
       window.history.pushState({ ...prevState, tab, sort: sortMode, q: searchText }, '', newUrl);
+      // Increment in-session history depth to avoid leaving web on Back
+      try {
+        const raw = sessionStorage.getItem('auralink-history-count') || '1';
+        const n = parseInt(raw, 10);
+        const next = (Number.isFinite(n) && n > 0 ? n : 1) + 1;
+        sessionStorage.setItem('auralink-history-count', String(next));
+      } catch {}
       // Persist last tab for next refresh alternation
       try { localStorage.setItem('auralink-last-feed-tab', tab); } catch {}
     } catch {}

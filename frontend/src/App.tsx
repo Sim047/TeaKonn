@@ -171,6 +171,37 @@ export default function App() {
     }
   });
 
+  // History guard to prevent leaving web to native app on Back
+  const historyCountRef = useRef<number>(0);
+  function getHistoryCount(): number {
+    try {
+      const raw = sessionStorage.getItem('auralink-history-count') || '0';
+      const n = parseInt(raw, 10);
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    } catch {
+      return historyCountRef.current || 0;
+    }
+  }
+  function setHistoryCount(n: number) {
+    historyCountRef.current = n;
+    try {
+      sessionStorage.setItem('auralink-history-count', String(n));
+    } catch {}
+  }
+  // Initialize a baseline history count so the first Back stays in-app
+  useEffect(() => {
+    const current = getHistoryCount();
+    if (current <= 0) setHistoryCount(1);
+    // Push a pinned state entry so Back immediately loops within the web app
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const qs = params.toString();
+      const href = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
+      window.history.pushState({ pinned: true }, '', href);
+      setHistoryCount(getHistoryCount() + 1);
+    } catch {}
+  }, []);
+
   function startHeaderPress() {
     try {
       if (headerPressTimer.current) {
@@ -308,6 +339,8 @@ export default function App() {
       const qs = params.toString();
       const newUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
       window.history.pushState({ view: newView }, '', newUrl);
+      // Track in-session history depth so Back never leaves the web app
+      setHistoryCount(getHistoryCount() + 1);
     } catch (e) {
       console.warn('Failed to push navigation state:', e);
     }
@@ -317,6 +350,18 @@ export default function App() {
   useEffect(() => {
     const onPop = () => {
       try {
+        // Decrement and guard against leaving the site (native app)
+        const nextDepth = Math.max(0, getHistoryCount() - 1);
+        setHistoryCount(nextDepth);
+        if (nextDepth === 0) {
+          // Re-push current state to remain on web and restore depth baseline
+          const params = new URLSearchParams(window.location.search);
+          const qs = params.toString();
+          const href = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
+          window.history.pushState({ view }, '', href);
+          setHistoryCount(1);
+          return;
+        }
         const stateView = (window.history.state && window.history.state.view) || null;
         if (stateView) {
           setView(stateView as any);
@@ -1810,9 +1855,21 @@ export default function App() {
     }
   }
   React.useEffect(() => {
-    if (!messageImageViewer) return;
+    const onPop = () => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeMessageImage();
+        // Decrement and guard against leaving the site (native app)
+        const nextDepth = Math.max(0, getHistoryCount() - 1);
+        setHistoryCount(nextDepth);
+        // If this pop would leave the app, immediately re-push the current state
+        if (nextDepth === 0 || (window.history.state && (window.history.state as any).pinned)) {
+          const params = new URLSearchParams(window.location.search);
+          const qs = params.toString();
+          const href = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
+          window.history.pushState({ view, pinned: true }, '', href);
+          setHistoryCount(1);
+          return;
+        }
+        const stateView = (window.history.state && window.history.state.view) || null;
       else if (e.key === 'ArrowLeft') prevMessageImage();
       else if (e.key === 'ArrowRight') nextMessageImage();
     };
@@ -1827,6 +1884,63 @@ export default function App() {
         onSuccess={({ token, user }) => {
           setToken(token);
           setUser(user);
+
+  // Pull-to-refresh: pull down from top to refresh the app
+  const pullStartYRef = useRef<number | null>(null);
+  const pullActiveRef = useRef<boolean>(false);
+  const [pullRefreshing, setPullRefreshing] = useState<boolean>(false);
+  useEffect(() => {
+    const THRESHOLD = 70; // px
+    function onTouchStart(e: TouchEvent) {
+      try {
+        if (window.scrollY <= 0) {
+          pullStartYRef.current = e.touches[0]?.clientY || 0;
+          pullActiveRef.current = false;
+        } else {
+          pullStartYRef.current = null;
+          pullActiveRef.current = false;
+        }
+      } catch {}
+    }
+    function onTouchMove(e: TouchEvent) {
+      try {
+        if (pullStartYRef.current == null) return;
+        const dy = (e.touches[0]?.clientY || 0) - pullStartYRef.current;
+        if (dy > THRESHOLD) {
+          pullActiveRef.current = true;
+          setPullRefreshing(true);
+        }
+      } catch {}
+    }
+    function onTouchEnd() {
+      try {
+        if (pullActiveRef.current) {
+          // Simple refresh: reload the page to refresh app state
+          setTimeout(() => {
+            setPullRefreshing(false);
+            try {
+              window.location.reload();
+            } catch {}
+          }, 100);
+        } else {
+          setPullRefreshing(false);
+        }
+      } catch {
+        setPullRefreshing(false);
+      } finally {
+        pullStartYRef.current = null;
+        pullActiveRef.current = false;
+      }
+    }
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', onTouchStart as any);
+      window.removeEventListener('touchmove', onTouchMove as any);
+      window.removeEventListener('touchend', onTouchEnd as any);
+    };
+  }, []);
         }}
         switchToRegister={() => setAuthPage('register')}
       />
