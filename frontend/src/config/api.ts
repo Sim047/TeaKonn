@@ -41,11 +41,14 @@ const getBaseURL = (): string => {
   // If VITE_API_URL is set at build time, use it (normalized)
   if (envURL) return normalizeBase(envURL);
 
-  // In production builds without an explicit VITE_API_URL, prefer the current origin
-  // so the frontend will call the same host (useful when backend is proxied).
+  // Default to deployed Railway backend when no env is provided
+  // This ensures Vercel builds point to the correct API by default.
+  const defaultProd = 'https://teakonn-production.up.railway.app';
+
+  // In production builds, prefer the default deployed backend
   try {
-    if (import.meta.env.MODE === 'production' && typeof window !== 'undefined') {
-      return window.location.origin.replace(/\/$/, '');
+    if (import.meta.env.MODE === 'production') {
+      return defaultProd;
     }
   } catch (e) {}
 
