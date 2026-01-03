@@ -332,7 +332,7 @@ export default function Sidebar({
         {/* Priority: Posts, Direct Messages, Group Chats */}
         <NavButton
           icon={TrendingUp}
-          label="Posts"
+          label="Pots & Events"
           isCollapsed={isCollapsed}
           onClick={() => {
             onNavigate?.('posts');
