@@ -1855,21 +1855,9 @@ export default function App() {
     }
   }
   React.useEffect(() => {
-    const onPop = () => {
     const onKey = (e: KeyboardEvent) => {
-        // Decrement and guard against leaving the site (native app)
-        const nextDepth = Math.max(0, getHistoryCount() - 1);
-        setHistoryCount(nextDepth);
-        // If this pop would leave the app, immediately re-push the current state
-        if (nextDepth === 0 || (window.history.state && (window.history.state as any).pinned)) {
-          const params = new URLSearchParams(window.location.search);
-          const qs = params.toString();
-          const href = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
-          window.history.pushState({ view, pinned: true }, '', href);
-          setHistoryCount(1);
-          return;
-        }
-        const stateView = (window.history.state && window.history.state.view) || null;
+      if (!messageImageViewer) return;
+      if (e.key === 'Escape') closeMessageImage();
       else if (e.key === 'ArrowLeft') prevMessageImage();
       else if (e.key === 'ArrowRight') nextMessageImage();
     };
