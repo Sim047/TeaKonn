@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import api from '../utils/axios';
 import GoogleLoginButton from '../components/GoogleLoginButton';
-import { TeaKonnLogo } from '../components/AuralinkLogo';
+import Logo from '../assets/teakonn-logo.png';
 
 // Use centralized axios instance with normalized baseURL
 
@@ -37,9 +37,9 @@ export default function Register({ onSuccess, switchToLogin }) {
   return (
     <div className="min-h-screen themed-page flex items-center justify-center px-4">
       <div className="w-full max-w-md relative themed-card rounded-2xl p-6">
-        {/* LOGO */}
+        {/* LOGO (match Login page) */}
         <div className="flex justify-center mb-6">
-          <TeaKonnLogo size={64} theme="auto" variant="mark" ariaLabel="TeaKonn" />
+          <img src={Logo} alt="TeaKonn Logo" className="h-16 w-auto object-contain drop-shadow-lg" />
         </div>
 
         {/* Title */}

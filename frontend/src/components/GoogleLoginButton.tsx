@@ -63,7 +63,28 @@ export default function GoogleLoginButton({ onSuccess, className }: Props) {
   }, [clientId]);
 
   if (!clientId) {
-    return null; // Hide button if client id not set
+    return (
+      <div className={className}>
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '10px 16px',
+            borderRadius: 9999,
+            border: '1px solid var(--border, #334155)',
+            background: 'var(--card, #0f172a)',
+            color: 'var(--text, #e2e8f0)',
+            opacity: 0.6,
+            width: 320,
+            cursor: 'not-allowed',
+          }}
+          title="Google login not configured (set VITE_GOOGLE_CLIENT_ID)"
+        >
+          Continue with Google
+        </div>
+      </div>
+    );
   }
 
   return <div ref={btnRef} className={className} />;
