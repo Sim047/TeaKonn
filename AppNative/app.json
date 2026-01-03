@@ -2,6 +2,7 @@
   "expo": {
     "name": "TeaKonn Native",
     "slug": "teakonn-native",
+    "owner": "simsweb",
     "scheme": "teakonn",
     "version": "0.1.1",
     "sdkVersion": "51.0.0",
