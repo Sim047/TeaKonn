@@ -1,0 +1,48 @@
+name: EAS Android Development Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: EAS build profile (default: development)
+        required: false
+        default: development
+  push:
+    branches: [ "main" ]
+    paths:
+      - "AppNative/**"
+      - ".github/workflows/eas-development.yml"
+
+jobs:
+  build-android-dev:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: AppNative
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Expo + EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: EAS Android build (development)
+        run: npx eas-cli build --platform android --profile ${{ github.event.inputs.profile || 'development' }} --non-interactive --wait --json > build.json
+
+      - name: Upload build info
+        uses: actions/upload-artifact@v4
+        with:
+          name: eas-android-${{ github.event.inputs.profile || 'development' }}-build
+          path: build.json
