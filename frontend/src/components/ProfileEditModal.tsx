@@ -13,7 +13,6 @@ type Props = {
 export default function ProfileEditModal({ visible, onClose, user, onUpdated }: Props) {
   const [username, setUsername] = useState(user?.username || '');
   const [email, setEmail] = useState(user?.email || '');
-  const [bio, setBio] = useState(user?.bio || '');
   const [about, setAbout] = useState(user?.about || '');
   const [location, setLocation] = useState(user?.location || '');
   const [saving, setSaving] = useState(false);
@@ -30,7 +29,6 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
   useEffect(() => {
     setUsername(user?.username || '');
     setEmail(user?.email || '');
-    setBio(user?.bio || '');
     setAbout(user?.about || '');
     setLocation(user?.location || '');
     setError(null);
@@ -49,7 +47,7 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
       setError(null);
 
       // Update text fields
-      const { data } = await api.put('/users/me', { username, email, bio, about, location });
+      const { data } = await api.put('/users/me', { username, email, about, location });
       let updatedUser = data?.user || user;
 
       // Optional avatar upload
@@ -134,10 +132,7 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
             <input className="input w-full mt-1" type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} />
           </div>
 
-          <div>
-            <label className="text-xs text-theme-secondary">Bio</label>
-            <textarea className="input w-full mt-1" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} maxLength={300} />
-          </div>
+          {/* Bio removed per request */}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

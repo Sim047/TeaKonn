@@ -44,10 +44,6 @@ interface SidebarProps {
   onShowProfile: (user: any) => void;
   onEditProfile?: (user: any) => void;
   onOpenConversation: (conversation: any) => void;
-  onAvatarUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onAvatarSave: () => void;
-  onAvatarCancel: () => void;
-  selectedAvatar: File | null;
   conversations: any[];
   makeAvatarUrl: (url?: string) => string;
 }
@@ -65,10 +61,6 @@ export default function Sidebar({
   onShowProfile,
   onEditProfile,
   onOpenConversation,
-  onAvatarUpload,
-  onAvatarSave,
-  onAvatarCancel,
-  selectedAvatar,
   conversations,
   makeAvatarUrl
 }: SidebarProps) {
@@ -331,64 +323,7 @@ export default function Sidebar({
             onUpdated={onStatusUpdated}
           />
 
-          {/* Improved Avatar Upload Section */}
-          <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
-            <label className="block text-xs font-semibold mb-3 text-slate-300">
-                Profile Picture
-            </label>
-            
-            {selectedAvatar && (
-              <div className="mb-3 relative">
-                <div className="w-full aspect-square rounded-xl overflow-hidden bg-slate-800 border-2 border-cyan-500">
-                  <img
-                    src={URL.createObjectURL(selectedAvatar)}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="absolute top-2 right-2 px-2 py-1 bg-cyan-600 text-white text-xs rounded-full font-semibold">
-                  Preview
-                </div>
-              </div>
-            )}
-            
-            <div className="relative">
-              <input
-                id="avatar-upload"
-                type="file"
-                accept="image/*"
-                onChange={onAvatarUpload}
-                className="hidden"
-              />
-              <label
-                htmlFor="avatar-upload"
-                className="block w-full px-4 py-2.5 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700 text-white text-sm font-medium rounded-lg cursor-pointer transition-all text-center"
-              >
-                {selectedAvatar ? 'Choose Different Image' : 'Upload New Photo'}
-              </label>
-            </div>
-            
-            {selectedAvatar && (
-              <div className="flex gap-2 mt-3">
-                <button
-                  onClick={onAvatarSave}
-                  className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-all shadow-lg hover:shadow-xl"
-                >
-                  ✓ Save
-                </button>
-                <button
-                  onClick={onAvatarCancel}
-                  className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-lg transition-all"
-                >
-                  ✕ Cancel
-                </button>
-              </div>
-            )}
-            
-            <p className="mt-2 text-xs text-slate-400 text-center">
-              JPG, PNG or WEBP • Max 5MB
-            </p>
-          </div>
+          {/* Profile picture upload removed; use Edit Profile modal */}
         </div>
       )}
 

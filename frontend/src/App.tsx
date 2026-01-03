@@ -70,7 +70,7 @@ type User = {
 
 export default function App() {
   const [theme, setTheme] = useState<string>(getInitialTheme());
-  const ASSISTANT_ENABLED = (import.meta.env.VITE_ASSISTANT_ENABLED ?? 'true') !== 'false';
+  const ASSISTANT_ENABLED = (import.meta.env.VITE_ASSISTANT_ENABLED === 'true');
 
   useEffect(() => {
     // Add smooth transition class
@@ -362,7 +362,7 @@ export default function App() {
   const [dmOpen, setDmOpen] = useState<boolean>(true);
 
   // Missing states and helpers added
-  const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
+  // Sidebar avatar upload removed; handled in Edit Profile modal
   const [unreadIndex, setUnreadIndex] = useState<number>(-1);
   const [enterToSend, setEnterToSend] = useState<boolean>(() => {
     const saved = localStorage.getItem('enterToSend');
@@ -1733,39 +1733,7 @@ export default function App() {
     });
   }
 
-  // AVATAR UPLOAD ------------------------------------------------
-  function uploadAvatarDirect(e: any) {
-    const f = e.target.files?.[0];
-    if (f) setSelectedAvatar(f);
-  }
-
-  async function saveAvatar() {
-    if (!selectedAvatar || !token) return;
-
-    const fd = new FormData();
-    fd.append('avatar', selectedAvatar);
-
-    try {
-      console.log('App: Uploading avatar...');
-      const res = await axios.post(API + '/api/users/avatar', fd, {
-        headers: {
-          Authorization: 'Bearer ' + token,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      console.log('App: Avatar upload response:', res.data);
-      if (res.data?.user) {
-        console.log('App: Updating user state with:', res.data.user);
-        setUser(res.data.user);
-        localStorage.setItem('user', JSON.stringify(res.data.user));
-      }
-
-      setSelectedAvatar(null);
-    } catch (e) {
-      console.error('avatar upload error', e);
-    }
-  }
+  // Avatar upload via sidebar removed; use ProfileEditModal
 
   // LOGOUT -------------------------------------------------------
   function logout() {
@@ -1896,10 +1864,7 @@ export default function App() {
           onShowProfile={showProfile}
           onEditProfile={editMyProfile}
           onOpenConversation={openConversation}
-          onAvatarUpload={uploadAvatarDirect}
-          onAvatarSave={saveAvatar}
-          onAvatarCancel={() => setSelectedAvatar(null)}
-          selectedAvatar={selectedAvatar}
+          /* Avatar upload props removed */
           conversations={conversations}
           makeAvatarUrl={makeAvatarUrl}
         />
