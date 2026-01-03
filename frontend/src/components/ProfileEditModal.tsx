@@ -12,6 +12,7 @@ type Props = {
 
 export default function ProfileEditModal({ visible, onClose, user, onUpdated }: Props) {
   const [username, setUsername] = useState(user?.username || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [about, setAbout] = useState(user?.about || '');
   const [location, setLocation] = useState(user?.location || '');
@@ -19,15 +20,27 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
   const [error, setError] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     setUsername(user?.username || '');
+    setEmail(user?.email || '');
     setBio(user?.bio || '');
     setAbout(user?.about || '');
     setLocation(user?.location || '');
     setError(null);
     setAvatarFile(null);
     setAvatarPreview(null);
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setPasswordError(null);
+    setPasswordSuccess(null);
   }, [user, visible]);
 
   async function saveProfile() {
@@ -36,7 +49,7 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
       setError(null);
 
       // Update text fields
-      const { data } = await api.put('/users/me', { username, bio, about, location });
+      const { data } = await api.put('/users/me', { username, email, bio, about, location });
       let updatedUser = data?.user || user;
 
       // Optional avatar upload
@@ -64,6 +77,33 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
     }
   }
 
+  async function changePassword() {
+    try {
+      setPasswordSaving(true);
+      setPasswordError(null);
+      setPasswordSuccess(null);
+      if (newPassword.length < 8) {
+        setPasswordError('New password must be at least 8 characters');
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        setPasswordError('Passwords do not match');
+        return;
+      }
+      const { data } = await api.post('/users/change-password', { currentPassword, newPassword });
+      if (data?.success) {
+        setPasswordSuccess('Password updated successfully');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      }
+    } catch (e: any) {
+      setPasswordError(e?.response?.data?.message || e?.message || 'Failed to change password');
+    } finally {
+      setPasswordSaving(false);
+    }
+  }
+
   if (!visible) return null;
 
   return (
@@ -83,6 +123,11 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
             <label className="text-xs text-theme-secondary">Username</label>
             <input className="input w-full mt-1" value={username} onChange={(e) => setUsername(e.target.value)} maxLength={30} />
             <p className="text-xs text-theme-secondary mt-1">Allowed: letters, numbers, dot, dash, underscore.</p>
+          </div>
+
+          <div>
+            <label className="text-xs text-theme-secondary">Email</label>
+            <input className="input w-full mt-1" type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} />
           </div>
 
           <div>
@@ -114,6 +159,31 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
               )}
             </div>
             <p className="text-xs text-theme-secondary mt-1">JPG/PNG/WEBP up to 5MB. Cropped to square.</p>
+          </div>
+
+          <div className="mt-6 p-4 rounded-xl border" style={{ borderColor: 'var(--border)' }}>
+            <h4 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Change Password</h4>
+            {passwordError && <div className="text-red-400 text-xs mt-2">{passwordError}</div>}
+            {passwordSuccess && <div className="text-green-400 text-xs mt-2">{passwordSuccess}</div>}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+              <div>
+                <label className="text-xs text-theme-secondary">Current Password</label>
+                <input className="input w-full mt-1" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-xs text-theme-secondary">New Password</label>
+                <input className="input w-full mt-1" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-xs text-theme-secondary">Confirm New Password</label>
+                <input className="input w-full mt-1" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              </div>
+            </div>
+            <div className="mt-3 flex gap-2">
+              <button className="btn" onClick={changePassword} disabled={passwordSaving}>{passwordSaving ? 'Updating…' : 'Update Password'}</button>
+              <button className="px-4 py-2 rounded-lg themed-card" onClick={() => { setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); setPasswordError(null); setPasswordSuccess(null); }}>Clear</button>
+            </div>
+            <p className="text-xs text-theme-secondary mt-2">Minimum 8 characters. If your account was created via Google, you can set a password here.</p>
           </div>
         </div>
 

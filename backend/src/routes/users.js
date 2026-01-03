@@ -5,6 +5,7 @@ import multer from "multer";
 import sharp from "sharp";
 import { fileURLToPath } from "url";
 import { v2 as cloudinary } from 'cloudinary';
+import bcrypt from 'bcrypt';
 
 import auth from "../middleware/auth.js";
 import User from "../models/User.js";
@@ -143,13 +144,14 @@ router.get("/me", auth, async (req, res) => {
 
 /* ---------------------------------------------
    UPDATE LOGGED-IN USER PROFILE
-   Allowed fields: username, bio, about, location
+   Allowed fields: username, email, bio, about, location
 --------------------------------------------- */
 router.put("/me", auth, async (req, res) => {
   try {
-    const { username, bio, about, location } = req.body || {};
+    const { username, email, bio, about, location } = req.body || {};
     const update = {};
     if (typeof username === 'string' && username.trim()) update.username = username.trim();
+    if (typeof email === 'string' && email.trim()) update.email = email.trim().toLowerCase();
     if (typeof bio === 'string') update.bio = bio;
     if (typeof about === 'string') update.about = about;
     if (typeof location === 'string') update.location = location;
@@ -167,6 +169,12 @@ router.put("/me", auth, async (req, res) => {
       if (exists) return res.status(400).json({ message: "Username already taken" });
     }
 
+    // Email uniqueness
+    if (update.email) {
+      const existsEmail = await User.findOne({ email: update.email, _id: { $ne: req.user.id } });
+      if (existsEmail) return res.status(400).json({ message: "Email already in use" });
+    }
+
     const updated = await User.findByIdAndUpdate(req.user.id, update, { new: true })
       .select("_id username email avatar role bio about location favoriteSports followers following");
 
@@ -176,6 +184,39 @@ router.put("/me", auth, async (req, res) => {
   } catch (err) {
     console.error("PUT /api/users/me error:", err);
     return res.status(500).json({ message: "Server error" });
+  }
+});
+
+/* ---------------------------------------------
+   CHANGE PASSWORD
+   Requires: currentPassword (if existing), newPassword
+--------------------------------------------- */
+router.post('/change-password', auth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body || {};
+    if (typeof newPassword !== 'string' || newPassword.length < 8) {
+      return res.status(400).json({ message: 'New password must be at least 8 characters' });
+    }
+
+    const user = await User.findById(req.user.id).select('password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const hasExisting = !!user.password;
+    if (hasExisting) {
+      if (typeof currentPassword !== 'string' || !currentPassword) {
+        return res.status(400).json({ message: 'Current password is required' });
+      }
+      const ok = await bcrypt.compare(currentPassword, user.password);
+      if (!ok) return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    const hash = await bcrypt.hash(newPassword, 10);
+    user.password = hash;
+    await user.save();
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('POST /api/users/change-password error:', err);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 
