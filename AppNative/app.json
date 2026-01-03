@@ -37,7 +37,7 @@
       "EXPO_PUBLIC_API_URL": "https://teakonn-production.up.railway.app/api",
       "EXPO_PUBLIC_GOOGLE_CLIENT_ID_ANDROID": "YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com",
       "EXPO_PUBLIC_GOOGLE_CLIENT_ID_IOS": "YOUR_IOS_CLIENT_ID.apps.googleusercontent.com",
-      "EXPO_PUBLIC_GOOGLE_CLIENT_ID_WEB": "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com"
+      "EXPO_PUBLIC_GOOGLE_CLIENT_ID_WEB": "50477811908-dr8piak3f09p7k624a8oqdh25u5odnkr.apps.googleusercontent.com"
     }
   }
 }

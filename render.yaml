@@ -13,6 +13,8 @@ services:
         sync: false
       - key: FRONTEND_URL
         sync: false
+      - key: GOOGLE_CLIENT_ID
+        value: 50477811908-dr8piak3f09p7k624a8oqdh25u5odnkr.apps.googleusercontent.com
       - key: UPLOAD_DIR
         value: uploads
       - key: AI_ENABLED
