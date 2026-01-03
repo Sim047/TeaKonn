@@ -1,0 +1,54 @@
+name: Build Android APK (EAS)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Install dependencies (AppNative)
+        working-directory: AppNative
+        run: npm ci
+
+      - name: Authenticate to EAS
+        env:
+          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
+        run: |
+          eas whoami || eas login --token "$EAS_TOKEN"
+
+      - name: Build Android APK (production)
+        working-directory: AppNative
+        env:
+          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
+        run: |
+          eas build --platform android --profile production --non-interactive --wait --json > build.json
+          cat build.json
+
+      - name: Download APK artifact
+        id: download
+        working-directory: AppNative
+        run: |
+          ARTIFACT_URL=$(cat build.json | node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(0)); console.log((Array.isArray(j)?j[0]:j)?.artifactUrl||'');")
+          if [ -z "$ARTIFACT_URL" ]; then echo 'No artifactUrl found'; exit 1; fi
+          echo "Artifact URL: $ARTIFACT_URL"
+          curl -L "$ARTIFACT_URL" -o app.apk
+          ls -la
+          echo "apk_path=AppNative/app.apk" >> $GITHUB_OUTPUT
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: TeaKonn-android-apk
+          path: AppNative/app.apk
