@@ -1,8 +1,16 @@
 import Constants from 'expo-constants';
 import axios from 'axios';
 
-const API_BASE = (Constants?.expoConfig?.extra as any)?.EXPO_PUBLIC_API_BASE || process.env.EXPO_PUBLIC_API_BASE || 'http://localhost:3001';
-const API_URL = (Constants?.expoConfig?.extra as any)?.EXPO_PUBLIC_API_URL || process.env.EXPO_PUBLIC_API_URL || `${API_BASE}/api`;
+// Prefer deployed URL by default to avoid accidental localhost usage
+const DEFAULT_API_BASE = 'https://teakonn-production.up.railway.app';
+const API_BASE =
+  (Constants?.expoConfig?.extra as any)?.EXPO_PUBLIC_API_BASE ??
+  process.env.EXPO_PUBLIC_API_BASE ??
+  DEFAULT_API_BASE;
+const API_URL =
+  (Constants?.expoConfig?.extra as any)?.EXPO_PUBLIC_API_URL ??
+  process.env.EXPO_PUBLIC_API_URL ??
+  `${API_BASE}/api`;
 
 export const api = axios.create({
   baseURL: API_URL,

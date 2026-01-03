@@ -4,6 +4,7 @@
     "slug": "teakonn",
     "owner": "simsweb",
     "scheme": "teakonn",
+    "entryPoint": "./index.js",
     "version": "0.1.1",
     "sdkVersion": "54.0.0",
     "platforms": ["android", "ios"],
@@ -28,12 +29,11 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.teakonn.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "package": "com.teakonn.app",
-      "useNextNotificationsApi": true
+      }
     },
     "plugins": [],
     "extra": {
@@ -46,8 +46,6 @@
         "projectId": "ce6cf9cc-c389-4a33-84f5-5f73939968d7"
       }
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    }
+    "runtimeVersion": "0.1.1"
   }
 }
