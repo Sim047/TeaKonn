@@ -105,7 +105,31 @@ export default function App() {
     const raw = localStorage.getItem('user');
     return raw ? JSON.parse(raw) : null;
   });
-  const [authPage, setAuthPage] = useState<'login' | 'register'>('login');
+  const [authPage, setAuthPage] = useState<'login' | 'register'>(() => {
+    try {
+      const qs = new URLSearchParams(window.location.search);
+      const fromUrl = qs.get('auth');
+      if (fromUrl === 'register' || fromUrl === 'login') return fromUrl as any;
+      const saved = localStorage.getItem('auralink-auth-page');
+      return saved === 'register' ? 'register' : 'login';
+    } catch {
+      return 'login';
+    }
+  });
+
+  // Persist auth page and sync to URL so refresh keeps current page
+  useEffect(() => {
+    try {
+      localStorage.setItem('auralink-auth-page', authPage);
+      const params = new URLSearchParams(window.location.search);
+      params.set('auth', authPage);
+      const qs = params.toString();
+      const newUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
+      window.history.replaceState({ ...(window.history.state || {}), authPage }, '', newUrl);
+    } catch (e) {
+      console.warn('Failed to persist auth page to URL/localStorage:', e);
+    }
+  }, [authPage]);
 
   // DM --------------------------------
   const [room, setRoom] = useState<string>('general');

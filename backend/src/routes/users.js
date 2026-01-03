@@ -160,12 +160,16 @@ router.put("/me", auth, async (req, res) => {
       return res.status(400).json({ message: "No valid fields to update" });
     }
 
-    // Enforce reasonable username format
+    // Enforce reasonable username format (preserve case for display)
     if (update.username) {
-      const clean = update.username.toLowerCase().replace(/[^a-z0-9_\.\-]/g, '');
+      function escapeRegExp(str) { return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+      const clean = update.username.replace(/[^a-zA-Z0-9_\.\-]/g, '');
       update.username = clean || update.username;
-      // Ensure uniqueness
-      const exists = await User.findOne({ username: update.username, _id: { $ne: req.user.id } });
+      // Case-insensitive uniqueness check
+      const exists = await User.findOne({
+        username: { $regex: '^' + escapeRegExp(update.username) + '$', $options: 'i' },
+        _id: { $ne: req.user.id },
+      });
       if (exists) return res.status(400).json({ message: "Username already taken" });
     }
 
