@@ -1,0 +1,67 @@
+name: EAS OTA Update
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: EAS update branch (default: development)
+        required: false
+        default: development
+      message:
+        description: Update message
+        required: false
+        default: CI: Update from main
+  push:
+    branches: [ "main" ]
+    paths:
+      - "AppNative/**"
+      - ".github/workflows/eas-update.yml"
+
+jobs:
+  ota-update:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: AppNative
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Expo + EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Publish EAS Update
+        run: npx eas-cli update --branch ${{ github.event.inputs.branch || 'development' }} --message "${{ github.event.inputs.message || 'CI: Update from main' }}" --non-interactive --json > update.json
+
+      - name: Extract link and summarize
+        shell: bash
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y jq
+          GROUP=$(jq -r '.group // .updates[0].group // .updateGroup // .[0].group' update.json)
+          PROJECT_ID=$(jq -r '.expo.extra.eas.projectId // .extra.eas.projectId // empty' app.json)
+          echo "Update group: $GROUP"
+          echo "Project ID: $PROJECT_ID"
+          LINK="exp+://expo-development-client/?url=https://u.expo.dev/$PROJECT_ID/group/$GROUP"
+          echo "Launch in Dev Client: $LINK" >> $GITHUB_STEP_SUMMARY
+          echo "\nRaw update.json:" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          cat update.json >> $GITHUB_STEP_SUMMARY
+          echo '\n```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload update info
+        uses: actions/upload-artifact@v4
+        with:
+          name: eas-update-${{ github.event.inputs.branch || 'development' }}
+          path: AppNative/update.json
