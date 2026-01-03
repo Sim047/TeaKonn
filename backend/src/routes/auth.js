@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import auth from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -37,7 +38,18 @@ router.post('/login', async (req,res)=>{
   }
 });
 
-export default router;
+// Current user from JWT
+router.get('/me', auth, async (req, res) => {
+  try {
+    const id = req.user?.id;
+    const user = await User.findById(id).select('username email avatar role');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    return res.json({ user });
+  } catch (err) {
+    console.error('[auth/me] ', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
  
 // --- Google Sign-In (ID token) ---
 // POST /api/auth/google { idToken: string }
@@ -103,3 +115,5 @@ router.post('/google', async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 });
+
+export default router;

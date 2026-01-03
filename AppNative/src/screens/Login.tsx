@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { login } from '../api';
+import GoogleLoginButton from '../components/GoogleLoginButton';
 
 type Props = {
   onLoggedIn: (token: string) => void;
@@ -47,6 +48,10 @@ export default function Login({ onLoggedIn }: Props) {
         placeholderTextColor="#94A3B8"
       />
       <Button title={loading ? 'Logging in…' : 'Log In'} onPress={doLogin} disabled={loading} />
+      {/* Divider */}
+      <View style={{ height: 12 }} />
+      {/* Google Login */}
+      <GoogleLoginButton onLoggedIn={onLoggedIn} />
     </View>
   );
 }

@@ -161,6 +161,11 @@ MONGO_URI=your_mongodb_connection_string
 
 # Authentication
 JWT_SECRET=your_jwt_secret_key
+# Google OAuth (optional, for Google login)
+# Accepts single or comma-separated client IDs (web/mobile)
+GOOGLE_CLIENT_ID=your_web_client_id.apps.googleusercontent.com
+# or multiple:
+# GOOGLE_CLIENT_IDS=web_client_id.apps.googleusercontent.com,android_client_id.apps.googleusercontent.com,ios_client_id.apps.googleusercontent.com
 
 # Server
 PORT=5000
@@ -178,6 +183,7 @@ UPLOAD_DIR=uploads
 Create `.env` file in the `frontend` directory:
 ```env
 VITE_API_URL=http://localhost:5000
+VITE_GOOGLE_CLIENT_ID=your_web_client_id.apps.googleusercontent.com
 ```
 
 **Setting up Cloudinary (Required for image uploads):**
@@ -206,6 +212,10 @@ npm run dev
 ```
 
 The app will be available at `http://localhost:5173`
+
+### Google Login
+
+Web uses Google Identity Services; set `VITE_GOOGLE_CLIENT_ID` and the login page renders a Google button. The backend verifies the Google ID token at `POST /api/auth/google`, finds/creates a user, and returns our JWT. Mobile (Expo) uses `expo-auth-session` and exchanges the `id_token` with the same endpoint.
 
 ## 📱 How to Use
 
