@@ -5,7 +5,7 @@
     "owner": "simsweb",
     "scheme": "teakonn",
     "version": "0.1.1",
-    "sdkVersion": "51.0.0",
+    "sdkVersion": "54.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -39,7 +39,10 @@
       "EXPO_PUBLIC_API_URL": "https://teakonn-production.up.railway.app/api",
       "EXPO_PUBLIC_GOOGLE_CLIENT_ID_ANDROID": "YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com",
       "EXPO_PUBLIC_GOOGLE_CLIENT_ID_IOS": "YOUR_IOS_CLIENT_ID.apps.googleusercontent.com",
-      "EXPO_PUBLIC_GOOGLE_CLIENT_ID_WEB": "50477811908-dr8piak3f09p7k624a8oqdh25u5odnkr.apps.googleusercontent.com"
+      "EXPO_PUBLIC_GOOGLE_CLIENT_ID_WEB": "50477811908-dr8piak3f09p7k624a8oqdh25u5odnkr.apps.googleusercontent.com",
+      "eas": {
+        "projectId": "e54258ba-9e86-4494-9802-7456808802c5"
+      }
     }
   }
 }
