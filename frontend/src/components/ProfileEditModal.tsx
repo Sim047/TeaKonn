@@ -1,5 +1,5 @@
 // frontend/src/components/ProfileEditModal.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import api from '../utils/api';
 import { X } from 'lucide-react';
 
@@ -28,6 +28,7 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [deletePassword, setDeletePassword] = useState('');
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     setName(user?.name || '');
@@ -122,6 +123,70 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
     }
   }
 
+  // ---- Avatar handling: drag/drop + client-side square resize ----
+  function onPickAvatar() {
+    avatarInputRef.current?.click();
+  }
+
+  async function prepareAvatar(file: File) {
+    try {
+      const objectUrl = URL.createObjectURL(file);
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = (e) => reject(e);
+        i.src = objectUrl;
+      });
+
+      const size = 512; // target square size
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('canvas_ctx');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
+      // Compute square crop from center
+      const minSide = Math.min(img.naturalWidth || img.width, img.naturalHeight || img.height);
+      const sx = ((img.naturalWidth || img.width) - minSide) / 2;
+      const sy = ((img.naturalHeight || img.height) - minSide) / 2;
+
+      ctx.clearRect(0, 0, size, size);
+      ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+
+      const blob: Blob = await new Promise((resolve) =>
+        canvas.toBlob((b) => resolve(b as Blob), 'image/webp', 0.92),
+      );
+      const resizedFile = new File([blob], 'avatar.webp', { type: 'image/webp' });
+
+      setAvatarFile(resizedFile);
+      setAvatarPreview(URL.createObjectURL(blob));
+      URL.revokeObjectURL(objectUrl);
+    } catch (e) {
+      // Fallback to original file if resizing fails
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  }
+
+  function onAvatarInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (f) prepareAvatar(f);
+  }
+
+  function onAvatarDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    const f = e.dataTransfer?.files?.[0];
+    if (f) prepareAvatar(f);
+  }
+
+  function onAvatarDragOver(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
   if (!visible) return null;
 
   return (
@@ -172,17 +237,36 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
 
           <div className="mt-2">
             <label className="text-xs text-theme-secondary">Profile Photo</label>
-            <div className="flex items-center gap-3 mt-2">
-              <input type="file" accept="image/*" onChange={(e) => {
-                const f = e.target.files?.[0] || null;
-                setAvatarFile(f);
-                setAvatarPreview(f ? URL.createObjectURL(f) : null);
-              }} />
-              {avatarPreview && (
-                <img src={avatarPreview} className="w-16 h-16 rounded-lg object-cover border" style={{ borderColor: 'var(--border)' }} />
-              )}
+            <div
+              className="mt-2 rounded-xl border-2 border-dashed themed-card p-3 flex items-center gap-3 hover:border-cyan-500/60 transition-colors"
+              onDrop={onAvatarDrop}
+              onDragOver={onAvatarDragOver}
+            >
+              <div className="w-20 h-20 rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
+                {avatarPreview ? (
+                  <img src={avatarPreview} className="w-full h-full object-cover" alt="Avatar preview" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs text-theme-secondary">No image</div>
+                )}
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-theme-secondary">Drag & drop or choose a photo. Optimized to 512×512 square.</p>
+                <div className="mt-2 flex gap-2">
+                  <button type="button" className="px-3 py-2 rounded-lg btn" onClick={onPickAvatar}>Choose File</button>
+                  {avatarPreview && (
+                    <button type="button" className="px-3 py-2 rounded-lg themed-card" onClick={() => { setAvatarPreview(null); setAvatarFile(null); }}>Remove</button>
+                  )}
+                </div>
+              </div>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                onChange={onAvatarInputChange}
+                className="hidden"
+              />
             </div>
-            <p className="text-xs text-theme-secondary mt-1">JPG/PNG/WEBP up to 5MB. Cropped to square.</p>
+            <p className="text-xs text-theme-secondary mt-1">JPG/PNG/WEBP • up to 5MB • We resize and crop to a square for best fit.</p>
           </div>
 
           <div className="mt-6 p-4 rounded-xl border" style={{ borderColor: 'var(--border)' }}>
