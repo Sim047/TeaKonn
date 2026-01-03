@@ -27,31 +27,41 @@ export default function AllUsersModern({
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState<number>(1);
+  const [limit] = useState<number>(24);
+  const [hasMore, setHasMore] = useState<boolean>(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [statuses, setStatuses] = useState<Record<string, any>>({});
 
   useEffect(() => {
     if (!token) return;
-    loadUsers();
+    // initial load
+    loadUsers(true);
   }, [token]);
 
-  async function loadUsers(q = '') {
+  async function loadUsers(initial = false) {
     try {
       setLoading(true);
-
-      const url = `${API}/api/users/all${q ? '?search=' + encodeURIComponent(q) : ''}`;
-
-      const res = await axios.get(url, {
+      const nextPage = initial ? 1 : page + 1;
+      const params: any = { page: nextPage, limit };
+      if (search && search.trim()) params.search = search.trim();
+      const res = await axios.get(`${API}/api/users/all`, {
         headers: { Authorization: `Bearer ${token}` },
+        params,
       });
-
-      const normalized = (res.data || []).map((u: any) => ({
+      const payload = res.data || {};
+      const list = payload.users || payload || [];
+      const normalized = (list || []).map((u: any) => ({
         ...(u || {}),
         isFollowed: !!u.isFollowed,
       }));
-
-      setUsers(normalized);
+      setUsers((prev) => (initial ? normalized : [...prev, ...normalized]));
+      // Update pagination state
+      const total: number = payload.total || 0;
+      const currentCount = (initial ? normalized.length : (users.length + normalized.length));
+      setHasMore(currentCount < total || normalized.length === limit);
+      setPage(nextPage);
     } catch (err) {
       console.error('AllUsers load err', err);
     } finally {
@@ -78,9 +88,10 @@ export default function AllUsersModern({
   useEffect(() => {
     const t = setTimeout(() => {
       if (!token) return;
-      loadUsers(search);
+      // reset to page 1 on search change
+      setPage(1);
+      loadUsers(true);
     }, 300);
-
     return () => clearTimeout(t);
   }, [search]);
 
@@ -134,7 +145,7 @@ export default function AllUsersModern({
       <div className="sticky top-0 z-10 themed-sticky">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-heading">All Users</h1>
+            <h1 className="text-2xl font-bold text-heading">People</h1>
 
             <div className="flex items-center gap-2">
               <div className="flex rounded-lg p-1 themed-card">
@@ -212,6 +223,18 @@ export default function AllUsersModern({
                 isCurrentUser={user._id === currentUserId}
               />
             ))}
+            {hasMore && (
+              <div className="col-span-full flex justify-center">
+                <button
+                  className="px-4 py-2 rounded-xl border text-sm"
+                  style={{ borderColor: 'var(--border)' }}
+                  onClick={() => loadUsers(false)}
+                  disabled={loading}
+                >
+                  {loading ? 'Loading…' : 'Load more'}
+                </button>
+              </div>
+            )}
           </div>
         )}
 

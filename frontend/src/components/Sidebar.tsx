@@ -398,7 +398,7 @@ export default function Sidebar({
         />
         <NavButton
           icon={Users}
-          label="All Users"
+          label="People"
           isCollapsed={isCollapsed}
           onClick={() => {
             onNavigate?.('all-users');

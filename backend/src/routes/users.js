@@ -86,10 +86,13 @@ router.post("/avatar", auth, upload.single("avatar"), async (req, res) => {
 router.get("/all", auth, async (req, res) => {
   try {
     const meId = req.user.id;
-    const searchQuery = req.query.search || "";
+    const searchQuery = String(req.query.search || "");
+    const page = Math.max(parseInt(String(req.query.page || '1'), 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(String(req.query.limit || '24'), 10) || 24, 1), 100);
+    const skip = (page - 1) * limit;
 
-    // Build search filter
-    let filter = {};
+    // Build search filter and exclude self
+    const filter = { _id: { $ne: meId } };
     if (searchQuery) {
       filter.$or = [
         { username: { $regex: searchQuery, $options: "i" } },
@@ -97,21 +100,24 @@ router.get("/all", auth, async (req, res) => {
       ];
     }
 
-    const users = await User.find(filter, "username email avatar followers following").lean();
+    const total = await User.countDocuments(filter);
+    const users = await User.find(filter, "username email avatar followers following")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
 
-    const formatted = users
-      .filter((u) => String(u._id) !== String(meId))
-      .map((u) => ({
-        _id: u._id,
-        username: u.username,
-        email: u.email,
-        avatar: u.avatar,
-        followersCount: u.followers?.length || 0,
-        followingCount: u.following?.length || 0,
-        isFollowed: u.followers?.map(String).includes(String(meId)), // <— FIXED
-      }));
+    const formatted = users.map((u) => ({
+      _id: u._id,
+      username: u.username,
+      email: u.email,
+      avatar: u.avatar,
+      followersCount: u.followers?.length || 0,
+      followingCount: u.following?.length || 0,
+      isFollowed: (u.followers || []).map(String).includes(String(meId)),
+    }));
 
-    res.json(formatted);
+    res.json({ users: formatted, total, page, limit });
   } catch (err) {
     console.error("GET /api/users/all error:", err);
     res.status(500).json({ message: "Server error" });
