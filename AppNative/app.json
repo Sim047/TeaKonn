@@ -6,6 +6,7 @@
     "scheme": "teakonn",
     "version": "0.1.1",
     "sdkVersion": "54.0.0",
+    "platforms": ["android", "ios"],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -17,7 +18,8 @@
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/e54258ba-9e86-4494-9802-7456808802c5"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -43,6 +45,9 @@
       "eas": {
         "projectId": "e54258ba-9e86-4494-9802-7456808802c5"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }
