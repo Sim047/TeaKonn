@@ -268,4 +268,17 @@ All changes committed and pushed. Vercel should auto-deploy within 2-3 minutes.
 
 ---
 
-Last Updated: December 17, 2025 ✅
+Last Updated: January 3, 2026 ✅
+
+---
+
+## EAS OTA Updates (Local)
+
+- **Project**: teakonn (projectId: ce6cf9cc-c389-4a33-84f5-5f73939968d7)
+- **Runtime**: 0.1.1
+
+- **Development**: Update group 9072f6ec-778b-4538-8411-8e04364cea07
+  - Dev Client link: exp+://expo-development-client/?url=https://u.expo.dev/ce6cf9cc-c389-4a33-84f5-5f73939968d7/group/9072f6ec-778b-4538-8411-8e04364cea07
+
+- **Production**: Update group 40378b42-2b16-4133-8082-5f7560dc1d22
+  - Dev Client link: exp+://expo-development-client/?url=https://u.expo.dev/ce6cf9cc-c389-4a33-84f5-5f73939968d7/group/40378b42-2b16-4133-8082-5f7560dc1d22
