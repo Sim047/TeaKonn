@@ -14,7 +14,9 @@ declare global {
 
 export default function GoogleLoginButton({ onSuccess, className }: Props) {
   const btnRef = useRef<HTMLDivElement | null>(null);
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const clientId =
+    (typeof window !== 'undefined' && ((window as any).__GOOGLE_CLIENT_ID || localStorage.getItem('GOOGLE_CLIENT_ID'))) ||
+    import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   useEffect(() => {
     if (!clientId) return; // Not configured
@@ -79,7 +81,7 @@ export default function GoogleLoginButton({ onSuccess, className }: Props) {
             width: 320,
             cursor: 'not-allowed',
           }}
-          title="Google login not configured (set VITE_GOOGLE_CLIENT_ID)"
+          title="Google login not configured (set VITE_GOOGLE_CLIENT_ID or window.__GOOGLE_CLIENT_ID/localStorage.GOOGLE_CLIENT_ID)"
         >
           Continue with Google
         </div>
