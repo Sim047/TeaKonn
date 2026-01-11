@@ -20,6 +20,7 @@ export default function Notifications({ token, onBack }: any) {
   const [filter, setFilter] = useState<'all' | 'events' | 'bookings' | 'followers'>('all');
   const [bookingModal, setBookingModal] = useState<{ open: boolean; data?: any }>(() => ({ open: false }));
   const [tokenModal, setTokenModal] = useState<{ open: boolean; data?: any }>(() => ({ open: false }));
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     loadAll();
@@ -168,6 +169,7 @@ export default function Notifications({ token, onBack }: any) {
         user: u,
       }));
       setFollowers(followersList);
+      setCurrentUser(me);
     } catch (err) {
       console.error('Load notifications error:', err);
     } finally {
@@ -219,6 +221,13 @@ export default function Notifications({ token, onBack }: any) {
       const res = await axios.get(`${API}/api/booking-requests/${brId}`, { headers: { Authorization: `Bearer ${token}` } });
       setBookingModal({ open: true, data: res.data });
     } catch (e) {
+      try {
+        const status = (e as any)?.response?.status;
+        if (status === 403) {
+          alert('You are not authorized to view this booking request. Try replying in chat instead.');
+          return;
+        }
+      } catch {}
       console.error('View booking request failed', e);
     }
   }
@@ -360,12 +369,27 @@ export default function Notifications({ token, onBack }: any) {
                           }}>
                             <MessageSquare className="w-4 h-4 inline mr-1" /> Reply in Chat
                           </button>
-                          <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>viewBookingRequest(notif.id || notif.bookingRequestId)}>
-                            View Request
-                          </button>
-                          <button className="px-3 py-1 rounded-lg bg-teal-600 text-white text-sm" onClick={()=>generateTokenForBooking(notif.id || notif.bookingRequestId)}>
-                            Generate Token
-                          </button>
+                          {(() => {
+                            const uid = currentUser?._id;
+                            const ownerId = notif.owner?._id || notif.owner;
+                            const requesterId = notif.requester?._id || notif.requester;
+                            const canView = uid && (String(uid) === String(ownerId) || String(uid) === String(requesterId));
+                            const isOwner = uid && String(uid) === String(ownerId);
+                            return (
+                              <>
+                                {canView && (
+                                  <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>viewBookingRequest(notif.id || notif.bookingRequestId)}>
+                                    View Request
+                                  </button>
+                                )}
+                                {isOwner && (
+                                  <button className="px-3 py-1 rounded-lg bg-teal-600 text-white text-sm" onClick={()=>generateTokenForBooking(notif.id || notif.bookingRequestId)}>
+                                    Generate Token
+                                  </button>
+                                )}
+                              </>
+                            );
+                          })()}
                         </div>
                       </>
                     )}
