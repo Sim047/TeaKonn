@@ -57,7 +57,7 @@ export default function Notifications({ token, onBack }: any) {
           const item = {
             id: payload.bookingRequestId || Math.random().toString(36),
             kind: payload.kind,
-            title: payload.title,
+            title: payload.requester?.username || 'New booking request',
             message: payload.message,
             date: payload.date || new Date().toISOString(),
             venue: payload.venue,
@@ -72,7 +72,7 @@ export default function Notifications({ token, onBack }: any) {
           const item = {
             id: (payload.bookingRequestId || '') + '-token',
             kind: 'booking_token',
-            title: payload.title || 'Your request has a response',
+            title: payload.owner?.username || 'Response',
             message: payload.message || `A response was issued for ${payload.venue?.name || 'your request'}`,
             date: payload.date || new Date().toISOString(),
             venue: payload.venue,
@@ -148,7 +148,7 @@ export default function Notifications({ token, onBack }: any) {
       const received = (receivedRes.data?.requests || []).map((r: any) => ({
         id: r._id,
         kind: 'booking_received',
-        title: `New booking request for ${r.venue?.name || 'your venue'}`,
+        title: r.requester?.username || 'New booking request',
         message: `From ${r.requester?.username || 'someone'}`,
         date: r.createdAt || new Date().toISOString(),
         venue: r.venue,
@@ -368,11 +368,7 @@ export default function Notifications({ token, onBack }: any) {
                           </span>
                           <span className="text-xs text-theme-secondary">{dayjs(notif.date).fromNow()}</span>
                         </div>
-                        <div className="mt-3">
-                          <span className="px-3 py-1 rounded-lg text-sm bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                            You have a booking request for this venue.
-                          </span>
-                        </div>
+                        {/* Simplified: no extra sentence, the title shows requester */}
                       </>
                     )}
 
@@ -385,11 +381,7 @@ export default function Notifications({ token, onBack }: any) {
                           </span>
                           <span className="text-xs text-theme-secondary">{dayjs(notif.date).fromNow()}</span>
                         </div>
-                        <div className="mt-3">
-                          <span className="px-3 py-1 rounded-lg text-sm bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400">
-                            Your request has a response.
-                          </span>
-                        </div>
+                        {/* Simplified: no extra sentence, the title shows owner */}
                       </>
                     )}
 
