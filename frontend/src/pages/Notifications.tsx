@@ -43,7 +43,7 @@ export default function Notifications({ token, onBack }: any) {
             },
             ...prev,
           ]);
-        } else if (payload.kind === 'booking_received' || payload.kind === 'booking_sent') {
+        } else if (payload.kind === 'booking_received') {
           const item = {
             id: payload.bookingRequestId || Math.random().toString(36),
             kind: payload.kind,
@@ -60,9 +60,9 @@ export default function Notifications({ token, onBack }: any) {
         } else if (payload.kind === 'booking_token') {
           const item = {
             id: (payload.bookingRequestId || '') + '-token',
-            kind: 'booking_sent',
-            title: payload.title || 'Booking token issued',
-            message: payload.message || 'A booking token was generated',
+            kind: 'booking_token',
+            title: payload.title || 'Your request has a response',
+            message: payload.message || `A response was issued for ${payload.venue?.name || 'your request'}`,
             date: payload.date || new Date().toISOString(),
             venue: payload.venue,
             requester: payload.requester,
@@ -145,18 +145,8 @@ export default function Notifications({ token, onBack }: any) {
         status: r.status,
         conversation: r.conversation?._id || r.conversation,
       }));
-      const sent = (sentRes.data?.requests || []).map((r: any) => ({
-        id: r._id,
-        kind: 'booking_sent',
-        title: `Your booking request to ${r.venue?.name || 'venue'}`,
-        message: `Status: ${r.status || 'pending'}`,
-        date: r.createdAt || new Date().toISOString(),
-        venue: r.venue,
-        requester: r.requester,
-        owner: r.owner,
-        status: r.status,
-        conversation: r.conversation?._id || r.conversation,
-      }));
+      // Requester side: do not include sent requests here; only show when token is generated via realtime notification
+      const sent: any[] = [];
       setBookingNotifs([...received, ...sent]);
 
       // Followers
@@ -357,40 +347,27 @@ export default function Notifications({ token, onBack }: any) {
                           </span>
                           <span className="text-xs text-theme-secondary">{dayjs(notif.date).fromNow()}</span>
                         </div>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>{
-                            const convId = notif.conversation;
-                            if (convId) openConversationById(convId);
-                            else openChatWith(notif.requester?._id || notif.requester);
-                          }}>
-                            <MessageSquare className="w-4 h-4 inline mr-1" /> Reply in Chat
-                          </button>
+                        <div className="mt-3">
+                          <span className="px-3 py-1 rounded-lg text-sm border" style={{ borderColor: 'var(--border)' }}>
+                            You have a booking request for this venue.
+                          </span>
                         </div>
                       </>
                     )}
 
-                    {notif.kind==='booking_sent' && (
+                    {notif.kind==='booking_token' && (
                       <>
                         <p className="text-theme-secondary mb-3">Venue: {notif.venue?.name || 'Venue'}</p>
                         <div className="flex items-center gap-2">
                           <span className={'px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}>
-                            Your Request
+                            Response Received
                           </span>
                           <span className="text-xs text-theme-secondary">{dayjs(notif.date).fromNow()}</span>
                         </div>
-                        <div className="mt-3 flex gap-2">
-                          <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>{
-                            const convId = notif.conversation;
-                            if (convId) openConversationById(convId);
-                            else openChatWith(notif.owner?._id || notif.owner);
-                          }}>
-                            <MessageSquare className="w-4 h-4 inline mr-1" /> Message Owner
-                          </button>
-                          {notif.token?.code ? (
-                            <button className="px-3 py-1 rounded-lg bg-cyan-600 text-white text-sm" onClick={()=> setTokenModal({ open: true, data: notif.token })}>
-                              View Token
-                            </button>
-                          ) : null}
+                        <div className="mt-3">
+                          <span className="px-3 py-1 rounded-lg text-sm border" style={{ borderColor: 'var(--border)' }}>
+                            Your request has a response.
+                          </span>
                         </div>
                       </>
                     )}
