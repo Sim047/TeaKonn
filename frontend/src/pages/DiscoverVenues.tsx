@@ -100,6 +100,10 @@ export default function DiscoverVenues({ token }: { token: string | null }) {
       return;
     }
     try {
+      const target = items.find((v) => v._id === venueId);
+      const name = target?.name || 'this venue';
+      const ok = typeof window !== 'undefined' ? window.confirm(`Send a booking request for ${name}?`) : true;
+      if (!ok) return;
       await axios.post(`${API_URL}/booking-requests/create`, { venueId }, { headers: { Authorization: `Bearer ${token}` } });
       alert('Booking request created. Check chat for negotiation.');
     } catch (e: any) {

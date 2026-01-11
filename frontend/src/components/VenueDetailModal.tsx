@@ -19,6 +19,10 @@ export default function VenueDetailModal({ venue, onClose, token }: VenueDetailM
 
   async function requestBooking() {
     try {
+      const venueName = venue.name || 'this venue';
+      const ok = typeof window !== 'undefined' ? window.confirm(`Send a booking request for ${venueName}?`)
+        : true;
+      if (!ok) return;
       if (!token) return;
       setSubmitting(true);
       await axios.post(
