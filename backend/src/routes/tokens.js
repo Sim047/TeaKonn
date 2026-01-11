@@ -31,6 +31,12 @@ router.post("/generate", auth, async (req, res) => {
       return res.status(403).json({ error: "Only venue owner can generate token" });
     }
 
+    // Prevent duplicate tokens for the same booking request
+    const existingActive = await BookingToken.findOne({ bookingRequest: br._id, status: 'active' });
+    if (existingActive || br.status === 'token_generated') {
+      return res.status(400).json({ error: 'Token already generated for this request' });
+    }
+
     // Ensure a successful payment exists by owner for this bookingRequest
     const payment = await Payment.findOne({ bookingRequest: br._id, initiator: req.user.id, status: "success" });
     if (!payment) return res.status(400).json({ error: "Payment required before token generation" });
