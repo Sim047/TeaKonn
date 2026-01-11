@@ -12,6 +12,7 @@ interface VenueDetailModalProps {
 
 export default function VenueDetailModal({ venue, onClose, token }: VenueDetailModalProps) {
   const [submitting, setSubmitting] = React.useState(false);
+  const [idx, setIdx] = React.useState(0);
   const API = API_URL.replace(/\/api$/, '');
 
   if (!venue) return null;
@@ -36,7 +37,8 @@ export default function VenueDetailModal({ venue, onClose, token }: VenueDetailM
     }
   }
 
-  const img = Array.isArray(venue.images) && venue.images.length > 0 ? venue.images[0] : null;
+  const images: string[] = Array.isArray(venue.images) ? venue.images : [];
+  const img = images.length > 0 ? images[Math.min(idx, images.length - 1)] : null;
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -52,8 +54,19 @@ export default function VenueDetailModal({ venue, onClose, token }: VenueDetailM
         </div>
 
         {img ? (
-          <div className="w-full h-60 sm:h-72 overflow-hidden">
+          <div className="relative w-full h-60 sm:h-72 overflow-hidden">
             <img src={img} alt={venue.name} className="w-full h-full object-cover" />
+            {images.length > 1 && (
+              <>
+                <button aria-label="Previous" className="absolute left-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded-md bg-black/40 text-white" onClick={() => setIdx((i) => (i - 1 + images.length) % images.length)}>‹</button>
+                <button aria-label="Next" className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded-md bg-black/40 text-white" onClick={() => setIdx((i) => (i + 1) % images.length)}>›</button>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2">
+                  {images.map((u, i) => (
+                    <button key={u + i} className={`h-2 w-2 rounded-full ${i === idx ? 'bg-white' : 'bg-white/50'}`} onClick={() => setIdx(i)} aria-label={`Image ${i + 1}`} />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <div className="w-full h-48 flex items-center justify-center themed-card">
@@ -90,8 +103,9 @@ export default function VenueDetailModal({ venue, onClose, token }: VenueDetailM
             <button
               className="themed-card px-3 py-2 text-sm flex items-center gap-2 w-full sm:w-auto"
               onClick={() => {
-                if (venue.owner) {
-                  try { localStorage.setItem('auralink-open-chat-with', String(venue.owner)); } catch {}
+                const ownerId = typeof venue.owner === 'object' ? venue.owner?._id : venue.owner;
+                if (ownerId) {
+                  try { localStorage.setItem('auralink-open-chat-with', String(ownerId)); } catch {}
                 }
                 window.location.href = '/?view=dashboard';
               }}

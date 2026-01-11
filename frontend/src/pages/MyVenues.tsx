@@ -350,6 +350,12 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
               }).map((v) => (
                 <div key={v._id} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
                   <div className="h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80 group-hover:opacity-100" />
+                  {Array.isArray(v.images) && v.images.length > 0 && (
+                    <div className="relative w-full h-40 sm:h-48 overflow-hidden rounded-xl mb-3">
+                      <img src={v.images[0]} alt={v.name} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/0 to-transparent" />
+                    </div>
+                  )}
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                     <div>
                       <div className="text-lg font-semibold text-heading">{v.name}</div>
@@ -409,6 +415,12 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                 {allVenues.map((v: any) => (
                   <div key={v._id || `${v.name}-${v.location?.city}`} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all">
                     <div className="h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80" />
+                    {Array.isArray(v.images) && v.images.length > 0 && (
+                      <div className="relative w-full h-40 sm:h-48 overflow-hidden rounded-xl mb-3">
+                        <img src={v.images[0]} alt={v.name} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/0 to-transparent" />
+                      </div>
+                    )}
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                       <div>
                         <div className="text-lg font-semibold text-heading">{v.name}</div>
@@ -423,6 +435,13 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                       <div className="mt-2 flex items-center gap-2 text-sm text-theme-secondary">
                         <Users className="w-4 h-4 text-[var(--accent-amber)]" />
                         <span>Capacity: {v.capacity?.max}</span>
+                      </div>
+                    )}
+                    {v.owner?._id && (
+                      <div className="mt-3">
+                        <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => startConversationWithUser(v.owner?._id)}>
+                          Message Owner
+                        </button>
                       </div>
                     )}
                   </div>
