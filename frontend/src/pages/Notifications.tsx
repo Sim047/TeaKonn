@@ -198,6 +198,7 @@ export default function Notifications({ token, onBack }: any) {
       window.location.href = url.toString();
     } catch (e) {
       console.error('Open chat failed', e);
+      alert('Could not open chat. Please try again.');
     }
   }
 
@@ -205,7 +206,10 @@ export default function Notifications({ token, onBack }: any) {
     try {
       const res = await axios.get(`${API}/api/conversations`, { headers: { Authorization: `Bearer ${token}` } });
       const conv = (res.data || []).find((c: any) => String(c._id) === String(convId));
-      if (!conv) return;
+      if (!conv) {
+        alert('Conversation not found. Try starting a new chat.');
+        return;
+      }
       localStorage.setItem('auralink-active-conversation', JSON.stringify(conv));
       localStorage.setItem('auralink-in-dm', 'true');
       const url = new URL(window.location.href);
@@ -213,6 +217,7 @@ export default function Notifications({ token, onBack }: any) {
       window.location.href = url.toString();
     } catch (e) {
       console.error('Open conversation by id failed', e);
+      alert('Could not open existing conversation. Please try again.');
     }
   }
 
@@ -374,7 +379,11 @@ export default function Notifications({ token, onBack }: any) {
                           <span className="text-xs text-theme-secondary">{dayjs(notif.date).fromNow()}</span>
                         </div>
                         <div className="mt-3 flex gap-2">
-                          <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>openChatWith(notif.owner?._id || notif.owner)}>
+                          <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>{
+                            const convId = notif.conversation;
+                            if (convId) openConversationById(convId);
+                            else openChatWith(notif.owner?._id || notif.owner);
+                          }}>
                             <MessageSquare className="w-4 h-4 inline mr-1" /> Message Owner
                           </button>
                           {notif.token?.code ? (
