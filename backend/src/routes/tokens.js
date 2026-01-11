@@ -4,6 +4,7 @@ import BookingToken from "../models/BookingToken.js";
 import BookingRequest from "../models/BookingRequest.js";
 import Payment from "../models/Payment.js";
 import Message from "../models/Message.js";
+import Conversation from "../models/Conversation.js";
 
 const router = express.Router();
 
@@ -65,6 +66,32 @@ router.post("/generate", auth, async (req, res) => {
           bookingRequestId: br._id,
           token: { code: token.code, expiresAt: token.expiresAt }
         });
+
+        // Also send a DM message in the existing (or new) 1:1 conversation
+        const ownerId = br.owner?._id || br.owner;
+        const requesterId = br.requester?._id || br.requester;
+        let conv = await Conversation.findOne({ participants: { $all: [ownerId, requesterId] }, isGroup: false });
+        if (!conv) {
+          conv = await Conversation.create({ participants: [ownerId, requesterId], isGroup: false });
+        }
+
+        const dmText = `Booking token issued for ${br.venue?.name || 'venue'}\nCode: ${token.code}\nExpires: ${token.expiresAt.toISOString()}`;
+        const saved = await Message.create({
+          room: conv._id.toString(),
+          sender: ownerId,
+          text: dmText,
+          fileUrl: "",
+          replyTo: null,
+          createdAt: new Date(),
+        });
+
+        try {
+          await Conversation.findByIdAndUpdate(conv._id, { lastMessage: saved._id, updatedAt: new Date() });
+        } catch {}
+
+        const populatedMsg = await Message.findById(saved._id)
+          .populate('sender', 'username avatar');
+        io.to(conv._id.toString()).emit('receive_message', populatedMsg);
       } catch (e) {
         console.warn('token notify emit failed:', e?.message || e);
       }
