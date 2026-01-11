@@ -23,6 +23,7 @@ import Discover from './pages/Discover';
 import DiscoverVenues from './pages/DiscoverVenues';
 import SportsEvents from './pages/SportsEvents';
 import Dashboard from './pages/Dashboard';
+import Notifications from './pages/Notifications';
 import MyEvents from './pages/MyEvents';
 import MyActivities from './pages/MyActivities';
 import MyServices from './pages/MyServices';
@@ -257,6 +258,7 @@ export default function App() {
     | 'group-chats'
     | 'user-content'
     | 'past-events'
+    | 'notifications'
     | 'my-activities'
     | 'my-events'
     | 'my-services'
@@ -2095,6 +2097,14 @@ export default function App() {
             currentUserId={user?._id}
             onShowProfile={showProfile}
             onOpenConversation={openConversation}
+          />
+        )}
+
+        {/* NOTIFICATIONS PAGE */}
+        {view === 'notifications' && (
+          <Notifications
+            token={token}
+            onBack={() => navigateTo('dashboard')}
           />
         )}
 
