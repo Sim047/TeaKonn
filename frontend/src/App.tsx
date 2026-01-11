@@ -453,6 +453,20 @@ export default function App() {
     if (index === 0) return true;
     return messages[index - 1]?.sender?._id !== messages[index]?.sender?._id;
   }
+  // Group consecutive messages by the same sender so they render as one trail
+  function groupConsecutiveMessages(list: any[]) {
+    const groups: Array<{ senderId: string; items: any[] }> = [];
+    for (const m of list) {
+      const sid = String(m.sender?._id || m.sender?.id || '');
+      const last = groups[groups.length - 1];
+      if (last && String(last.senderId) === sid) {
+        last.items.push(m);
+      } else {
+        groups.push({ senderId: sid, items: [m] });
+      }
+    }
+    return groups;
+  }
 
   function toggleEnterToSend() {
     const newValue = !enterToSend;
