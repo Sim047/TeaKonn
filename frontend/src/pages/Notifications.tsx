@@ -166,7 +166,7 @@ export default function Notifications({ token, onBack }: any) {
         message: `A response was issued for ${t.venue?.name || 'your request'}`,
         date: t.createdAt || t.expiresAt || new Date().toISOString(),
         venue: t.venue,
-        requester: currentUser, // me
+        requester: me, // current user
         owner: t.owner,
         status: 'token_generated',
         token: { code: t.code, expiresAt: t.expiresAt },
