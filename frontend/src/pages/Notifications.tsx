@@ -18,6 +18,8 @@ export default function Notifications({ token, onBack }: any) {
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<'upcoming' | 'past'>('upcoming');
   const [filter, setFilter] = useState<'all' | 'events' | 'bookings' | 'followers'>('all');
+  const [bookingModal, setBookingModal] = useState<{ open: boolean; data?: any }>(() => ({ open: false }));
+  const [tokenModal, setTokenModal] = useState<{ open: boolean; data?: any }>(() => ({ open: false }));
 
   useEffect(() => {
     loadAll();
@@ -51,6 +53,7 @@ export default function Notifications({ token, onBack }: any) {
             requester: payload.requester,
             owner: payload.owner,
             status: payload.status,
+            conversation: payload.conversation,
           } as any;
           setBookingNotifs((prev) => [item, ...prev]);
         } else if (payload.kind === 'booking_token') {
@@ -64,6 +67,7 @@ export default function Notifications({ token, onBack }: any) {
             requester: payload.requester,
             owner: payload.owner,
             status: 'token_generated',
+            token: payload.token,
           } as any;
           setBookingNotifs((prev) => [item, ...prev]);
         }
@@ -185,9 +189,44 @@ export default function Notifications({ token, onBack }: any) {
       });
       localStorage.setItem('auralink-active-conversation', JSON.stringify(res.data));
       localStorage.setItem('auralink-in-dm', 'true');
-      window.location.href = '/';
+      const url = new URL(window.location.href);
+      url.searchParams.set('view', 'chat');
+      window.location.href = url.toString();
     } catch (e) {
       console.error('Open chat failed', e);
+    }
+  }
+
+  async function openConversationById(convId: string) {
+    try {
+      const res = await axios.get(`${API}/api/conversations`, { headers: { Authorization: `Bearer ${token}` } });
+      const conv = (res.data || []).find((c: any) => String(c._id) === String(convId));
+      if (!conv) return;
+      localStorage.setItem('auralink-active-conversation', JSON.stringify(conv));
+      localStorage.setItem('auralink-in-dm', 'true');
+      const url = new URL(window.location.href);
+      url.searchParams.set('view', 'chat');
+      window.location.href = url.toString();
+    } catch (e) {
+      console.error('Open conversation by id failed', e);
+    }
+  }
+
+  async function viewBookingRequest(brId: string) {
+    try {
+      const res = await axios.get(`${API}/api/booking-requests/${brId}`, { headers: { Authorization: `Bearer ${token}` } });
+      setBookingModal({ open: true, data: res.data });
+    } catch (e) {
+      console.error('View booking request failed', e);
+    }
+  }
+
+  async function generateTokenForBooking(brId: string) {
+    try {
+      const res = await axios.post(`${API}/api/tokens/generate`, { bookingRequestId: brId }, { headers: { Authorization: `Bearer ${token}` } });
+      setTokenModal({ open: true, data: res.data });
+    } catch (e) {
+      console.error('Generate token failed', e);
     }
   }
 
@@ -310,9 +349,19 @@ export default function Notifications({ token, onBack }: any) {
                           </span>
                           <span className="text-xs text-theme-secondary">{dayjs(notif.date).fromNow()}</span>
                         </div>
-                        <div className="mt-3 flex gap-2">
-                          <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>openChatWith(notif.requester?._id || notif.requester)}>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>{
+                            const convId = notif.conversation;
+                            if (convId) openConversationById(convId);
+                            else openChatWith(notif.requester?._id || notif.requester);
+                          }}>
                             <MessageSquare className="w-4 h-4 inline mr-1" /> Reply in Chat
+                          </button>
+                          <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>viewBookingRequest(notif.id)}>
+                            View Request
+                          </button>
+                          <button className="px-3 py-1 rounded-lg bg-teal-600 text-white text-sm" onClick={()=>generateTokenForBooking(notif.id)}>
+                            Generate Token
                           </button>
                         </div>
                       </>
@@ -331,6 +380,11 @@ export default function Notifications({ token, onBack }: any) {
                           <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>openChatWith(notif.owner?._id || notif.owner)}>
                             <MessageSquare className="w-4 h-4 inline mr-1" /> Message Owner
                           </button>
+                          {notif.token?.code ? (
+                            <button className="px-3 py-1 rounded-lg bg-cyan-600 text-white text-sm" onClick={()=> setTokenModal({ open: true, data: notif.token })}>
+                              View Token
+                            </button>
+                          ) : null}
                         </div>
                       </>
                     )}
@@ -353,5 +407,45 @@ export default function Notifications({ token, onBack }: any) {
         )}
       </div>
     </div>
+    {/* Booking Request Modal */}
+    {bookingModal.open && (
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={()=>setBookingModal({ open: false })}>
+        <div className="rounded-2xl p-6 themed-card w-[90%] max-w-lg" onClick={(e)=>e.stopPropagation()}>
+          <h3 className="text-lg font-bold mb-3">Booking Request</h3>
+          <div className="text-sm text-theme-secondary mb-4">{bookingModal.data?.venue?.name || 'Venue'}</div>
+          <div className="space-y-2 text-sm">
+            <div><strong>Requester:</strong> {bookingModal.data?.requester?.username || 'User'}</div>
+            <div><strong>Status:</strong> {bookingModal.data?.status}</div>
+            {bookingModal.data?.notes ? (<div><strong>Notes:</strong> {bookingModal.data.notes}</div>) : null}
+          </div>
+          <div className="mt-4 flex gap-2">
+            <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>{
+              const convId = bookingModal.data?.conversation?._id || bookingModal.data?.conversation;
+              if (convId) openConversationById(convId);
+              else openChatWith(bookingModal.data?.requester?._id || bookingModal.data?.requester);
+            }}>Open Chat</button>
+            <button className="px-3 py-1 rounded-lg bg-teal-600 text-white text-sm" onClick={()=>{
+              const id = bookingModal.data?._id;
+              if (id) generateTokenForBooking(id);
+            }}>Generate Token</button>
+            <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>setBookingModal({ open: false })}>Close</button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Token Modal */}
+    {tokenModal.open && (
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={()=>setTokenModal({ open: false })}>
+        <div className="rounded-2xl p-6 themed-card w-[90%] max-w-md" onClick={(e)=>e.stopPropagation()}>
+          <h3 className="text-lg font-bold mb-3">Booking Token</h3>
+          <div className="text-sm mb-2"><strong>Code:</strong> {tokenModal.data?.code || '—'}</div>
+          <div className="text-sm mb-4"><strong>Expires:</strong> {tokenModal.data?.expiresAt ? dayjs(tokenModal.data.expiresAt).format('MMM D, YYYY h:mm A') : '—'}</div>
+          <div className="flex gap-2">
+            <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>setTokenModal({ open: false })}>Close</button>
+          </div>
+        </div>
+      </div>
+    )}
   );
 }

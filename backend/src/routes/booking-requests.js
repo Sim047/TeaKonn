@@ -50,6 +50,7 @@ router.post("/create", auth, async (req, res) => {
           venue: populated.venue,
           requester: populated.requester,
           owner: populated.owner,
+          conversation: populated.conversation?._id || populated.conversation,
           bookingRequestId: populated._id,
           status: populated.status,
         });
@@ -61,6 +62,7 @@ router.post("/create", auth, async (req, res) => {
           venue: populated.venue,
           requester: populated.requester,
           owner: populated.owner,
+          conversation: populated.conversation?._id || populated.conversation,
           bookingRequestId: populated._id,
           status: populated.status,
         });
@@ -102,7 +104,8 @@ router.get('/my/sent', auth, async (req, res) => {
     const list = await BookingRequest.find({ requester: req.user.id })
       .sort({ createdAt: -1 })
       .populate('venue')
-      .populate('owner', 'username avatar');
+      .populate('owner', 'username avatar')
+      .populate('conversation');
     res.json({ requests: list });
   } catch (err) {
     console.error('List my sent booking requests error:', err);
@@ -116,7 +119,8 @@ router.get('/my/received', auth, async (req, res) => {
     const list = await BookingRequest.find({ owner: req.user.id })
       .sort({ createdAt: -1 })
       .populate('venue')
-      .populate('requester', 'username avatar');
+      .populate('requester', 'username avatar')
+      .populate('conversation');
     res.json({ requests: list });
   } catch (err) {
     console.error('List my received booking requests error:', err);
