@@ -26,7 +26,8 @@ router.post("/generate", auth, async (req, res) => {
       .populate('owner', 'username avatar')
       .populate('requester', 'username avatar');
     if (!br) return res.status(404).json({ error: "Booking request not found" });
-    if (String(br.owner) !== String(req.user.id)) {
+    const brOwnerId = br.owner && br.owner._id ? String(br.owner._id) : String(br.owner);
+    if (brOwnerId !== String(req.user.id)) {
       return res.status(403).json({ error: "Only venue owner can generate token" });
     }
 
