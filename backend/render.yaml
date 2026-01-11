@@ -11,7 +11,7 @@ services:
       - key: JWT_SECRET
         value: supersecret123
       - key: FRONTEND_URL
-        value: https://your-frontend.vercel.app
+        value: https://tea-konn.vercel.app,https://*.vercel.app
       - key: MONGO_URI
         sync: false
       - key: UPLOAD_DIR
