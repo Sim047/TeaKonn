@@ -142,6 +142,7 @@ export default function Notifications({ token, onBack }: any) {
         requester: r.requester,
         owner: r.owner,
         status: r.status,
+        conversation: r.conversation?._id || r.conversation,
       }));
       const sent = (sentRes.data?.requests || []).map((r: any) => ({
         id: r._id,
@@ -153,6 +154,7 @@ export default function Notifications({ token, onBack }: any) {
         requester: r.requester,
         owner: r.owner,
         status: r.status,
+        conversation: r.conversation?._id || r.conversation,
       }));
       setBookingNotifs([...received, ...sent]);
 
