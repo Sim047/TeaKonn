@@ -108,12 +108,12 @@ router.get("/stats/area", async (req, res) => {
         q['location.coordinates.lat'] = { $gte: Math.min(minLat, maxLat), $lte: Math.max(minLat, maxLat) };
         q['location.coordinates.lng'] = { $gte: Math.min(minLng, maxLng), $lte: Math.max(minLng, maxLng) };
       }
-    } else if (Number.isFinite(lat) && Number.isFinite(lng) && Number.isFinite(radiusKm) && radiusKm! > 0) {
+    } else if (Number.isFinite(lat) && Number.isFinite(lng) && Number.isFinite(radiusKm) && radiusKm > 0) {
       // Approximate using bounding box (1 deg lat ~ 111km, lng scales by cos(lat))
-      const dLat = radiusKm! / 111;
-      const dLng = radiusKm! / (111 * Math.max(Math.cos((lat! * Math.PI) / 180), 0.0001));
-      q['location.coordinates.lat'] = { $gte: (lat! - dLat), $lte: (lat! + dLat) };
-      q['location.coordinates.lng'] = { $gte: (lng! - dLng), $lte: (lng! + dLng) };
+      const dLat = radiusKm / 111;
+      const dLng = radiusKm / (111 * Math.max(Math.cos((lat * Math.PI) / 180), 0.0001));
+      q['location.coordinates.lat'] = { $gte: (lat - dLat), $lte: (lat + dLat) };
+      q['location.coordinates.lng'] = { $gte: (lng - dLng), $lte: (lng + dLng) };
     }
 
     // Only consider docs that actually have coordinates when area filters provided
