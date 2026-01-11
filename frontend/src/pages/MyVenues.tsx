@@ -125,6 +125,8 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
       ]);
       setGeneratedTokens(g.data.tokens || []);
       setReceivedTokens(t.data.tokens || []);
+      // Optimistically update received requests status so the button disappears
+      setReceivedRequests((prev) => prev.map((r) => r._id === reqItem._id ? { ...r, status: 'token_generated' } : r));
     } catch (e: any) {
       onToast && onToast(e.response?.data?.error || 'Failed to generate token', 'error');
     }
