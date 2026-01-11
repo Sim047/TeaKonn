@@ -1,9 +1,9 @@
 // Notifications Page - View all notifications
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { Bell, ArrowLeft, Calendar, Loader, MapPin, Users, Check } from 'lucide-react';
+import { Bell, ArrowLeft, Calendar, Loader, MapPin, Users, Check, UserPlus, MessageSquare } from 'lucide-react';
 
 dayjs.extend(relativeTime);
 
@@ -11,21 +11,28 @@ import { API_URL } from '../config/api';
 const API = API_URL.replace(/\/api$/, '');
 
 export default function Notifications({ token, onBack }: any) {
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [eventsNotifs, setEventsNotifs] = useState<any[]>([]);
+  const [bookingNotifs, setBookingNotifs] = useState<any[]>([]);
+  const [followers, setFollowers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<'upcoming' | 'past'>('upcoming');
+  const [filter, setFilter] = useState<'all' | 'events' | 'bookings' | 'followers'>('all');
 
   useEffect(() => {
-    loadNotifications();
-  }, []);
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeframe]);
 
-  async function loadNotifications() {
+  async function loadAll() {
     try {
       setLoading(true);
-      // Load events to generate notifications (bookings removed)
-      const eventsRes = await axios.get(`${API}/api/events?status=published&limit=100`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const headers = { Authorization: `Bearer ${token}` } as any;
+      const [eventsRes, receivedRes, sentRes, meRes] = await Promise.all([
+        axios.get(`${API}/api/events?status=published&limit=100`, { headers }),
+        axios.get(`${API}/api/booking-requests/my/received`, { headers }),
+        axios.get(`${API}/api/booking-requests/my/sent`, { headers }),
+        axios.get(`${API}/api/users/me`, { headers }),
+      ]);
 
       const now = new Date();
       const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -35,25 +42,79 @@ export default function Notifications({ token, onBack }: any) {
         const d = new Date(event.startDate);
         return timeframe === 'upcoming' ? (d >= now && d <= thirtyDaysFromNow) : (d < now && d >= thirtyDaysAgo);
       });
-
       const eventNotifications = events.map((event: any) => ({
         id: event._id,
-        type: 'event',
+        kind: 'event',
         title: `${timeframe === 'upcoming' ? 'Upcoming' : 'Recent'}: ${event.title}`,
         message: `${dayjs(event.startDate).format('MMM D, YYYY')} • ${event.location?.city || event.location?.name || 'TBD'}`,
         time: dayjs(event.startDate).fromNow(),
         date: event.startDate,
         event,
       }));
-      const allNotifications = [...eventNotifications].sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-      );
 
-      setNotifications(allNotifications);
+      setEventsNotifs(eventNotifications);
+
+      // Booking requests (received + sent)
+      const received = (receivedRes.data?.requests || []).map((r: any) => ({
+        id: r._id,
+        kind: 'booking_received',
+        title: `New booking request for ${r.venue?.name || 'your venue'}`,
+        message: `From ${r.requester?.username || 'someone'}`,
+        date: r.createdAt || new Date().toISOString(),
+        venue: r.venue,
+        requester: r.requester,
+        owner: r.owner,
+        status: r.status,
+      }));
+      const sent = (sentRes.data?.requests || []).map((r: any) => ({
+        id: r._id,
+        kind: 'booking_sent',
+        title: `Your booking request to ${r.venue?.name || 'venue'}`,
+        message: `Status: ${r.status || 'pending'}`,
+        date: r.createdAt || new Date().toISOString(),
+        venue: r.venue,
+        requester: r.requester,
+        owner: r.owner,
+        status: r.status,
+      }));
+      setBookingNotifs([...received, ...sent]);
+
+      // Followers
+      const me = meRes.data || {};
+      const followersList = (me.followers || []).map((u: any) => ({
+        id: u._id,
+        kind: 'follow',
+        title: `${u.username || 'Someone'} followed you`,
+        message: '',
+        user: u,
+      }));
+      setFollowers(followersList);
     } catch (err) {
       console.error('Load notifications error:', err);
     } finally {
       setLoading(false);
+    }
+  }
+
+  const merged = useMemo(() => {
+    const all = [
+      ...eventsNotifs,
+      ...bookingNotifs,
+      // followers have no timestamp on relationship; include separately unless filtered specifically
+    ];
+    return all.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+  }, [eventsNotifs, bookingNotifs]);
+
+  async function openChatWith(userId: string) {
+    try {
+      const res = await axios.post(`${API}/api/conversations`, { partnerId: userId }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      localStorage.setItem('auralink-active-conversation', JSON.stringify(res.data));
+      localStorage.setItem('auralink-in-dm', 'true');
+      window.location.href = '/';
+    } catch (e) {
+      console.error('Open chat failed', e);
     }
   }
 
@@ -73,17 +134,24 @@ export default function Notifications({ token, onBack }: any) {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2">Notifications</h1>
-              <p className="text-theme-secondary">Stay updated with upcoming events</p>
+              <p className="text-theme-secondary">All your important updates in one place</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 items-center">
+              <span className="text-sm text-theme-secondary mr-2">Timeframe:</span>
               <button
                 className={`px-3 py-1 rounded-lg text-sm border ${timeframe === 'upcoming' ? 'bg-cyan-600 text-white border-cyan-500' : ''}`}
-                onClick={() => { setTimeframe('upcoming'); loadNotifications(); }}
+                onClick={() => setTimeframe('upcoming')}
               >Upcoming</button>
               <button
                 className={`px-3 py-1 rounded-lg text-sm border ${timeframe === 'past' ? 'bg-purple-600 text-white border-purple-500' : ''}`}
-                onClick={() => { setTimeframe('past'); loadNotifications(); }}
+                onClick={() => setTimeframe('past')}
               >Past 30 days</button>
+              <span className="mx-3 h-6 w-px bg-[var(--border)]" />
+              <span className="text-sm text-theme-secondary mr-2">Filter:</span>
+              <button className={`px-3 py-1 rounded-lg text-sm border ${filter==='all'?'bg-blue-600 text-white border-blue-500':''}`} onClick={()=>setFilter('all')}>All</button>
+              <button className={`px-3 py-1 rounded-lg text-sm border ${filter==='events'?'bg-blue-600 text-white border-blue-500':''}`} onClick={()=>setFilter('events')}>Events</button>
+              <button className={`px-3 py-1 rounded-lg text-sm border ${filter==='bookings'?'bg-blue-600 text-white border-blue-500':''}`} onClick={()=>setFilter('bookings')}>Bookings</button>
+              <button className={`px-3 py-1 rounded-lg text-sm border ${filter==='followers'?'bg-blue-600 text-white border-blue-500':''}`} onClick={()=>setFilter('followers')}>Followers</button>
             </div>
           </div>
         </div>
@@ -93,7 +161,7 @@ export default function Notifications({ token, onBack }: any) {
           <div className="flex items-center justify-center py-20">
             <Loader className="w-8 h-8 animate-spin text-blue-600" />
           </div>
-        ) : notifications.length === 0 ? (
+        ) : (filter==='followers' ? followers.length===0 : (filter==='events'? eventsNotifs.length===0 : (filter==='bookings'? bookingNotifs.length===0 : merged.length===0))) ? (
           <div className="rounded-2xl p-12 text-center themed-card">
             <Bell className="w-16 h-16 text-theme-secondary mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-heading mb-2">No notifications</h3>
@@ -103,60 +171,106 @@ export default function Notifications({ token, onBack }: any) {
           </div>
         ) : (
           <div className="space-y-4">
-            {notifications.map((notif) => (
+            {(filter==='followers' ? followers : (filter==='events'? eventsNotifs : (filter==='bookings'? bookingNotifs : merged))).map((notif: any) => (
               <div
                 key={notif.id}
                 className="rounded-2xl p-6 hover:shadow-lg transition-all duration-300 group themed-card"
               >
                 <div className="flex items-start gap-4">
                   <div
-                    className={
-                      'w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-purple-100 dark:bg-purple-900/30'
-                    }
+                    className={'w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ' + (
+                      notif.kind==='event' ? 'bg-purple-100 dark:bg-purple-900/30' :
+                      notif.kind?.startsWith('booking') ? 'bg-green-100 dark:bg-green-900/30' :
+                      'bg-blue-100 dark:bg-blue-900/30'
+                    )}
                   >
-                    <Calendar className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                    {notif.kind==='event' && (<Calendar className="w-6 h-6 text-purple-600 dark:text-purple-400" />)}
+                    {notif.kind?.startsWith('booking') && (<Check className="w-6 h-6 text-green-600 dark:text-green-400" />)}
+                    {notif.kind==='follow' && (<UserPlus className="w-6 h-6 text-blue-600 dark:text-blue-400" />)}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-heading mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       {notif.title}
                     </h3>
-                    <p className="text-theme-secondary mb-3 flex items-center gap-3">
-                      <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {notif.event?.location?.city || notif.event?.location?.name || 'TBD'}</span>
-                      <span className="flex items-center gap-1"><Users className="w-4 h-4" /> {(notif.event?.participants?.length || 0)}/{(notif.event?.capacity?.max || 0)}</span>
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={
-                          'px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                        }
-                      >
-                        Event
-                      </span>
-                      <span className="text-xs text-theme-secondary">{notif.time}</span>
-                    </div>
+                    {notif.kind==='event' && (
+                      <>
+                        <p className="text-theme-secondary mb-3 flex items-center gap-3">
+                          <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {notif.event?.location?.city || notif.event?.location?.name || 'TBD'}</span>
+                          <span className="flex items-center gap-1"><Users className="w-4 h-4" /> {(notif.event?.participants?.length || 0)}/{(notif.event?.capacity?.max || 0)}</span>
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <span className={'px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'}>
+                            Event
+                          </span>
+                          <span className="text-xs text-theme-secondary">{notif.time}</span>
+                        </div>
+                        {timeframe === 'upcoming' && (
+                          <div className="mt-3 flex gap-2">
+                            <button
+                              className="px-3 py-1 rounded-lg bg-teal-600 text-white text-sm"
+                              onClick={async () => {
+                                try {
+                                  await axios.post(`${API}/api/events/${notif.id}/join`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                                } catch (e) {
+                                  console.warn('Join failed');
+                                }
+                              }}
+                            >Join</button>
+                            <a
+                              className="px-3 py-1 rounded-lg border text-sm"
+                              style={{ borderColor: 'var(--border)' }}
+                              href="#"
+                              onClick={(ev) => ev.preventDefault()}
+                            >View Event</a>
+                          </div>
+                        )}
+                      </>
+                    )}
 
-                    {timeframe === 'upcoming' && (
-                      <div className="mt-3 flex gap-2">
-                        <button
-                          className="px-3 py-1 rounded-lg bg-teal-600 text-white text-sm"
-                          onClick={async () => {
-                            try {
-                              await axios.post(`${API}/api/events/${notif.id}/join`, {}, { headers: { Authorization: `Bearer ${token}` } });
-                              // quick feedback
-                              notif.event = { ...(notif.event || {}), participants: [...(notif.event?.participants || []), { _id: 'me' }] };
-                            } catch (e) {
-                              console.warn('Join failed');
-                            }
-                          }}
-                        >Join</button>
-                        <a
-                          className="px-3 py-1 rounded-lg border text-sm"
-                          style={{ borderColor: 'var(--border)' }}
-                          href="#"
-                          onClick={(ev) => ev.preventDefault()}
-                        >View Event</a>
-                      </div>
+                    {notif.kind==='booking_received' && (
+                      <>
+                        <p className="text-theme-secondary mb-3">Venue: {notif.venue?.name || 'Venue'}</p>
+                        <div className="flex items-center gap-2">
+                          <span className={'px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}>
+                            Booking Request
+                          </span>
+                          <span className="text-xs text-theme-secondary">{dayjs(notif.date).fromNow()}</span>
+                        </div>
+                        <div className="mt-3 flex gap-2">
+                          <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>openChatWith(notif.requester?._id || notif.requester)}>
+                            <MessageSquare className="w-4 h-4 inline mr-1" /> Reply in Chat
+                          </button>
+                        </div>
+                      </>
+                    )}
+
+                    {notif.kind==='booking_sent' && (
+                      <>
+                        <p className="text-theme-secondary mb-3">Venue: {notif.venue?.name || 'Venue'}</p>
+                        <div className="flex items-center gap-2">
+                          <span className={'px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}>
+                            Your Request
+                          </span>
+                          <span className="text-xs text-theme-secondary">{dayjs(notif.date).fromNow()}</span>
+                        </div>
+                        <div className="mt-3 flex gap-2">
+                          <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>openChatWith(notif.owner?._id || notif.owner)}>
+                            <MessageSquare className="w-4 h-4 inline mr-1" /> Message Owner
+                          </button>
+                        </div>
+                      </>
+                    )}
+
+                    {notif.kind==='follow' && (
+                      <>
+                        <p className="text-theme-secondary mb-3">{notif.user?.username || 'Someone'} is now following you.</p>
+                        <div className="flex items-center gap-2">
+                          <span className={'px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}>
+                            Follow
+                          </span>
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
