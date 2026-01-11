@@ -232,15 +232,6 @@ export default function Notifications({ token, onBack }: any) {
     }
   }
 
-  async function generateTokenForBooking(brId: string) {
-    try {
-      const res = await axios.post(`${API}/api/tokens/generate`, { bookingRequestId: brId }, { headers: { Authorization: `Bearer ${token}` } });
-      setTokenModal({ open: true, data: res.data });
-    } catch (e) {
-      console.error('Generate token failed', e);
-    }
-  }
-
   return (
     <>
     <div className="min-h-screen themed-page">
@@ -369,27 +360,6 @@ export default function Notifications({ token, onBack }: any) {
                           }}>
                             <MessageSquare className="w-4 h-4 inline mr-1" /> Reply in Chat
                           </button>
-                          {(() => {
-                            const uid = currentUser?._id;
-                            const ownerId = notif.owner?._id || notif.owner;
-                            const requesterId = notif.requester?._id || notif.requester;
-                            const canView = uid && (String(uid) === String(ownerId) || String(uid) === String(requesterId));
-                            const isOwner = uid && String(uid) === String(ownerId);
-                            return (
-                              <>
-                                {canView && (
-                                  <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>viewBookingRequest(notif.id || notif.bookingRequestId)}>
-                                    View Request
-                                  </button>
-                                )}
-                                {isOwner && (
-                                  <button className="px-3 py-1 rounded-lg bg-teal-600 text-white text-sm" onClick={()=>generateTokenForBooking(notif.id || notif.bookingRequestId)}>
-                                    Generate Token
-                                  </button>
-                                )}
-                              </>
-                            );
-                          })()}
                         </div>
                       </>
                     )}
@@ -451,10 +421,6 @@ export default function Notifications({ token, onBack }: any) {
               if (convId) openConversationById(convId);
               else openChatWith(bookingModal.data?.requester?._id || bookingModal.data?.requester);
             }}>Open Chat</button>
-            <button className="px-3 py-1 rounded-lg bg-teal-600 text-white text-sm" onClick={()=>{
-              const id = bookingModal.data?._id;
-              if (id) generateTokenForBooking(id);
-            }}>Generate Token</button>
             <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>setBookingModal({ open: false })}>Close</button>
           </div>
         </div>
