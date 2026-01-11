@@ -44,23 +44,14 @@ router.post("/generate", auth, async (req, res) => {
     br.status = "token_generated";
     await br.save();
 
-    // Send token in chat as a system message
+    // Notify requester directly so Notifications page updates, without DM message spam
     const io = req.app.get("io");
-    const room = String(br.conversation || br._id);
-    const saved = await Message.create({
-      sender: req.user.id,
-      room,
-      text: `Booking token: ${code} (expires ${expiresAt.toISOString()})`,
-    });
-    const populatedMsg = await Message.findById(saved._id).populate("sender", "username avatar");
     if (io) {
-      io.to(room).emit("receive_message", populatedMsg);
-      // Also notify requester directly so Notifications page updates instantly
       try {
         io.to(String(br.requester)).emit('notification', {
           kind: 'booking_token',
-          title: `Token generated for ${br.venue}`,
-          message: `A booking token has been issued and sent in chat`,
+          title: `Token generated`,
+          message: `A booking token was issued`,
           date: new Date().toISOString(),
           venue: br.venue,
           requester: br.requester,
