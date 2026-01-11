@@ -11,7 +11,7 @@ import EventParticipantsModal from '../components/EventParticipantsModal';
 import DashboardSearch from '../components/DashboardSearch';
 // Removed booking-related pages
 import AllEvents from './AllEvents';
-import NotificationsPage from './Notifications';
+// Notifications page removed from Dashboard navigation per request
 import SportEvents from './SportEvents';
 
 dayjs.extend(relativeTime);
@@ -178,7 +178,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
   });
   // (Removed duplicate GlobalSearch render) Only render inside the main layout below.
   const [loading, setLoading] = useState(true);
-  const [notifications, setNotifications] = useState<any[]>([]);
+  // Notifications removed from Dashboard
   // Persist dashboard UI state
   useEffect(() => {
     localStorage.setItem('auralink-dashboard-events-filter', eventsFilter);
@@ -188,7 +188,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
   }, [showEvents]);
   const [createEventModalOpen, setCreateEventModalOpen] = useState(false);
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'dashboard' | 'allEvents' | 'notifications'>(
+  const [viewMode, setViewMode] = useState<'dashboard' | 'allEvents'>(
     'dashboard',
   );
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
@@ -235,7 +235,8 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
     try {
       setLoading(true);
       // Load upcoming events (next 30 days)
-      const eventsRes = await axios.get(`${API}/api/events?status=published&limit=10`, {
+      // Focus Dashboard on events the user has joined
+      const eventsRes = await axios.get(`${API}/api/events/my/joined?limit=10`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -249,17 +250,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
 
       setUpcomingEvents(events);
 
-      // Group Chats moved to sidebar: no longer load joined events here
-
-      const eventNotifications = events.slice(0, 3).map((event: Event) => ({
-        id: event._id,
-        type: 'event',
-        title: `Upcoming: ${event.title}`,
-        message: `${dayjs(event.startDate).format('MMM D')} at ${event.location?.city || 'TBD'}`,
-        time: dayjs(event.startDate).fromNow(),
-      }));
-      // Set event notifications only
-      setNotifications(eventNotifications.slice(0, 5));
+      // Notifications removed from Dashboard
     } catch (err) {
       console.error('Dashboard load error:', err);
     } finally {
@@ -268,7 +259,6 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
   }
   const stats = {
     upcomingEvents: upcomingEvents.length,
-    notifications: notifications.length,
   };
 
   // Open Event Details (populated) by id
@@ -381,9 +371,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
     );
   }
 
-  if (viewMode === 'notifications') {
-    return <NotificationsPage token={token} onBack={() => setViewMode('dashboard')} />;
-  }
+  // Notifications page route removed from Dashboard
 
   // If viewing a specific sport's events, show that component
   if (selectedSport) {
@@ -458,30 +446,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
             </div>
           </button>
 
-          {/* Notifications - Clickable */}
-          <button
-            onClick={() => setViewMode('notifications')}
-            className="rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-300 text-left group relative overflow-hidden"
-            style={{
-              background: 'var(--card)',
-              border: '2px solid var(--border)',
-              color: 'var(--text)',
-            }}
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
-            <div className="relative flex items-center justify-between">
-              <div>
-                <p className="text-sm text-orange-600 dark:text-red-400 mb-1 font-medium">
-                  Notifications
-                </p>
-                <p className="text-3xl font-bold text-heading">{stats.notifications}</p>
-                <p className="text-xs text-theme-secondary mt-1">View all updates</p>
-              </div>
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/30 ring-1 ring-accent/30 group-hover:rotate-12 transition-transform">
-                <Bell className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          </button>
+          {/* Notifications card removed */}
         </div>
 
         {/* Past Events link removed per request */}

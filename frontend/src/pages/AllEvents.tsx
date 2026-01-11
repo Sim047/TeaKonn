@@ -63,35 +63,9 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
     try {
       setLoading(true);
       setError('');
-
-      // Load all events (created + participating) and other events (posts tagged as events)
-      const [createdRes, participatingRes, postsRes] = await Promise.all([
-        axios.get(`${API}/api/events/my/created`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get(`${API}/api/events?status=published`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get(`${API}/api/posts`, {
-          params: { limit: 200 },
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
-
-      const created = (createdRes.data.events || []).map((e: any) => ({
-        ...e,
-        role: 'organizing',
-        isOther: false,
-        source: 'event',
-      }));
-      const all = participatingRes.data.events || [];
-      const postsAll = (postsRes.data?.posts || postsRes.data || []).filter((p: any) => {
-        const tags = Array.isArray(p.tags) ? p.tags : p.tags ? [p.tags] : [];
-        return tags.some((t: any) =>
-          String(t || '')
-            .toLowerCase()
-            .includes('event'),
-        );
+      // Focus All Events on events the user has joined
+      const joinedRes = await axios.get(`${API}/api/events/my/joined`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       // Get user ID from token with localStorage fallback
@@ -119,31 +93,13 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
         } catch {}
       }
 
-      const participating = all
-        .filter((e: any) => e.participants?.some((p: any) => p._id === userId || p === userId))
-        .map((e: any) => ({ ...e, role: 'participating', isOther: false, source: 'event' }));
+      const joined = (joinedRes.data.events || joinedRes.data || [])
+        .map((e: any) => {
+          const isOrganizer = String(e.organizer?._id || e.organizer) === String(userId);
+          return { ...e, role: isOrganizer ? 'organizing' : 'participating', isOther: false, source: 'event' };
+        });
 
-      // Other Events (posts): authored and participating
-      const authoredOther = postsAll
-        .filter((p: any) => String(p.author?._id || p.author) === String(userId))
-        .map((p: any) => toOtherItem(p, 'organizing'));
-      const participatingOther = postsAll
-        .filter((p: any) =>
-          (p.participants || []).some((u: any) => String(u?._id || u) === String(userId)),
-        )
-        .map((p: any) => toOtherItem(p, 'participating'));
-
-      // Combine and deduplicate across sources
-      const combined = [...created, ...participating, ...authoredOther, ...participatingOther];
-      const seen = new Set<string>();
-      const deduped = combined.filter((item: any) => {
-        const key = `${item.source}:${item._id}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-
-      setEvents(deduped);
+      setEvents(joined);
     } catch (err: any) {
       console.error('Load events error:', err);
       setError(err.response?.data?.error || 'Failed to load events');
@@ -190,8 +146,8 @@ export default function AllEvents({ token, onBack, onNavigate, onViewEvent }: an
 
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-heading mb-2">All Events</h1>
-              <p className="text-theme-secondary">Manage all your events in one place</p>
+              <h1 className="text-3xl font-bold text-heading mb-2">My Joined Events</h1>
+              <p className="text-theme-secondary">View and manage events you participate in</p>
             </div>
             {showPastOnly && (
               <div className="flex items-center gap-2">
