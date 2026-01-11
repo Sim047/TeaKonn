@@ -38,6 +38,37 @@ router.post("/create", auth, async (req, res) => {
       .populate("owner", "username avatar")
       .populate("conversation");
 
+    // Realtime notifications: owner gets 'booking_received', requester gets 'booking_sent'
+    try {
+      const io = req.app.get('io');
+      if (io) {
+        io.to(String(populated.owner?._id || populated.owner)).emit('notification', {
+          kind: 'booking_received',
+          title: `New booking request for ${populated.venue?.name || 'your venue'}`,
+          message: `From ${populated.requester?.username || 'someone'}`,
+          date: populated.createdAt || new Date().toISOString(),
+          venue: populated.venue,
+          requester: populated.requester,
+          owner: populated.owner,
+          bookingRequestId: populated._id,
+          status: populated.status,
+        });
+        io.to(String(populated.requester?._id || populated.requester)).emit('notification', {
+          kind: 'booking_sent',
+          title: `Your booking request to ${populated.venue?.name || 'venue'}`,
+          message: `Status: ${populated.status || 'pending'}`,
+          date: populated.createdAt || new Date().toISOString(),
+          venue: populated.venue,
+          requester: populated.requester,
+          owner: populated.owner,
+          bookingRequestId: populated._id,
+          status: populated.status,
+        });
+      }
+    } catch (e) {
+      console.warn('booking create notify emit failed:', e?.message || e);
+    }
+
     res.status(201).json(populated);
   } catch (err) {
     console.error("Create booking request error:", err);

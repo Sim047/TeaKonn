@@ -53,7 +53,25 @@ router.post("/generate", auth, async (req, res) => {
       text: `Booking token: ${code} (expires ${expiresAt.toISOString()})`,
     });
     const populatedMsg = await Message.findById(saved._id).populate("sender", "username avatar");
-    if (io) io.to(room).emit("receive_message", populatedMsg);
+    if (io) {
+      io.to(room).emit("receive_message", populatedMsg);
+      // Also notify requester directly so Notifications page updates instantly
+      try {
+        io.to(String(br.requester)).emit('notification', {
+          kind: 'booking_token',
+          title: `Token generated for ${br.venue}`,
+          message: `A booking token has been issued and sent in chat`,
+          date: new Date().toISOString(),
+          venue: br.venue,
+          requester: br.requester,
+          owner: br.owner,
+          bookingRequestId: br._id,
+          token: { code: token.code, expiresAt: token.expiresAt }
+        });
+      } catch (e) {
+        console.warn('token notify emit failed:', e?.message || e);
+      }
+    }
 
     res.status(201).json(token);
   } catch (err) {

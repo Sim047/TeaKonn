@@ -8,6 +8,7 @@ import { Bell, ArrowLeft, Calendar, Loader, MapPin, Users, Check, UserPlus, Mess
 dayjs.extend(relativeTime);
 
 import { API_URL } from '../config/api';
+import { socket } from '../socket';
 const API = API_URL.replace(/\/api$/, '');
 
 export default function Notifications({ token, onBack }: any) {
@@ -22,6 +23,78 @@ export default function Notifications({ token, onBack }: any) {
     loadAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeframe]);
+
+  // Realtime updates: listen to socket notifications and booking status updates
+  useEffect(() => {
+    function onNotification(payload: any) {
+      try {
+        if (!payload || !payload.kind) return;
+        if (payload.kind === 'follow') {
+          setFollowers((prev) => [
+            {
+              id: payload.user?._id || Math.random().toString(36),
+              kind: 'follow',
+              title: payload.title || `${payload.user?.username || 'Someone'} followed you`,
+              message: payload.message || '',
+              user: payload.user,
+            },
+            ...prev,
+          ]);
+        } else if (payload.kind === 'booking_received' || payload.kind === 'booking_sent') {
+          const item = {
+            id: payload.bookingRequestId || Math.random().toString(36),
+            kind: payload.kind,
+            title: payload.title,
+            message: payload.message,
+            date: payload.date || new Date().toISOString(),
+            venue: payload.venue,
+            requester: payload.requester,
+            owner: payload.owner,
+            status: payload.status,
+          } as any;
+          setBookingNotifs((prev) => [item, ...prev]);
+        } else if (payload.kind === 'booking_token') {
+          const item = {
+            id: (payload.bookingRequestId || '') + '-token',
+            kind: 'booking_sent',
+            title: payload.title || 'Booking token issued',
+            message: payload.message || 'A booking token was generated',
+            date: payload.date || new Date().toISOString(),
+            venue: payload.venue,
+            requester: payload.requester,
+            owner: payload.owner,
+            status: 'token_generated',
+          } as any;
+          setBookingNotifs((prev) => [item, ...prev]);
+        }
+      } catch (e) {
+        console.warn('Notification handler failed', e);
+      }
+    }
+
+    function onBookingStatusUpdate({ bookingId, status, message }: any) {
+      const item = {
+        id: String(bookingId || Math.random().toString(36)),
+        kind: 'booking_sent',
+        title: 'Booking update',
+        message: message || `Status: ${status}`,
+        date: new Date().toISOString(),
+        status,
+      } as any;
+      setBookingNotifs((prev) => [item, ...prev]);
+    }
+
+    try {
+      socket.on('notification', onNotification);
+      socket.on('booking_status_update', onBookingStatusUpdate);
+    } catch {}
+    return () => {
+      try {
+        socket.off('notification', onNotification);
+        socket.off('booking_status_update', onBookingStatusUpdate);
+      } catch {}
+    };
+  }, []);
 
   async function loadAll() {
     try {

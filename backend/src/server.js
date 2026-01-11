@@ -281,6 +281,10 @@ io.on("connection", (socket) => {
     const uid = clientUser.id || clientUser._id;
     if (uid) {
       onlineUsers.set(uid, socket.id);
+      try {
+        // Join a personal room so we can target io.to(userId)
+        socket.join(String(uid));
+      } catch {}
       io.emit("presence_update", { userId: uid, status: "online" });
       
       // Send current online users list to the newly connected user

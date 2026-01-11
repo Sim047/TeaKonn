@@ -327,6 +327,22 @@ router.post("/:id/follow", auth, async (req, res) => {
     await me.save();
     await other.save();
 
+    // Emit realtime notification to the followed user
+    try {
+      const io = req.app.get('io');
+      if (io) {
+        io.to(String(otherId)).emit('notification', {
+          kind: 'follow',
+          title: `${me.username || 'Someone'} followed you`,
+          message: '',
+          date: new Date().toISOString(),
+          user: { _id: me._id, username: me.username, avatar: me.avatar }
+        });
+      }
+    } catch (e) {
+      console.warn('follow notify emit failed:', e?.message || e);
+    }
+
     res.json({ success: true });
   } catch (err) {
     console.error("POST /follow error:", err);
