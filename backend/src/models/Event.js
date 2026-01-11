@@ -22,6 +22,10 @@ const EventSchema = new Schema(
       city: String,
       state: String,
       country: String,
+      coordinates: {
+        lat: { type: Number },
+        lng: { type: Number },
+      },
     },
     capacity: {
       max: { type: Number, default: 100 },
@@ -57,5 +61,6 @@ EventSchema.index({ startDate: 1 });
 EventSchema.index({ endsAt: 1 });
 EventSchema.index({ archivedAt: 1 });
 EventSchema.index({ venue: 1 });
+EventSchema.index({ 'location.city': 1 });
 
 export default mongoose.model("Event", EventSchema);

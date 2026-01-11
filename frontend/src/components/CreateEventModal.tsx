@@ -4,6 +4,7 @@ import axios from 'axios';
 import { API_URL } from '../config/api';
 import { X, Calendar, MapPin, Users, DollarSign, Clock, Trophy, Camera } from 'lucide-react';
 import ImageUpload from './ImageUpload';
+import MapPicker, { PlaceSelection } from './MapPicker';
 
 const API = API_URL.replace(/\/api$/, '');
 
@@ -169,6 +170,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
   const [bookingTokenCode, setBookingTokenCode] = useState<string>(initialToken || '');
   const [tokenStatus, setTokenStatus] = useState<{ valid: boolean; message?: string } | null>(null);
   const [noTokenMode, setNoTokenMode] = useState<boolean>(false);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | undefined>(undefined);
 
   // Load editing data when modal opens
   useEffect(() => {
@@ -215,6 +217,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
         paymentInstructions: '',
         skillLevel: 'all',
       });
+      setCoords(undefined);
     }
   }, [editingEvent, isOpen]);
 
@@ -289,6 +292,10 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
         eventData.city = formData.city || undefined;
         eventData.state = formData.state || undefined;
         eventData.country = formData.country || undefined;
+        if (coords) {
+          eventData.location = eventData.location || {};
+          eventData.location.coordinates = coords;
+        }
       }
 
       if (editingEvent) {
@@ -328,6 +335,7 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
       });
       setBookingTokenCode('');
       setTokenStatus(null);
+      setCoords(undefined);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to create event');
     } finally {
@@ -597,6 +605,33 @@ export default function CreateEventModal({ isOpen, onClose, token, onSuccess, ed
                 />
               </div>
             </div>
+
+            {noTokenMode && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pick on Map (optional)</label>
+                <MapPicker
+                  value={{
+                    name: formData.locationName || undefined,
+                    address: formData.address || undefined,
+                    city: formData.city || undefined,
+                    state: formData.state || undefined,
+                    country: formData.country || undefined,
+                    coordinates: coords,
+                  }}
+                  onChange={(next: PlaceSelection) => {
+                    setFormData({
+                      ...formData,
+                      locationName: next.name || formData.locationName,
+                      address: next.address || formData.address,
+                      city: next.city || formData.city,
+                      state: next.state || formData.state,
+                      country: next.country || formData.country,
+                    });
+                    setCoords(next.coordinates);
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           {/* Capacity & Pricing */}

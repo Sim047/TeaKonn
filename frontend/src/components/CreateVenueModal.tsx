@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../config/api';
+import MapPicker, { PlaceSelection } from './MapPicker';
+import { useLoadScript, Autocomplete } from '@react-google-maps/api';
 
 interface CreateVenueModalProps {
   isOpen: boolean;
@@ -12,6 +14,9 @@ interface CreateVenueModalProps {
 }
 
 export default function CreateVenueModal({ isOpen, onClose, token, onCreated, editVenue, onSaved }: CreateVenueModalProps) {
+  const apiKey = (import.meta as any)?.env?.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
+  const { isLoaded } = useLoadScript({ googleMapsApiKey: apiKey || '', libraries: ['places'] });
+  const addressAutoRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [form, setForm] = useState({
     name: '',
     locationName: '',
@@ -19,6 +24,7 @@ export default function CreateVenueModal({ isOpen, onClose, token, onCreated, ed
     city: '',
     state: '',
     country: '',
+    coordinates: undefined as undefined | { lat: number; lng: number },
     capacity: 50,
     description: '',
     images: [] as string[],
@@ -41,7 +47,7 @@ export default function CreateVenueModal({ isOpen, onClose, token, onCreated, ed
         images: Array.isArray(editVenue.images) ? editVenue.images : [],
       });
     } else if (isOpen && !editVenue) {
-      setForm({ name: '', locationName: '', address: '', city: '', state: '', country: '', capacity: 50, description: '', images: [] });
+      setForm({ name: '', locationName: '', address: '', city: '', state: '', country: '', coordinates: undefined, capacity: 50, description: '', images: [] });
     }
   }, [editVenue, isOpen]);
 
@@ -95,6 +101,7 @@ export default function CreateVenueModal({ isOpen, onClose, token, onCreated, ed
           city: form.city,
           state: form.state,
           country: form.country,
+          coordinates: form.coordinates,
         },
         capacity: { max: Number(form.capacity) },
         description: form.description,
@@ -108,7 +115,7 @@ export default function CreateVenueModal({ isOpen, onClose, token, onCreated, ed
         onCreated && onCreated();
       }
       onClose();
-      setForm({ name: '', locationName: '', address: '', city: '', state: '', country: '', capacity: 50, description: '', images: [] });
+      setForm({ name: '', locationName: '', address: '', city: '', state: '', country: '', coordinates: undefined, capacity: 50, description: '', images: [] });
     } catch (e: any) {
       setError(e.response?.data?.error || e.message || 'Failed to create venue');
     } finally {
@@ -128,11 +135,66 @@ export default function CreateVenueModal({ isOpen, onClose, token, onCreated, ed
         <form onSubmit={submit} className="space-y-3">
           <input className="input" placeholder="Venue name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           <input className="input" placeholder="Location name" value={form.locationName} onChange={(e) => setForm({ ...form, locationName: e.target.value })} />
-          <input className="input" placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+          {isLoaded ? (
+            <Autocomplete
+              onLoad={(a) => (addressAutoRef.current = a)}
+              onPlaceChanged={() => {
+                const place = addressAutoRef.current?.getPlace();
+                if (!place) return;
+                const comps = place.address_components || [];
+                const get = (type: string) => comps.find(c => (c.types || []).includes(type))?.long_name || '';
+                const coords = place.geometry?.location
+                  ? { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() }
+                  : undefined;
+                setForm((prev) => ({
+                  ...prev,
+                  locationName: (place.name as string) || prev.locationName,
+                  address: (place.formatted_address as string) || prev.address,
+                  city: get('locality') || get('sublocality') || get('administrative_area_level_2') || prev.city,
+                  state: get('administrative_area_level_1') || prev.state,
+                  country: get('country') || prev.country,
+                  coordinates: coords ?? prev.coordinates,
+                }));
+              }}
+            >
+              <input
+                className="input"
+                placeholder="Address (search places)"
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+              />
+            </Autocomplete>
+          ) : (
+            <input className="input" placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+          )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
             <input className="input" placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
             <input className="input" placeholder="State" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} />
             <input className="input" placeholder="Country" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-theme-secondary mb-2">Pick on Map (optional)</label>
+            <MapPicker
+              value={{
+                name: form.locationName || form.name || undefined,
+                address: form.address || undefined,
+                city: form.city || undefined,
+                state: form.state || undefined,
+                country: form.country || undefined,
+                coordinates: form.coordinates,
+              }}
+              onChange={(next: PlaceSelection) => {
+                setForm({
+                  ...form,
+                  locationName: next.name || form.locationName,
+                  address: next.address || form.address,
+                  city: next.city || form.city,
+                  state: next.state || form.state,
+                  country: next.country || form.country,
+                  coordinates: next.coordinates,
+                });
+              }}
+            />
           </div>
           <input className="input" type="number" min="1" placeholder="Capacity (max)" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: Number(e.target.value) })} required />
           <textarea className="input" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />

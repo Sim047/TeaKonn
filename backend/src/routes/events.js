@@ -74,6 +74,76 @@ router.get("/", async (req, res) => {
   }
 });
 
+// GET /api/events/stats/area - aggregate counts for events within a geographic area
+// Supports either bbox=minLat,minLng,maxLat,maxLng or lat,lng,radiusKm
+// Optional timeframe: upcoming|past|all (default: upcoming), days window for past (default: 30)
+router.get("/stats/area", async (req, res) => {
+  try {
+    const now = new Date();
+    const timeframe = String(req.query.timeframe || 'upcoming');
+    const days = Math.max(parseInt(req.query.days) || 30, 1);
+
+    // Base query
+    const q = { status: 'published' };
+    // Exclude archived by default
+    q.$or = [ { archivedAt: { $exists: false } }, { archivedAt: null } ];
+
+    if (timeframe === 'upcoming') {
+      q.startDate = { $gte: now };
+    } else if (timeframe === 'past') {
+      const from = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+      q.startDate = { $gte: from, $lt: now };
+    }
+
+    // Area filter
+    const bboxParam = String(req.query.bbox || '').trim();
+    const lat = req.query.lat != null ? Number(req.query.lat) : undefined;
+    const lng = req.query.lng != null ? Number(req.query.lng) : undefined;
+    const radiusKm = req.query.radiusKm != null ? Math.max(Number(req.query.radiusKm) || 0, 0) : undefined;
+
+    if (bboxParam) {
+      const parts = bboxParam.split(',').map(x => Number(x.trim()));
+      if (parts.length === 4 && parts.every(n => Number.isFinite(n))) {
+        const [minLat, minLng, maxLat, maxLng] = parts;
+        q['location.coordinates.lat'] = { $gte: Math.min(minLat, maxLat), $lte: Math.max(minLat, maxLat) };
+        q['location.coordinates.lng'] = { $gte: Math.min(minLng, maxLng), $lte: Math.max(minLng, maxLng) };
+      }
+    } else if (Number.isFinite(lat) && Number.isFinite(lng) && Number.isFinite(radiusKm) && radiusKm! > 0) {
+      // Approximate using bounding box (1 deg lat ~ 111km, lng scales by cos(lat))
+      const dLat = radiusKm! / 111;
+      const dLng = radiusKm! / (111 * Math.max(Math.cos((lat! * Math.PI) / 180), 0.0001));
+      q['location.coordinates.lat'] = { $gte: (lat! - dLat), $lte: (lat! + dLat) };
+      q['location.coordinates.lng'] = { $gte: (lng! - dLng), $lte: (lng! + dLng) };
+    }
+
+    // Only consider docs that actually have coordinates when area filters provided
+    if (q['location.coordinates.lat'] || q['location.coordinates.lng']) {
+      q['location.coordinates.lat'] = q['location.coordinates.lat'] || { $exists: true };
+      q['location.coordinates.lng'] = q['location.coordinates.lng'] || { $exists: true };
+    }
+
+    // Build aggregations
+    const matchStage = { $match: q };
+    const groupSport = { $group: { _id: { $ifNull: ['$sport', 'Other'] }, count: { $sum: 1 } } };
+    const sortCount = { $sort: { count: -1 } };
+    const projectSport = { $project: { _id: 0, sport: '$_id', count: 1 } };
+
+    const groupCity = { $group: { _id: { $ifNull: ['$location.city', 'Unknown'] }, count: { $sum: 1 } } };
+    const projectCity = { $project: { _id: 0, city: '$_id', count: 1 } };
+
+    const [total, bySport, byCity] = await Promise.all([
+      Event.countDocuments(q),
+      Event.aggregate([matchStage, groupSport, sortCount, projectSport]),
+      Event.aggregate([matchStage, groupCity, sortCount, projectCity])
+    ]);
+
+    res.json({ total, bySport, byCity, timeframe, days });
+  } catch (err) {
+    console.error('Area stats error:', err);
+    res.status(500).json({ error: 'Failed to compute area stats' });
+  }
+});
+
 // GET /api/events/user/:userId - list published events organized by a specific user (paginated)
 router.get("/user/:userId", async (req, res) => {
   try {
@@ -341,6 +411,7 @@ router.post("/", auth, async (req, res) => {
         city: venue.location?.city,
         state: venue.location?.state,
         country: venue.location?.country,
+        coordinates: venue.location?.coordinates,
       };
       data.bookingTokenCode = bookingTokenCode;
 
@@ -375,6 +446,7 @@ router.post("/", auth, async (req, res) => {
       city: data.city || data.location?.city,
       state: data.state || data.location?.state,
       country: data.country || data.location?.country,
+      coordinates: (data.location && data.location.coordinates) || (typeof data.lat === 'number' && typeof data.lng === 'number' ? { lat: data.lat, lng: data.lng } : undefined),
     };
     // Only set location if at least one value provided
     if (Object.values(loc).some((v) => v)) {

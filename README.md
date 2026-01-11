@@ -184,6 +184,7 @@ Create `.env` file in the `frontend` directory:
 ```env
 VITE_API_URL=http://localhost:5000
 VITE_GOOGLE_CLIENT_ID=your_web_client_id.apps.googleusercontent.com
+VITE_GOOGLE_MAPS_API_KEY=your_google_maps_browser_api_key
 ```
 
 **Setting up Cloudinary (Required for image uploads):**

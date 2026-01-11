@@ -5,7 +5,7 @@
 {
   /* Payment flow removed */
 }
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import {
   Calendar,
@@ -40,6 +40,7 @@ import EventDetailModal from '../components/EventDetailModal';
 import EventParticipantsModal from '../components/EventParticipantsModal';
 import SearchBar from '../components/SearchBar';
 import NotificationToast from '../components/NotificationToast';
+import { useLoadScript, GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
 
 dayjs.extend(relativeTime);
 
@@ -179,6 +180,8 @@ interface DiscoverProps {
 }
 
 export default function Discover({ token, onViewProfile, onStartConversation }: DiscoverProps) {
+  const mapsApiKey = (import.meta as any)?.env?.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
+  const { isLoaded: mapsLoaded } = useLoadScript({ googleMapsApiKey: mapsApiKey || '', libraries: ['places'] });
   const [activeCategory, setActiveCategory] = useState<CategoryType>(() => {
     const saved = localStorage.getItem('auralink-discover-category');
     return saved ? (saved as CategoryType) : null;
@@ -235,6 +238,18 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
   const [likingService, setLikingService] = useState<InFlightMap>({});
 
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+  // Map state for sports view
+  const [showEventMap, setShowEventMap] = useState<boolean>(true);
+  const eventMarkers = useMemo(() =>
+    (events || []).filter(e => e?.location?.coordinates && typeof e.location.coordinates.lat === 'number' && typeof e.location.coordinates.lng === 'number')
+      .map(e => ({ id: e._id, title: e.title, sport: e.sport, lat: e.location.coordinates.lat, lng: e.location.coordinates.lng, city: e.location?.city, when: e.startDate }))
+  , [events]);
+  const defaultCenter = useMemo(() => {
+    if (eventMarkers.length > 0) return { lat: eventMarkers[0].lat, lng: eventMarkers[0].lng };
+    return { lat: -1.286389, lng: 36.817223 }; // Nairobi
+  }, [eventMarkers]);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeCategory === 'sports') {
@@ -1007,6 +1022,48 @@ export default function Discover({ token, onViewProfile, onStartConversation }: 
               </button>
             ))}
           </div>
+
+          {/* Map toggle */}
+          <div className="mb-4 flex items-center justify-between">
+            <div className="text-sm text-theme-secondary">Show map with nearby events</div>
+            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+              <span className="text-sm">Map</span>
+              <input type="checkbox" checked={showEventMap} onChange={(e) => setShowEventMap(e.target.checked)} />
+            </label>
+          </div>
+
+          {showEventMap && (
+            <div className="mb-8 rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)', height: 360 }}>
+              {mapsLoaded ? (
+                <GoogleMap
+                  center={defaultCenter}
+                  zoom={eventMarkers.length ? 12 : 11}
+                  mapContainerStyle={{ width: '100%', height: '100%' }}
+                  options={{ disableDefaultUI: true, zoomControl: true }}
+                >
+                  {eventMarkers.map(m => (
+                    <Marker key={m.id} position={{ lat: m.lat, lng: m.lng }} onClick={() => setSelectedEventId(m.id)} />
+                  ))}
+                  {selectedEventId && (() => {
+                    const m = eventMarkers.find(mm => mm.id === selectedEventId);
+                    if (!m) return null;
+                    return (
+                      <InfoWindow position={{ lat: m.lat, lng: m.lng }} onCloseClick={() => setSelectedEventId(null)}>
+                        <div className="text-sm">
+                          <div className="font-semibold mb-1">{m.title}</div>
+                          <div className="opacity-70">{m.sport || 'Event'}</div>
+                          <div className="opacity-70">{m.city || ''}</div>
+                          <button className="mt-2 px-3 py-1 rounded bg-teal-600 text-white" onClick={() => openEventDetails(m.id)}>View</button>
+                        </div>
+                      </InfoWindow>
+                    );
+                  })()}
+                </GoogleMap>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-theme-secondary text-sm">Loading map…</div>
+              )}
+            </div>
+          )}
 
           {/* Events Grid */}
           {loading ? (
