@@ -821,6 +821,45 @@ export default function App() {
       },
     );
 
+    // Global notification listener: booking_received, booking_token, follow
+    function bumpNotifUnread(delta = 1) {
+      try {
+        const raw = localStorage.getItem('auralink-unread-notifs') || '0';
+        const n = parseInt(raw, 10) || 0;
+        const next = Math.max(0, n + delta);
+        localStorage.setItem('auralink-unread-notifs', String(next));
+        window.dispatchEvent(
+          new CustomEvent('auralink-unread-notifs.update', { detail: { count: next } })
+        );
+      } catch {}
+    }
+    socket.on('notification', (payload: any) => {
+      try {
+        if (!payload || !payload.kind) return;
+        if (payload.kind === 'booking_received') {
+          setToast({
+            message: `New booking for ${payload.venue?.name || 'your venue'}`,
+            type: 'info',
+          });
+          bumpNotifUnread(1);
+        } else if (payload.kind === 'booking_token') {
+          setToast({
+            message: `Response issued for ${payload.venue?.name || 'your request'}`,
+            type: 'success',
+          });
+          bumpNotifUnread(1);
+        } else if (payload.kind === 'follow') {
+          setToast({
+            message: `${payload.user?.username || 'Someone'} followed you`,
+            type: 'info',
+          });
+          bumpNotifUnread(1);
+        }
+      } catch (e) {
+        console.warn('App: notification handler failed', e);
+      }
+    });
+
     return () => {
       socket.removeAllListeners();
       socket.disconnect();

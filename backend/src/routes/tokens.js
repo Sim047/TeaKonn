@@ -98,7 +98,11 @@ router.post("/generate", auth, async (req, res) => {
 
         const populatedMsg = await Message.findById(saved._id)
           .populate('sender', 'username avatar');
+        // Emit to the conversation room
         io.to(conv._id.toString()).emit('receive_message', populatedMsg);
+        // Also emit to personal rooms so participants receive the DM even if not joined to the conversation room
+        io.to(String(requesterId)).emit('receive_message', populatedMsg);
+        io.to(String(ownerId)).emit('receive_message', populatedMsg);
       } catch (e) {
         console.warn('token notify emit failed:', e?.message || e);
       }
