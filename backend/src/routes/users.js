@@ -71,7 +71,7 @@ router.post("/avatar", auth, upload.single("avatar"), async (req, res) => {
       req.user.id, 
       { avatar: result.secure_url },
       { new: true }
-    ).select("_id username email avatar role");
+    ).select("_id name username email avatar role");
 
     res.json({ success: true, avatar: result.secure_url, user: updatedUser });
   } catch (err) {
@@ -131,7 +131,7 @@ router.get("/all", auth, async (req, res) => {
 router.get("/me", auth, async (req, res) => {
   try {
     const me = await User.findById(req.user.id)
-      .select("username email avatar followers following bio about location favoriteSports")
+      .select("name username email avatar followers following bio about location favoriteSports")
       .populate("followers", "username avatar email")
       .populate("following", "username avatar email");
 
@@ -188,7 +188,7 @@ router.put("/me", auth, async (req, res) => {
     }
 
     const updated = await User.findByIdAndUpdate(req.user.id, update, { new: true })
-      .select("_id username email avatar role bio about location favoriteSports followers following");
+      .select("_id name username email avatar role bio about location favoriteSports followers following");
 
     if (!updated) return res.status(404).json({ message: "User not found" });
 
@@ -264,7 +264,7 @@ router.get("/:id", auth, async (req, res) => {
     const viewerId = req.user.id;
 
     const user = await User.findById(req.params.id)
-      .select("username email avatar followers following about bio location")
+      .select("name username email avatar followers following about bio location")
       .populate("followers", "username email avatar")
       .populate("following", "username email avatar");
 
@@ -481,7 +481,7 @@ router.post('/role', auth, async (req, res) => {
     const allowed = ['event_creator', 'venue_owner', 'user'];
     if (!allowed.includes(role)) return res.status(400).json({ message: 'Invalid role' });
     const me = await User.findByIdAndUpdate(req.user.id, { role }, { new: true })
-      .select('_id username email avatar role');
+      .select('_id name username email avatar role');
     // Emit presence update or notify as needed (optional)
     return res.json({ success: true, user: me });
   } catch (err) {
