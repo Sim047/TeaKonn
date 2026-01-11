@@ -41,36 +41,61 @@ router.post("/create", auth, ensureVenueOwner, async (req, res) => {
 // GET /api/venues/search?name=&city=&capacityMin=&capacityMax=&page=&limit=
 router.get("/search", async (req, res) => {
   try {
-    const { name, location, city, capacityMin, capacityMax, status, onlyAvailable } = req.query;
+    const { name, location, city, capacityMin, capacityMax, status, onlyAvailable, q } = req.query;
     const page = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
     const skip = (page - 1) * limit;
 
-    const q = {};
+    const query = {};
     if (String(onlyAvailable).toLowerCase() === 'true') {
-      q.available = true;
+      query.available = true;
     }
     if (status) {
-      q.status = String(status);
+      query.status = String(status);
     }
-    if (name) q.name = { $regex: String(name), $options: "i" };
+    if (name) query.name = { $regex: String(name), $options: "i" };
     const cityValue = city || (typeof location === "string" ? location : undefined);
-    if (cityValue) q["location.city"] = { $regex: String(cityValue), $options: "i" };
+    if (cityValue) query["location.city"] = { $regex: String(cityValue), $options: "i" };
     const minCap = capacityMin ? Number(capacityMin) : undefined;
     const maxCap = capacityMax ? Number(capacityMax) : undefined;
     if (minCap !== undefined || maxCap !== undefined) {
-      q["capacity.max"] = {};
-      if (minCap !== undefined) q["capacity.max"].$gte = minCap;
-      if (maxCap !== undefined) q["capacity.max"].$lte = maxCap;
+      query["capacity.max"] = {};
+      if (minCap !== undefined) query["capacity.max"].$gte = minCap;
+      if (maxCap !== undefined) query["capacity.max"].$lte = maxCap;
+    }
+    // Deep text search across multiple fields if q is provided
+    if (q && String(q).trim()) {
+      const term = String(q).trim();
+      const regex = { $regex: term, $options: 'i' };
+      // Combine with existing filters using $and
+      const andParts = [query];
+      andParts.push({ $or: [
+        { name: regex },
+        { description: regex },
+        { 'location.name': regex },
+        { 'location.address': regex },
+        { 'location.city': regex },
+        { 'location.state': regex },
+        { 'location.country': regex },
+      ]});
+      // Replace query with $and
+      // If query was empty object initially, $and with {} is fine
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      query.$and = andParts.filter(Boolean);
+      // Remove top-level fields already merged in $and to avoid conflicts
+      for (const k of Object.keys(query)) {
+        if (k !== '$and') delete query[k];
+      }
     }
 
     const [venues, total] = await Promise.all([
-      Venue.find(q)
+      Venue.find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .populate('owner', 'username avatar'),
-      Venue.countDocuments(q),
+      Venue.countDocuments(query),
     ]);
 
     res.json({ venues, page, totalPages: Math.ceil(total / limit), total });
