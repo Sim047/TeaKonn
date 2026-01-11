@@ -15,13 +15,19 @@ router.post("/create", auth, async (req, res) => {
     if (!venue) return res.status(404).json({ error: "Venue not found" });
     // Allow booking requests even if a venue already has events; venue remains available
 
-    // Create 1:1 conversation between requester and owner specific to this booking
-    const conversation = await Conversation.create({
-      participants: [req.user.id, venue.owner],
+    // Reuse existing 1:1 conversation between requester and owner to keep a single DM trail
+    let conversation = await Conversation.findOne({
+      participants: { $all: [req.user.id, venue.owner] },
       isGroup: false,
-      name: `Booking: ${venue.name}`,
-      meta: { bookingVenueId: String(venue._id) },
     });
+    if (!conversation) {
+      conversation = await Conversation.create({
+        participants: [req.user.id, venue.owner],
+        isGroup: false,
+        name: `Booking: ${venue.name}`,
+        meta: { bookingVenueId: String(venue._id) },
+      });
+    }
 
     const br = await BookingRequest.create({
       venue: venue._id,
