@@ -419,39 +419,7 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
 
         {/* Group Chats moved to sidebar */}
 
-        {/* Stats Cards (bookings removed) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-          {/* All Events - Clickable */}
-          <button
-            onClick={() => setViewMode('allEvents')}
-            className="rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-300 text-left group relative overflow-hidden"
-            style={{
-              background: 'var(--card)',
-              border: '2px solid var(--border)',
-              color: 'var(--text)',
-            }}
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
-            <div className="relative flex items-center justify-between">
-              <div>
-                <p className="text-sm text-purple-600 dark:text-purple-400 mb-1 font-medium">
-                  All Events
-                </p>
-                <p className="text-3xl font-bold text-heading">{stats.upcomingEvents}</p>
-                <p className="text-xs text-theme-secondary mt-1">Upcoming events</p>
-              </div>
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:rotate-12 transition-transform">
-                <Calendar className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          </button>
-
-          {/* Notifications card removed */}
-        </div>
-
-        {/* Past Events link removed per request */}
-
-        {/* Ready to Train Banner - Always at the bottom */}
+        {/* Ready to Train Banner - moved to top */}
         <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
@@ -520,6 +488,40 @@ export default function Dashboard({ token, onNavigate, onViewProfile }: any) {
             </div>
           </div>
         </div>
+
+        {/* Stats Cards (bookings removed) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+          {/* All Events - Clickable */}
+          <button
+            onClick={() => setViewMode('allEvents')}
+            className="rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-300 text-left group relative overflow-hidden"
+            style={{
+              background: 'var(--card)',
+              border: '2px solid var(--border)',
+              color: 'var(--text)',
+            }}
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="relative flex items-center justify-between">
+              <div>
+                <p className="text-sm text-purple-600 dark:text-purple-400 mb-1 font-medium">
+                  All Events
+                </p>
+                <p className="text-3xl font-bold text-heading">{stats.upcomingEvents}</p>
+                <p className="text-xs text-theme-secondary mt-1">Upcoming events</p>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:rotate-12 transition-transform">
+                <Calendar className="w-6 h-6 text-white" />
+              </div>
+            </div>
+          </button>
+
+          {/* Notifications card removed */}
+        </div>
+
+        {/* Past Events link removed per request */}
+
+        {/* Ready to Train Banner moved to top */}
 
         {/* Community Events section removed */}
         {/* End content container */}
