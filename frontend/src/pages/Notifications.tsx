@@ -172,9 +172,22 @@ export default function Notifications({ token, onBack }: any) {
         token: { code: t.code, expiresAt: t.expiresAt },
       }));
 
-      // Requester side: do not include sent requests here; rely on tokens + realtime for requester view
-      const sent: any[] = [];
-      setBookingNotifs([...received, ...tokensReceived, ...sent]);
+      // Requester side: include sent requests that have tokens generated as notifications fallback
+      const sentTokenNotifs = (sentRes.data?.requests || [])
+        .filter((r: any) => r.status === 'token_generated')
+        .map((r: any) => ({
+          id: (r._id || Math.random().toString(36)) + '-token',
+          kind: 'booking_token',
+          title: r.owner?.username || 'Response',
+          message: `A response was issued for ${r.venue?.name || 'your request'}`,
+          date: r.updatedAt || r.createdAt || new Date().toISOString(),
+          venue: r.venue,
+          requester: me,
+          owner: r.owner,
+          status: 'token_generated',
+        }));
+
+      setBookingNotifs([...received, ...tokensReceived, ...sentTokenNotifs]);
 
       // Followers
       const me = meRes.data || {};
