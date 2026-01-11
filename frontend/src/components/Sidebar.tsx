@@ -18,7 +18,8 @@ import {
   TrendingUp,
   Bot,
   Eye,
-  EyeOff
+  EyeOff,
+  Bell
 } from "lucide-react";
 import Avatar from "./Avatar";
 import StatusPicker from "./StatusPicker";
@@ -75,13 +76,18 @@ export default function Sidebar({
   });
   const [joinedActiveEvents, setJoinedActiveEvents] = useState<any[]>([]);
   const [groupUnread, setGroupUnread] = useState<Record<string, number>>({});
+  const [notifications, setNotifications] = useState<Array<{ id: string; title: string; message: string; time: string; date: string; }>>([]);
+  const [showNotificationsPanel, setShowNotificationsPanel] = useState<boolean>(true);
 
   useEffect(() => {
     loadUserStats();
     // Initial load of group chats and polling
     loadGroupChats();
+    // Load notifications and poll
+    loadNotifications();
     const interval = setInterval(() => {
       loadGroupChats();
+      loadNotifications();
     }, 60000);
     return () => clearInterval(interval);
   }, [token]);
@@ -172,6 +178,32 @@ export default function Sidebar({
       console.warn('Sidebar: failed to load joined events');
       setJoinedActiveEvents([]);
       setGroupUnread({});
+    }
+  }
+
+  async function loadNotifications() {
+    if (!token) return;
+    try {
+      const res = await axios.get(`${API}/events?limit=50`, { headers: { Authorization: `Bearer ${token}` } });
+      const now = new Date();
+      const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const upcoming = (res.data?.events || res.data || [])
+        .filter((event: any) => {
+          const d = new Date(event.startDate);
+          return d >= now && d <= thirtyDaysFromNow;
+        })
+        .map((event: any) => ({
+          id: String(event._id),
+          title: `Upcoming: ${event.title}`,
+          message: `${dayjs(event.startDate).format('MMM D')} • ${event.location?.city || event.location?.name || 'TBA'}`,
+          time: dayjs(event.startDate).fromNow(),
+          date: event.startDate,
+        }))
+        .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      setNotifications(upcoming);
+    } catch (e) {
+      console.warn('Sidebar: failed to load notifications');
+      setNotifications([]);
     }
   }
 
@@ -379,6 +411,16 @@ export default function Sidebar({
           }}
         />
         <NavButton
+          icon={Bell}
+          label="Notifications"
+          badge={notifications.length}
+          isCollapsed={isCollapsed}
+          onClick={() => {
+            onNavigate?.('notifications');
+            setIsMobileOpen(false);
+          }}
+        />
+        <NavButton
           icon={Search}
           label="Venue Booking"
           isCollapsed={isCollapsed}
@@ -416,6 +458,36 @@ export default function Sidebar({
             onShowProfile={onShowProfile}
             onOpenConversation={onOpenConversation}
           />
+        </div>
+      )}
+
+      {/* Notifications Panel */}
+      {!isCollapsed && (
+        <div className="px-4 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Notifications</h3>
+            <button
+              className="text-xs text-theme-secondary hover:text-heading"
+              onClick={() => onNavigate?.('notifications')}
+            >View all</button>
+          </div>
+          {notifications.length === 0 ? (
+            <p className="text-xs text-theme-secondary">No upcoming events</p>
+          ) : (
+            <div className="space-y-2">
+              {notifications.slice(0, 5).map((n) => (
+                <button
+                  key={n.id}
+                  className="w-full text-left px-3 py-2 rounded-lg themed-card border hover:shadow-sm transition"
+                  style={{ borderColor: 'var(--border)' }}
+                  onClick={() => onNavigate?.('notifications')}
+                >
+                  <div className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{n.title}</div>
+                  <div className="text-xs text-theme-secondary">{n.message} • {n.time}</div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
