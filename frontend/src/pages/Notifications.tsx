@@ -360,10 +360,10 @@ export default function Notifications({ token, onBack }: any) {
                           }}>
                             <MessageSquare className="w-4 h-4 inline mr-1" /> Reply in Chat
                           </button>
-                          <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>viewBookingRequest(notif.id)}>
+                          <button className="px-3 py-1 rounded-lg border text-sm" style={{ borderColor: 'var(--border)' }} onClick={()=>viewBookingRequest(notif.id || notif.bookingRequestId)}>
                             View Request
                           </button>
-                          <button className="px-3 py-1 rounded-lg bg-teal-600 text-white text-sm" onClick={()=>generateTokenForBooking(notif.id)}>
+                          <button className="px-3 py-1 rounded-lg bg-teal-600 text-white text-sm" onClick={()=>generateTokenForBooking(notif.id || notif.bookingRequestId)}>
                             Generate Token
                           </button>
                         </div>
