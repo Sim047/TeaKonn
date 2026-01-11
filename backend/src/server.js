@@ -11,6 +11,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import jwt from "jsonwebtoken";
 
 // ROUTES
 import authRoutes from "./routes/auth.js";
@@ -277,20 +278,35 @@ io.on("connection", (socket) => {
 
   // track presence
   const clientUser = socket.handshake.auth?.user;
-  if (clientUser) {
+  let joinedPersonalRoom = false;
+  if (clientUser && (clientUser.id || clientUser._id)) {
     const uid = clientUser.id || clientUser._id;
-    if (uid) {
-      onlineUsers.set(uid, socket.id);
+    onlineUsers.set(String(uid), socket.id);
+    try { socket.join(String(uid)); joinedPersonalRoom = true; } catch {}
+    io.emit("presence_update", { userId: uid, status: "online" });
+    const onlineUserIds = Array.from(onlineUsers.keys());
+    socket.emit("online_users_list", { userIds: onlineUserIds });
+    console.log("[socket] sent online users list:", onlineUserIds);
+  }
+
+  // Fallback: join personal room via JWT if client didn't provide user in auth
+  if (!joinedPersonalRoom) {
+    const token = socket.handshake.auth?.token;
+    if (token && process.env.JWT_SECRET) {
       try {
-        // Join a personal room so we can target io.to(userId)
-        socket.join(String(uid));
-      } catch {}
-      io.emit("presence_update", { userId: uid, status: "online" });
-      
-      // Send current online users list to the newly connected user
-      const onlineUserIds = Array.from(onlineUsers.keys());
-      socket.emit("online_users_list", { userIds: onlineUserIds });
-      console.log("[socket] sent online users list:", onlineUserIds);
+        const payload = jwt.verify(token, process.env.JWT_SECRET);
+        const uid = String(payload.id || payload._id);
+        if (uid) {
+          onlineUsers.set(uid, socket.id);
+          try { socket.join(uid); joinedPersonalRoom = true; } catch {}
+          io.emit("presence_update", { userId: uid, status: "online" });
+          const onlineUserIds = Array.from(onlineUsers.keys());
+          socket.emit("online_users_list", { userIds: onlineUserIds });
+          console.log("[socket] joined personal room via JWT:", uid);
+        }
+      } catch (e) {
+        console.warn('[socket] JWT verify failed in handshake:', e?.message || e);
+      }
     }
   }
 
