@@ -18,7 +18,12 @@ function randomCode(len = 10) {
 router.post("/generate", auth, async (req, res) => {
   try {
     const { bookingRequestId, expiresInHours = 72 } = req.body || {};
-    const br = await BookingRequest.findById(bookingRequestId);
+    // Populate venue and users so notification includes readable names
+    const br = await BookingRequest
+      .findById(bookingRequestId)
+      .populate('venue', 'name')
+      .populate('owner', 'username avatar')
+      .populate('requester', 'username avatar');
     if (!br) return res.status(404).json({ error: "Booking request not found" });
     if (String(br.owner) !== String(req.user.id)) {
       return res.status(403).json({ error: "Only venue owner can generate token" });
@@ -32,7 +37,7 @@ router.post("/generate", auth, async (req, res) => {
     const expiresAt = new Date(Date.now() + Number(expiresInHours) * 60 * 60 * 1000);
     const token = await BookingToken.create({
       code,
-      venue: br.venue,
+      venue: br.venue, // can be populated doc; Mongoose will persist ObjectId
       requester: br.requester,
       owner: br.owner,
       bookingRequest: br._id,
@@ -48,14 +53,15 @@ router.post("/generate", auth, async (req, res) => {
     const io = req.app.get("io");
     if (io) {
       try {
-        io.to(String(br.requester)).emit('notification', {
+        // Emit minimal, readable details for UI
+        io.to(String(br.requester?._id || br.requester)).emit('notification', {
           kind: 'booking_token',
           title: `Token generated`,
           message: `A booking token was issued`,
           date: new Date().toISOString(),
-          venue: br.venue,
-          requester: br.requester,
-          owner: br.owner,
+          venue: br.venue && br.venue._id ? { _id: br.venue._id, name: br.venue.name } : br.venue,
+          requester: br.requester && br.requester._id ? { _id: br.requester._id, username: br.requester.username, avatar: br.requester.avatar } : br.requester,
+          owner: br.owner && br.owner._id ? { _id: br.owner._id, username: br.owner.username, avatar: br.owner.avatar } : br.owner,
           bookingRequestId: br._id,
           token: { code: token.code, expiresAt: token.expiresAt }
         });
