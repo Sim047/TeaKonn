@@ -117,10 +117,11 @@ export default function Notifications({ token, onBack }: any) {
     try {
       setLoading(true);
       const headers = { Authorization: `Bearer ${token}` } as any;
-      const [eventsRes, receivedRes, sentRes, meRes] = await Promise.all([
+      const [eventsRes, receivedRes, sentRes, tokensReceivedRes, meRes] = await Promise.all([
         axios.get(`${API}/api/events?status=published&limit=100`, { headers }),
         axios.get(`${API}/api/booking-requests/my/received`, { headers }),
         axios.get(`${API}/api/booking-requests/my/sent`, { headers }),
+        axios.get(`${API}/api/tokens/my/received`, { headers }),
         axios.get(`${API}/api/users/me`, { headers }),
       ]);
 
@@ -157,9 +158,23 @@ export default function Notifications({ token, onBack }: any) {
         status: r.status,
         conversation: r.conversation?._id || r.conversation,
       }));
-      // Requester side: do not include sent requests here; only show when token is generated via realtime notification
+      // Tokens received by requester: persist notifications so they appear even if realtime was missed
+      const tokensReceived = (tokensReceivedRes.data?.tokens || []).map((t: any) => ({
+        id: (t._id || Math.random().toString(36)) + '-token',
+        kind: 'booking_token',
+        title: t.owner?.username || 'Response',
+        message: `A response was issued for ${t.venue?.name || 'your request'}`,
+        date: t.createdAt || t.expiresAt || new Date().toISOString(),
+        venue: t.venue,
+        requester: currentUser, // me
+        owner: t.owner,
+        status: 'token_generated',
+        token: { code: t.code, expiresAt: t.expiresAt },
+      }));
+
+      // Requester side: do not include sent requests here; rely on tokens + realtime for requester view
       const sent: any[] = [];
-      setBookingNotifs([...received, ...sent]);
+      setBookingNotifs([...received, ...tokensReceived, ...sent]);
 
       // Followers
       const me = meRes.data || {};
