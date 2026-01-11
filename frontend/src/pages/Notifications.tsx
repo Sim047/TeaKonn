@@ -145,6 +145,9 @@ export default function Notifications({ token, onBack }: any) {
 
       setEventsNotifs(eventNotifications);
 
+      // Current user (needed for requester mapping)
+      const me = meRes.data || {};
+
       // Booking requests (received + sent)
       const received = (receivedRes.data?.requests || []).map((r: any) => ({
         id: r._id,
@@ -190,7 +193,6 @@ export default function Notifications({ token, onBack }: any) {
       setBookingNotifs([...received, ...tokensReceived, ...sentTokenNotifs]);
 
       // Followers
-      const me = meRes.data || {};
       const followersList = (me.followers || []).map((u: any) => ({
         id: u._id,
         kind: 'follow',
