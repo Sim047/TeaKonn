@@ -78,6 +78,9 @@ export default function Sidebar({
   const [groupUnread, setGroupUnread] = useState<Record<string, number>>({});
   const [notifications, setNotifications] = useState<Array<{ id: string; title: string; message: string; time: string; date: string; }>>([]);
   const [showNotificationsPanel, setShowNotificationsPanel] = useState<boolean>(true);
+  const [unreadNotifs, setUnreadNotifs] = useState<number>(() => {
+    try { return parseInt(localStorage.getItem('auralink-unread-notifs') || '0', 10) || 0; } catch { return 0; }
+  });
 
   useEffect(() => {
     loadUserStats();
@@ -91,6 +94,22 @@ export default function Sidebar({
     }, 60000);
     return () => clearInterval(interval);
   }, [token]);
+
+  // Listen for unread notifications updates
+  useEffect(() => {
+    const handler = (e: any) => {
+      try {
+        const next = e?.detail?.count;
+        if (typeof next === 'number') setUnreadNotifs(next);
+        else {
+          const raw = localStorage.getItem('auralink-unread-notifs') || '0';
+          setUnreadNotifs(parseInt(raw, 10) || 0);
+        }
+      } catch {}
+    };
+    window.addEventListener('auralink-unread-notifs.update', handler as any);
+    return () => window.removeEventListener('auralink-unread-notifs.update', handler as any);
+  }, []);
 
   // Socket-driven refresh for incoming events
   useEffect(() => {
@@ -413,7 +432,7 @@ export default function Sidebar({
         <NavButton
           icon={Bell}
           label="Notifications"
-          badge={notifications.length}
+          badge={unreadNotifs}
           isCollapsed={isCollapsed}
           onClick={() => {
             onNavigate?.('notifications');

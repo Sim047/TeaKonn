@@ -22,6 +22,16 @@ export default function Notifications({ token, onBack }: any) {
   const [tokenModal, setTokenModal] = useState<{ open: boolean; data?: any }>(() => ({ open: false }));
   const [currentUser, setCurrentUser] = useState<any>(null);
 
+  function bumpUnread(countDelta: number = 1) {
+    try {
+      const raw = localStorage.getItem('auralink-unread-notifs') || '0';
+      const n = parseInt(raw, 10) || 0;
+      const next = Math.max(0, n + countDelta);
+      localStorage.setItem('auralink-unread-notifs', String(next));
+      window.dispatchEvent(new CustomEvent('auralink-unread-notifs.update', { detail: { count: next } }));
+    } catch {}
+  }
+
   useEffect(() => {
     loadAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,6 +67,7 @@ export default function Notifications({ token, onBack }: any) {
             conversation: payload.conversation,
           } as any;
           setBookingNotifs((prev) => [item, ...prev]);
+          bumpUnread(1);
         } else if (payload.kind === 'booking_token') {
           const item = {
             id: (payload.bookingRequestId || '') + '-token',
@@ -71,6 +82,7 @@ export default function Notifications({ token, onBack }: any) {
             token: payload.token,
           } as any;
           setBookingNotifs((prev) => [item, ...prev]);
+          bumpUnread(1);
         }
       } catch (e) {
         console.warn('Notification handler failed', e);
@@ -166,6 +178,15 @@ export default function Notifications({ token, onBack }: any) {
       setLoading(false);
     }
   }
+
+  // Reset unread count when visiting notifications page
+  useEffect(() => {
+    try {
+      localStorage.setItem('auralink-unread-notifs', '0');
+      localStorage.setItem('auralink-last-notifs-open', String(Date.now()));
+      window.dispatchEvent(new CustomEvent('auralink-unread-notifs.update', { detail: { count: 0 } }));
+    } catch {}
+  }, []);
 
   const merged = useMemo(() => {
     const all = [
@@ -348,7 +369,7 @@ export default function Notifications({ token, onBack }: any) {
                           <span className="text-xs text-theme-secondary">{dayjs(notif.date).fromNow()}</span>
                         </div>
                         <div className="mt-3">
-                          <span className="px-3 py-1 rounded-lg text-sm border" style={{ borderColor: 'var(--border)' }}>
+                          <span className="px-3 py-1 rounded-lg text-sm bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
                             You have a booking request for this venue.
                           </span>
                         </div>
@@ -365,7 +386,7 @@ export default function Notifications({ token, onBack }: any) {
                           <span className="text-xs text-theme-secondary">{dayjs(notif.date).fromNow()}</span>
                         </div>
                         <div className="mt-3">
-                          <span className="px-3 py-1 rounded-lg text-sm border" style={{ borderColor: 'var(--border)' }}>
+                          <span className="px-3 py-1 rounded-lg text-sm bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400">
                             Your request has a response.
                           </span>
                         </div>
