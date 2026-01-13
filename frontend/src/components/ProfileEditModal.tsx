@@ -11,10 +11,12 @@ type Props = {
 };
 
 export default function ProfileEditModal({ visible, onClose, user, onUpdated }: Props) {
+  const MAX_NAME = 60;
   const [name, setName] = useState(user?.name || '');
   const [username, setUsername] = useState(user?.username || '');
   const [email, setEmail] = useState(user?.email || '');
   const [location, setLocation] = useState(user?.location || '');
+  const [about, setAbout] = useState(user?.about || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -34,6 +36,7 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
     setUsername(user?.username || '');
     setEmail(user?.email || '');
     setLocation(user?.location || '');
+    setAbout(user?.about || '');
     setError(null);
     setAvatarFile(null);
     setAvatarPreview(null);
@@ -50,7 +53,8 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
       setError(null);
 
       // Update text fields
-      const { data } = await api.put('/users/me', { name, username, email, location });
+      const safeName = (name || '').slice(0, MAX_NAME);
+      const { data } = await api.put('/users/me', { name: safeName, username, email, location, about });
       let updatedUser = data?.user || user;
 
       // Optional avatar upload
@@ -206,13 +210,21 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
 
           <div>
             <label className="text-xs text-theme-secondary">Name</label>
-            <input className="input w-full mt-1" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} />
-            <p className="text-xs text-theme-secondary mt-1">Your display name.</p>
+            <input
+              className="input w-full mt-1"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={MAX_NAME}
+            />
+            <div className="flex items-center justify-between mt-1">
+              <p className="text-xs text-theme-secondary">Your display name.</p>
+              <p className="text-xs text-theme-secondary">{name.length}/{MAX_NAME}</p>
+            </div>
           </div>
 
           <div>
             <label className="text-xs text-theme-secondary">Email</label>
-            <input className="input w-full mt-1" type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} />
+            <input className="input w-full mt-1" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
 
           {/* Username (unique handle) */}
@@ -224,7 +236,18 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
 
           <div>
             <label className="text-xs text-theme-secondary">Location</label>
-            <input className="input w-full mt-1" value={location} onChange={(e) => setLocation(e.target.value)} maxLength={120} />
+            <input className="input w-full mt-1" value={location} onChange={(e) => setLocation(e.target.value)} />
+          </div>
+
+          <div>
+            <label className="text-xs text-theme-secondary">About</label>
+            <textarea
+              className="input w-full mt-1 min-h-[100px] resize-y"
+              value={about}
+              onChange={(e) => setAbout(e.target.value)}
+              placeholder="Tell others about yourself, your interests, and experience."
+            />
+            <p className="text-xs text-theme-secondary mt-1">This can be longer text and has no hard limit.</p>
           </div>
 
           <div className="mt-2">
