@@ -3,8 +3,7 @@ import axios from 'axios';
 import { API_URL } from '../config/api';
 import CreateServiceModal from '../components/CreateServiceModal';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { MapPin, BadgeCheck, ClipboardList, DollarSign, Tag } from 'lucide-react';
-import SearchBar from '../components/SearchBar';
+import { MapPin, BadgeCheck, ClipboardList, DollarSign, Tag, Plus } from 'lucide-react';
 
 interface MyServicesProps {
   token: string | null;
@@ -69,17 +68,29 @@ export default function MyServices({ token, onNavigate, onToast, onUpdated }: My
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">My Services</h2>
             <p className="text-sm text-theme-secondary">Manage your service offerings</p>
           </div>
-          <div className="flex flex-wrap sm:flex-nowrap gap-2 sm:justify-end w-full sm:w-auto">
-            <div className="w-full sm:w-80">
-              <SearchBar
-                value={query}
-                onChange={(v) => setQuery(v)}
+        </div>
+
+        <div className="-mx-3 sm:mx-0">
+          <div className="p-[1px] bg-gradient-to-r from-cyan-400 to-purple-500 rounded-none sm:rounded-xl">
+            <div className="flex items-center gap-1 themed-card rounded-none sm:rounded-xl px-1 py-1 w-full flex-nowrap" style={{ background: 'var(--card)' }}>
+              <span className={`px-2 py-1 text-[12px] font-semibold leading-tight rounded-md flex-none border bg-cyan-600 text-white border-cyan-500`}>My Services</span>
+              <input
+                type="text"
+                className="input text-sm leading-normal flex-1 min-w-0 rounded-md bg-white/60 dark:bg-slate-800/60 focus:ring-2 focus:ring-cyan-400 focus:outline-none placeholder:text-slate-500 dark:placeholder:text-slate-400 placeholder:opacity-90 dark:placeholder:opacity-80"
                 placeholder="Search services by name, category, city"
-                ariaLabel="Search services"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                aria-label="Search services"
               />
+              <button
+                onClick={() => setOpenCreate(true)}
+                aria-label="Create service"
+                className="p-1 rounded-md transition-all flex-none bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20"
+                title="Create service"
+              >
+                <Plus className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </button>
             </div>
-            <button className="inline-flex items-center px-4 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => onNavigate && onNavigate('my-activities')}>Back</button>
-            <button className="btn w-full sm:w-auto" onClick={() => setOpenCreate(true)}>Create Service</button>
           </div>
         </div>
 
