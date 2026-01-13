@@ -328,9 +328,8 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
           </div>
         </div>
       )}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-        <button className={`${btn('outline')} w-full sm:w-auto`} onClick={refreshAll}>Refresh</button>
-        {activeTab === 'events' && (
+      {activeTab === 'events' && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
           <input
             value={eventsQuery}
             onChange={(e) => setEventsQuery(e.target.value)}
@@ -338,8 +337,8 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
             className="input w-full sm:w-80 sm:ml-auto"
             aria-label="Search events"
           />
-        )}
-      </div>
+        </div>
+      )}
 
       {/* helper to filter by query */}
       {/**/}
