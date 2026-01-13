@@ -21,14 +21,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
     return `${base} ${sizing} ${variants[variant]}`;
   };
 
-  const venueStatusStyle = (raw?: string) => {
-    const s = (raw || '').toLowerCase();
-    if (s.includes('avail')) return 'badge-accent';
-    if (s.includes('closed')) return 'badge-violet';
-    if (s.includes('maint')) return 'badge-amber';
-    if (s.includes('book')) return 'badge-amber';
-    return '';
-  };
+  // Venue status display removed (status/available are legacy and not enforced)
 
   const tabBtn = (active: boolean) =>
     [
@@ -397,7 +390,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                         </div>
                       )}
                     </div>
-                    {isOpen && <span className={`badge ${venueStatusStyle(v.status)}`}>{v.status}</span>}
+                    {/* Status pill removed: classification not enforced */}
                   </div>
                   {isOpen && (
                     <div className="mt-2 flex items-center gap-2 text-sm text-theme-secondary">
@@ -580,7 +573,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                           <span>{v.location?.city || 'Location TBA'}</span>
                         </div>
                       </div>
-                      {v.status && <span className={`badge ${venueStatusStyle(v.status)}`}>{v.status}</span>}
+                      {/* Status pill removed in All Venues too */}
                     </div>
                     {v.capacity?.max && (
                       <div className="mt-2 flex items-center gap-2 text-sm text-theme-secondary">
