@@ -89,6 +89,9 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
   const [showReceivedTokens, setShowReceivedTokens] = useState<boolean>(() => {
     try { return JSON.parse(localStorage.getItem('myvenues.receivedTokens.show') || 'false'); } catch { return false; }
   });
+  const [showOtherInsights, setShowOtherInsights] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.otherInsights.show') || 'true'); } catch { return true; }
+  });
 
   async function refreshVenues() {
     if (!token) return;
@@ -184,6 +187,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
   useEffect(() => { localStorage.setItem('myvenues.received.show', JSON.stringify(showReceived)); }, [showReceived]);
   useEffect(() => { localStorage.setItem('myvenues.generated.show', JSON.stringify(showGenerated)); }, [showGenerated]);
   useEffect(() => { localStorage.setItem('myvenues.receivedTokens.show', JSON.stringify(showReceivedTokens)); }, [showReceivedTokens]);
+  useEffect(() => { localStorage.setItem('myvenues.otherInsights.show', JSON.stringify(showOtherInsights)); }, [showOtherInsights]);
         
 
   async function loadEventsForVenue(venueId: string) {
@@ -578,6 +582,15 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xl font-semibold">Other Insights</h3>
             <div className="flex items-center gap-2">
+              <span className="text-sm text-theme-secondary">Show</span>
+              <button
+                className={`chip ${showOtherInsights ? 'chip-active' : ''}`}
+                onClick={() => setShowOtherInsights(s => !s)}
+                aria-pressed={showOtherInsights}
+                aria-label="Toggle Other Insights visibility"
+              >
+                {showOtherInsights ? 'On' : 'Off'}
+              </button>
               <select
                 className="input h-9 text-sm"
                 value={globalInsightsMode}
@@ -596,6 +609,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             </div>
           </div>
 
+          {showOtherInsights && (
           <div
             className={`rounded-lg border p-3 max-h-[55vh] overflow-y-auto ${
               globalInsightsMode === 'nonPendingRequests' ? 'ring-1 ring-amber-500/30 bg-amber-50 dark:bg-amber-950/20' :
@@ -680,6 +694,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
               </div>
             )}
           </div>
+          )}
         </section>
 
         
