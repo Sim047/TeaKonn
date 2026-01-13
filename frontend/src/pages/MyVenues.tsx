@@ -49,11 +49,142 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
   const [editingVenue, setEditingVenue] = useState<any | null>(null);
   const [confirmDeleteVenueId, setConfirmDeleteVenueId] = useState<string | null>(null);
   const [query, setQuery] = useState<string>('');
-        
+  const [searchScope, setSearchScope] = useState<'mine' | 'all'>(() => {
+    const saved = localStorage.getItem('myvenues.scope');
+    return saved === 'all' ? 'all' : 'mine';
+  });
+  const [allVenues, setAllVenues] = useState<any[]>([]);
+  const [allVenuesPage, setAllVenuesPage] = useState<number>(1);
+  const [allVenuesHasMore, setAllVenuesHasMore] = useState<boolean>(false);
+  const [loadingSearch, setLoadingSearch] = useState<boolean>(false);
+  const [me, setMe] = useState<any | null>(null);
+  const [sentRequests, setSentRequests] = useState<any[]>([]);
+  const [receivedRequests, setReceivedRequests] = useState<any[]>([]);
+  const [generatedTokens, setGeneratedTokens] = useState<any[]>([]);
+  const [receivedTokens, setReceivedTokens] = useState<any[]>([]);
+  const [confirmGenerateReq, setConfirmGenerateReq] = useState<any | null>(null);
+  const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [initialEventToken, setInitialEventToken] = useState<string>('');
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [eventsByVenue, setEventsByVenue] = useState<Record<string, any[]>>({});
   const [loadingVenueEvents, setLoadingVenueEvents] = useState<Record<string, boolean>>({});
   const [insightModeByVenue, setInsightModeByVenue] = useState<Record<string, 'requests' | 'events'>>({});
   const [globalInsightsMode, setGlobalInsightsMode] = useState<'nonPendingRequests' | 'generated' | 'received' | 'inactiveEvents'>('nonPendingRequests');
   const [loadingAllVenueEvents, setLoadingAllVenueEvents] = useState(false);
+  const [showAllVenues, setShowAllVenues] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.all.show') || 'true'); } catch { return true; }
+  });
+  const [showMyVenues, setShowMyVenues] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.mine.show') || 'true'); } catch { return true; }
+  });
+  const [showSent, setShowSent] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.sent.show') || 'false'); } catch { return false; }
+  });
+  const [showReceived, setShowReceived] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.received.show') || 'false'); } catch { return false; }
+  });
+  const [showGenerated, setShowGenerated] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.generated.show') || 'false'); } catch { return false; }
+  });
+  const [showReceivedTokens, setShowReceivedTokens] = useState<boolean>(() => {
+    try { return JSON.parse(localStorage.getItem('myvenues.receivedTokens.show') || 'false'); } catch { return false; }
+  });
+
+  async function refreshVenues() {
+    if (!token) return;
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      const meRes = await axios.get(`${API_URL}/users/me`, { headers });
+      setMe(meRes.data || null);
+      const [v, s, r, g, t] = await Promise.all([
+        axios.get(`${API_URL}/venues/my`, { headers }),
+        axios.get(`${API_URL}/booking-requests/my/sent`, { headers }),
+        axios.get(`${API_URL}/booking-requests/my/received`, { headers }),
+        axios.get(`${API_URL}/tokens/my/generated`, { headers }),
+        axios.get(`${API_URL}/tokens/my/received`, { headers }),
+      ]);
+      setMyVenues(v.data.venues || []);
+      setSentRequests(s.data.requests || []);
+      setReceivedRequests(r.data.requests || []);
+      setGeneratedTokens(g.data.tokens || []);
+      setReceivedTokens(t.data.tokens || []);
+      onCountChange && onCountChange((v.data.venues || []).length);
+    } catch {}
+  }
+
+  async function startConversationWithUser(userId: string) {
+    if (!token || !onOpenConversation) return;
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      const res = await axios.post(`${API_URL.replace(/\/api$/, '')}/api/users/conversations/start`, { partnerId: userId }, { headers });
+      if (res.data) onOpenConversation(res.data);
+    } catch (e: any) {
+      onToast && onToast(e.response?.data?.error || 'Could not start conversation', 'error');
+    }
+  }
+
+  async function revokeToken(code: string) {
+    if (!token) return;
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      await axios.post(`${API_URL}/tokens/revoke`, { code }, { headers });
+      const g = await axios.get(`${API_URL}/tokens/my/generated`, { headers });
+      setGeneratedTokens(g.data.tokens || []);
+    } catch (e: any) {
+      onToast && onToast(e.response?.data?.error || 'Failed to revoke token', 'error');
+    }
+  }
+
+  async function extendToken(code: string, hours = 24) {
+    if (!token) return;
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      await axios.post(`${API_URL}/tokens/extend`, { code, hours }, { headers });
+      const g = await axios.get(`${API_URL}/tokens/my/generated`, { headers });
+      setGeneratedTokens(g.data.tokens || []);
+    } catch (e: any) {
+      onToast && onToast(e.response?.data?.error || 'Failed to extend token', 'error');
+    }
+  }
+
+  useEffect(() => { refreshVenues(); }, [token]);
+  useEffect(() => { localStorage.setItem('myvenues.scope', searchScope); }, [searchScope]);
+
+  async function searchAllVenues(q: string, page = 1, limit = 50) {
+    setLoadingSearch(true);
+    const headers = token ? { Authorization: `Bearer ${token}` } : undefined as any;
+    try {
+      const res = await axios.get(`${API_URL}/venues/search`, { params: { name: q, page, limit }, headers });
+      const items = (res.data?.venues || res.data?.results || res.data || []) as any[];
+      setAllVenues(page === 1 ? items : [...allVenues, ...items]);
+      setAllVenuesPage(page);
+      const hasMore = (res.data?.totalPages !== undefined && res.data?.page !== undefined)
+        ? (res.data.page < res.data.totalPages)
+        : (items.length >= limit);
+      setAllVenuesHasMore(hasMore);
+    } catch (e) {
+      setAllVenues(page === 1 ? [] : allVenues);
+      setAllVenuesHasMore(false);
+    } finally {
+      setLoadingSearch(false);
+    }
+  }
+
+  useEffect(() => {
+    if (searchScope !== 'all') return;
+    const q = query.trim();
+    const t = setTimeout(() => { searchAllVenues(q, 1); }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, searchScope]);
+
+  useEffect(() => { localStorage.setItem('myvenues.all.show', JSON.stringify(showAllVenues)); }, [showAllVenues]);
+  useEffect(() => { localStorage.setItem('myvenues.mine.show', JSON.stringify(showMyVenues)); }, [showMyVenues]);
+  useEffect(() => { localStorage.setItem('myvenues.sent.show', JSON.stringify(showSent)); }, [showSent]);
+  useEffect(() => { localStorage.setItem('myvenues.received.show', JSON.stringify(showReceived)); }, [showReceived]);
+  useEffect(() => { localStorage.setItem('myvenues.generated.show', JSON.stringify(showGenerated)); }, [showGenerated]);
+  useEffect(() => { localStorage.setItem('myvenues.receivedTokens.show', JSON.stringify(showReceivedTokens)); }, [showReceivedTokens]);
+        
 
   async function loadEventsForVenue(venueId: string) {
     if (!venueId) return;
@@ -67,6 +198,27 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
       setEventsByVenue((m) => ({ ...m, [venueId]: [] }));
     } finally {
       setLoadingVenueEvents((m) => ({ ...m, [venueId]: false }));
+    }
+  }
+
+  async function generateTokenForRequest(reqItem: any) {
+    if (!token) return;
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      const idempotencyKey = `br_${reqItem._id}`;
+      await axios.post(`${API_URL}/payments/initiate`, { bookingRequestId: reqItem._id, amount: 1000, currency: 'KES', idempotencyKey }, { headers });
+      await axios.post(`${API_URL}/payments/callback`, { status: 'success', idempotencyKey });
+      await axios.post(`${API_URL}/tokens/generate`, { bookingRequestId: reqItem._id, expiresInHours: 72 }, { headers });
+      onToast && onToast('Token generated and sent to requester in chat.', 'success');
+      const [g, t] = await Promise.all([
+        axios.get(`${API_URL}/tokens/my/generated`, { headers }),
+        axios.get(`${API_URL}/tokens/my/received`, { headers }),
+      ]);
+      setGeneratedTokens(g.data.tokens || []);
+      setReceivedTokens(t.data.tokens || []);
+      setReceivedRequests((prev) => prev.map((r) => r._id === reqItem._id ? { ...r, status: 'token_generated' } : r));
+    } catch (e: any) {
+      onToast && onToast(e.response?.data?.error || 'Failed to generate token', 'error');
     }
   }
 
@@ -417,93 +569,9 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
         </section>
         )}
 
-        {venuesSubTab === 'sent' && (
-        <section>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-semibold">Booking Requests (Sent)</h3>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-theme-secondary">Show</span>
-              <button className={`chip ${showSent ? 'chip-active' : ''}`} onClick={() => setShowSent(s => !s)} aria-pressed={showSent}>{showSent ? 'On' : 'Off'}</button>
-            </div>
-          </div>
-          {showSent ? (
-          <div className="space-y-2">
-            {sentRequests.filter((r) => {
-              const q = query.toLowerCase();
-              if (!q) return true;
-              return (
-                (r.venue?.name || '').toLowerCase().includes(q) ||
-                (r.status || '').toLowerCase().includes(q)
-              );
-            }).map((r) => (
-              <div key={r._id} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all">
-                <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                  <div>
-                    <div className="text-lg font-semibold text-heading">{r.venue?.name}</div>
-                    <div className="text-sm text-theme-secondary">Status: {r.status}</div>
-                  </div>
-                  <span className={`badge ${r.status === 'pending' ? 'badge-amber' : r.status === 'approved' ? 'badge-accent' : 'badge-violet'}`}>{r.status}</span>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => openRequestChat(r._id)}>Open Chat</button>
-                  <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => startConversationWithUser(r.owner?._id)}>Message Owner</button>
-                </div>
-              </div>
-            ))}
-            {sentRequests.length === 0 && <p className="text-sm text-gray-500">No sent requests.</p>}
-          </div>
-          ) : null}
-        </section>
-        )}
+        
 
-        {venuesSubTab === 'received' && (
-        <section>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-semibold">Booking Requests (Received)</h3>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-theme-secondary">Show</span>
-              <button className={`chip ${showReceived ? 'chip-active' : ''}`} onClick={() => setShowReceived(s => !s)} aria-pressed={showReceived}>{showReceived ? 'On' : 'Off'}</button>
-            </div>
-          </div>
-          {showReceived ? (
-          <div className="rounded-lg border p-2 ring-1 ring-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/20" style={{ borderColor: 'var(--border)' }}>
-            <div className="space-y-2">
-            {receivedRequests.filter((r) => {
-              const q = query.toLowerCase();
-              if (!q) return true;
-              return (
-                (r.venue?.name || '').toLowerCase().includes(q) ||
-                (r.requester?.username || '').toLowerCase().includes(q) ||
-                (r.status || '').toLowerCase().includes(q)
-              );
-            }).map((r) => (
-              <div key={r._id} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all">
-                <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                  <div>
-                    <div className="text-lg font-semibold text-heading">{r.venue?.name}</div>
-                    <div className="text-sm text-theme-secondary">Requester: {r.requester?.username}</div>
-                    <div className="text-sm text-theme-secondary">Status: {r.status}</div>
-                  </div>
-                  <span className={`badge ${r.status === 'pending' ? 'badge-amber' : r.status === 'approved' ? 'badge-accent' : 'badge-violet'}`}>{r.status}</span>
-                </div>
-                {(me && String(r.owner?._id || r.owner) === String(me?._id)) && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
-                    {r.status === 'pending' && (
-                      <button className="btn w-full sm:w-auto" onClick={() => setConfirmGenerateReq(r)}>Generate Token (after payment)</button>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-            {receivedRequests.length === 0 && <p className="text-sm text-gray-500">No received requests.</p>}
-            </div>
-          </div>
-          ) : null}
-        </section>
-        )}
+        
 
         {/* Global/Other Insights section for large-scale management */}
         <section className="mt-6">
@@ -614,90 +682,9 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
           </div>
         </section>
 
-        {venuesSubTab === 'generated' && (
-        <section>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-semibold">Generated Tokens</h3>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-theme-secondary">Show</span>
-              <button className={`chip ${showGenerated ? 'chip-active' : ''}`} onClick={() => setShowGenerated(s => !s)} aria-pressed={showGenerated}>{showGenerated ? 'On' : 'Off'}</button>
-            </div>
-          </div>
-          {showGenerated ? (
-          <div className="space-y-2">
-            {generatedTokens.filter((t) => {
-              const q = query.toLowerCase();
-              if (!q) return true;
-              return (
-                (t.code || '').toLowerCase().includes(q) ||
-                (t.venue?.name || '').toLowerCase().includes(q) ||
-                (t.status || '').toLowerCase().includes(q)
-              );
-            }).map((t) => (
-              <div key={t._id} className="themed-card rounded-2xl p-3 sm:p-4 shadow-sm">
-                <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                  <div className="font-medium text-heading">{t.code}</div>
-                  <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
-                </div>
-                <div className="text-sm text-theme-secondary">Venue: {t.venue?.name}</div>
-                <div className="text-sm text-theme-secondary">Expires: {new Date(t.expiresAt).toLocaleString()}</div>
-                {me?.role === 'venue_owner' && t.status === 'active' && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => extendToken(t.code, 24)}>Extend 24h</button>
-                    <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400 w-full sm:w-auto" onClick={() => revokeToken(t.code)}>Revoke</button>
-                  </div>
-                )}
-              </div>
-            ))}
-            {generatedTokens.length === 0 && <p className="text-sm text-gray-500">No generated tokens.</p>}
-          </div>
-          ) : null}
-        </section>
-        )}
+        
 
-        {venuesSubTab === 'receivedTokens' && (
-        <section>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-semibold">Received Tokens</h3>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-theme-secondary">Show</span>
-              <button className={`chip ${showReceivedTokens ? 'chip-active' : ''}`} onClick={() => setShowReceivedTokens(s => !s)} aria-pressed={showReceivedTokens}>{showReceivedTokens ? 'On' : 'Off'}</button>
-            </div>
-          </div>
-          {showReceivedTokens ? (
-          <div className="space-y-2">
-            {receivedTokens.filter((t) => {
-              const q = query.toLowerCase();
-              if (!q) return true;
-              return (
-                (t.code || '').toLowerCase().includes(q) ||
-                (t.venue?.name || '').toLowerCase().includes(q) ||
-                (t.status || '').toLowerCase().includes(q)
-              );
-            }).map((t) => (
-              <div key={t._id} className="themed-card rounded-2xl p-3 sm:p-4 shadow-sm">
-                <div className="h-2 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3" />
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                  <div className="font-medium text-heading">{t.code}</div>
-                  <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
-                </div>
-                <div className="text-sm text-theme-secondary">Venue: {t.venue?.name}</div>
-                <div className="text-sm text-theme-secondary">Expires: {new Date(t.expiresAt).toLocaleString()}</div>
-                {t.status === 'active' && (
-                  <div className="mt-2">
-                    <button className="btn w-full sm:w-auto" onClick={() => { setInitialEventToken(t.code); setShowCreateEvent(true); }}>
-                      Use Token to Create Event
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
-            {receivedTokens.length === 0 && <p className="text-sm text-gray-500">No received tokens.</p>}
-          </div>
-          ) : null}
-        </section>
-        )}
+        
       </div>
 
       {showCreateVenue && (
