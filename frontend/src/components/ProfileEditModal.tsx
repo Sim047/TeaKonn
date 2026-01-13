@@ -194,11 +194,11 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div
-        className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl w-full max-w-lg border border-cyan-600/30 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
+        className="themed-card rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
-        style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}
+        style={{ overscrollBehavior: 'contain', touchAction: 'pan-y', borderColor: 'var(--border)' }}
       >
-        <div className="flex items-center justify-between p-4 border-b sticky top-0 z-10" style={{ borderColor: 'var(--border)', background: 'linear-gradient(to bottom, rgba(15,23,42,1), rgba(15,23,42,0.95))' }}>
+        <div className="flex items-center justify-between p-4 border-b sticky top-0 z-10" style={{ borderColor: 'var(--border)', background: 'var(--card)' }}>
           <h3 className="text-lg font-bold" style={{ color: 'var(--text)' }}>Edit Profile</h3>
           <button className="p-2 rounded-lg hover:bg-white/10" onClick={onClose} title="Close">
             <X className="w-5 h-5" />
@@ -329,7 +329,7 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
           </div>
         </div>
 
-        <div className="p-4 border-t flex gap-2 sticky bottom-0 z-10" style={{ borderColor: 'var(--border)', background: 'linear-gradient(to top, rgba(15,23,42,1), rgba(15,23,42,0.95))' }}>
+        <div className="p-4 border-t flex gap-2 sticky bottom-0 z-10" style={{ borderColor: 'var(--border)', background: 'var(--card)' }}>
           <button className="flex-1 btn" onClick={saveProfile} disabled={saving}>{saving ? 'Saving…' : 'Save Changes'}</button>
           <button className="flex-1 px-4 py-2 rounded-lg themed-card" onClick={onClose}>Cancel</button>
         </div>

@@ -4,8 +4,7 @@ import { API_URL } from '../config/api';
 import CreateVenueModal from '../components/CreateVenueModal';
 import CreateEventModal from '../components/CreateEventModal';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { MapPin, Users, Search as SearchIcon, Send, Inbox, KeyRound, Shield } from 'lucide-react';
-import SearchBar from '../components/SearchBar';
+import { MapPin, Users, Search as SearchIcon, Send, Inbox, KeyRound, Shield, Plus } from 'lucide-react';
 
 export default function MyVenues({ token, onToast, onNavigate, onCountChange, onUpdated, onOpenConversation }: { token: string | null, onToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void, onNavigate?: (view: string) => void, onCountChange?: (count: number) => void, onUpdated?: () => void, onOpenConversation?: (conv: any) => void }) {
   const btn = (variant: 'primary' | 'success' | 'danger' | 'outline' | 'warning' | 'ghost', size: 'sm' | 'md' = 'md') => {
@@ -294,35 +293,38 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
           </div>
         </div>
 
-        <div className="flex flex-col gap-3">
-          <div className="w-full sm:w-96">
-            <SearchBar
-              value={query}
-              onChange={(v) => setQuery(v)}
-              placeholder="Search venues, requests, tokens"
-              ariaLabel="Search venues"
-            />
-          </div>
-          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Search Scope">
-            <button
-              className={tabBtn(searchScope === 'mine')}
-              onClick={() => setSearchScope('mine')}
-              role="tab"
-              aria-selected={searchScope === 'mine'}
-            >
-              <Inbox className="w-4 h-4" />
-              <span>My Venues</span>
-              <span className={countPill(searchScope === 'mine')}>{myVenues.length}</span>
-            </button>
-            <button
-              className={tabBtn(searchScope === 'all')}
-              onClick={() => setSearchScope('all')}
-              role="tab"
-              aria-selected={searchScope === 'all'}
-            >
-              <SearchIcon className="w-4 h-4" />
-              <span>All Venues</span>
-            </button>
+        <div className="-mx-3 sm:mx-0">
+          <div className="p-[1px] bg-gradient-to-r from-cyan-400 to-purple-500 rounded-none sm:rounded-xl">
+            <div className="flex items-center gap-1 themed-card rounded-none sm:rounded-xl px-1 py-1 w-full flex-nowrap" style={{ background: 'var(--card)' }}>
+              <button
+                className={`px-2 py-1 text-[12px] font-semibold leading-tight rounded-md flex-none border transition-colors ${
+                  searchScope === 'mine'
+                    ? 'bg-cyan-600 text-white border-cyan-500'
+                    : 'bg-purple-600 text-white border-purple-500'
+                }`}
+                onClick={() => setSearchScope((s) => (s === 'mine' ? 'all' : 'mine'))}
+                aria-label="Toggle search scope"
+                title={searchScope === 'mine' ? 'Searching My Venues' : 'Searching All Venues'}
+              >
+                {searchScope === 'mine' ? 'My Venues' : 'All Venues'}
+              </button>
+              <input
+                type="text"
+                className="input h-9 text-sm flex-1 min-w-0 rounded-md bg-white/60 dark:bg-slate-800/60 focus:ring-2 focus:ring-cyan-400 focus:outline-none placeholder:text-theme-secondary"
+                placeholder="Search venues"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                aria-label="Search venues"
+              />
+              <button
+                onClick={() => setShowCreateVenue(true)}
+                aria-label="Create venue"
+                className="p-1 rounded-md transition-all flex-none bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20"
+                title="Create venue"
+              >
+                <Plus className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </button>
+            </div>
           </div>
         </div>
 
