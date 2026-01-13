@@ -478,7 +478,6 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                                           </div>
                                           <div className="text-xs text-theme-secondary">Requester: {r.requester?.username}</div>
                                           <div className="mt-2 flex flex-wrap gap-2">
-                                            <button className="inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs" style={{ borderColor: 'var(--border)' }} onClick={() => openRequestChat(r._id)}>Open Chat</button>
                                             <button className="inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs" style={{ borderColor: 'var(--border)' }} onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
                                             {(me && String(r.owner?._id || r.owner) === String(me?._id) && r.status === 'pending') && (
                                               <button className="inline-flex items-center px-2.5 py-1.5 rounded-md bg-emerald-600 text-white text-xs" onClick={() => setConfirmGenerateReq(r)}>Generate Token</button>
@@ -687,7 +686,6 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                 </div>
                 {(me && String(r.owner?._id || r.owner) === String(me?._id)) && (
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => openRequestChat(r._id)}>Open Chat</button>
                     <button className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto" onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
                     {r.status === 'pending' && (
                       <button className="btn w-full sm:w-auto" onClick={() => setConfirmGenerateReq(r)}>Generate Token (after payment)</button>
