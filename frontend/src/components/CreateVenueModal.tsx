@@ -3,6 +3,7 @@ import axios from 'axios';
 import { API_URL } from '../config/api';
 import MapPicker, { PlaceSelection } from './MapPicker';
 import { useLoadScript, Autocomplete } from '@react-google-maps/api';
+import { Building2 } from 'lucide-react';
 
 interface CreateVenueModalProps {
   isOpen: boolean;
@@ -129,9 +130,13 @@ export default function CreateVenueModal({ isOpen, onClose, token, onCreated, ed
       <div className="w-full max-w-2xl mx-auto p-[1px] rounded-2xl bg-gradient-to-r from-cyan-400 to-purple-500 shadow-2xl">
         <div className="themed-card rounded-2xl overflow-hidden" style={{ background: 'var(--card)' }}>
           <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className="h-2 w-20 rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)]" />
-              <h3 className="text-lg font-semibold">{editVenue ? 'Edit Venue' : 'Create Venue'}</h3>
+              <Building2 className="w-5 h-5 text-cyan-500/80" />
+              <div className="leading-tight">
+                <h3 className="text-lg font-semibold">{editVenue ? 'Edit Venue' : 'Create Venue'}</h3>
+                <p className="text-xs text-theme-secondary">Add details for your venue</p>
+              </div>
             </div>
             <button className="px-3 py-1 rounded-md border hover:bg-white/40 dark:hover:bg-slate-800/40" style={{ borderColor: 'var(--border)' }} onClick={onClose}>Close</button>
           </div>
@@ -218,6 +223,7 @@ export default function CreateVenueModal({ isOpen, onClose, token, onCreated, ed
                 <label htmlFor="venue-images" className="flex items-center justify-center gap-2 w-full px-4 py-8 rounded-xl cursor-pointer transition-colors border-2 border-dashed hover:border-cyan-400/70" style={{ borderColor: 'var(--border)' }}>
                   {uploading ? <span className="text-theme-secondary">Uploading…</span> : <span className="text-theme-secondary">Click to upload up to 10 photos</span>}
                 </label>
+                <p className="mt-1 text-xs text-theme-secondary">Tip: JPG/PNG/WebP, up to 10MB each. Max 10 photos.</p>
                 {form.images.length > 0 && (
                   <div className="mt-3 grid grid-cols-3 gap-2">
                     {form.images.map((url, idx) => (
