@@ -157,43 +157,54 @@ export default function DiscoverVenues({ token }: { token: string | null }) {
             return (
               <div
                 key={v._id}
-                className="group themed-card rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer"
+                className="group cursor-pointer"
                 onClick={() => setSelectedVenue(v)}
                 role="button"
                 aria-label={`View venue ${v.name}`}
                 tabIndex={0}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedVenue(v); } }}
               >
-                {img && (
-                  <div className="relative w-full h-40 sm:h-48 overflow-hidden">
-                    <img src={img} alt={v.name} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/0 to-transparent" />
-                  </div>
-                )}
-                <div className="p-3 space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="text-lg font-bold text-heading">{v.name}</div>
-                      <div className="text-sm text-theme-secondary inline-flex items-center gap-1">
-                        <MapPin className="w-4 h-4" /> {city || 'Location TBA'}
+                <div className="p-[1px] rounded-2xl bg-gradient-to-r from-cyan-400/60 to-purple-500/60 group-hover:from-cyan-400 group-hover:to-purple-500 transition-colors">
+                  <div className="themed-card rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <div className="relative w-full h-44 sm:h-52 overflow-hidden bg-gradient-to-br from-slate-200/50 to-slate-300/30 dark:from-slate-800/40 dark:to-slate-900/40">
+                      {img ? (
+                        <img src={img} alt={v.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-sm text-theme-secondary">No image</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/0 to-transparent" />
+                      <div className="absolute top-2 right-2">
+                        <span className={`badge ${v.status === 'available' ? 'badge-accent' : 'badge-amber'}`}>{v.status}</span>
                       </div>
                     </div>
-                    <span className={`badge ${v.status === 'available' ? 'badge-accent' : 'badge-amber'}`}>{v.status}</span>
-                  </div>
-                  <div className="text-sm text-theme-secondary">Capacity: {v.capacity?.max ?? '-'}</div>
-                  <div className="pt-2 flex flex-wrap items-center gap-2 border-t" style={{ borderColor: 'var(--border)' }}>
-                    <button
-                      className="btn px-3 py-1.5 text-sm"
-                      onClick={(e) => { e.stopPropagation(); setSelectedVenue(v); }}
-                    >
-                      View Venue
-                    </button>
-                    <button
-                      className="themed-card px-3 py-1.5 text-sm"
-                      onClick={(e) => { e.stopPropagation(); requestBooking(v._id); }}
-                    >
-                      Request Booking
-                    </button>
+                    <div className="p-3 sm:p-4 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="text-lg font-semibold text-heading leading-tight">{v.name}</div>
+                          <div className="text-sm text-theme-secondary inline-flex items-center gap-1 mt-0.5">
+                            <MapPin className="w-4 h-4" /> {city || 'Location TBA'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-sm text-theme-secondary">Capacity: {v.capacity?.max ?? '-'}</div>
+                      <div className="pt-2 flex flex-wrap items-center gap-2 border-t" style={{ borderColor: 'var(--border)' }}>
+                        <button
+                          className="btn px-3 py-1.5 text-sm"
+                          onClick={(e) => { e.stopPropagation(); setSelectedVenue(v); }}
+                        >
+                          View Venue
+                        </button>
+                        <button
+                          className="px-3 py-1.5 text-sm rounded-md border hover:bg-emerald-500/10 hover:border-emerald-500/40 transition-colors"
+                          style={{ borderColor: 'var(--border)' }}
+                          onClick={(e) => { e.stopPropagation(); requestBooking(v._id); }}
+                        >
+                          Request Booking
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

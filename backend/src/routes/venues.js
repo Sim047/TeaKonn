@@ -67,11 +67,9 @@ router.get("/search", async (req, res) => {
     if (q && String(q).trim()) {
       const term = String(q).trim();
       const regex = { $regex: term, $options: 'i' };
-
-      // Capture existing filters to avoid circular references
+      // Attach text OR without mutating into circular structures
+      // If there are existing filters, wrap in $and; otherwise, use $or directly
       const hasBaseFilters = Object.keys(query).length > 0;
-      const baseFilters = hasBaseFilters ? { ...query } : {};
-
       const textOr = {
         $or: [
           { name: regex },
@@ -83,13 +81,23 @@ router.get("/search", async (req, res) => {
           { 'location.country': regex },
         ],
       };
-
-      const combined = hasBaseFilters ? { $and: [baseFilters, textOr] } : textOr;
-
-      // Replace contents of query with the combined object
-      for (const key of Object.keys(query)) delete query[key];
-      Object.assign(query, combined);
+      if (hasBaseFilters) {
+        // copy existing keys out first
+        const base = { ...query };
+        for (const key of Object.keys(query)) delete query[key];
+        Object.assign(query, { $and: [base, textOr] });
+      } else {
+        Object.assign(query, textOr);
+      }
     }
+
+    // Debug log (non-fatal): help diagnose query issues
+    try {
+      console.log('[venues.search] params:', {
+        name, city, capacityMin, capacityMax, status, onlyAvailable, q, page, limit,
+      });
+      console.log('[venues.search] query:', JSON.stringify(query));
+    } catch {}
 
     const [venues, total] = await Promise.all([
       Venue.find(query)
@@ -103,7 +111,8 @@ router.get("/search", async (req, res) => {
     res.json({ venues, page, totalPages: Math.ceil(total / limit), total });
   } catch (err) {
     console.error("Search venues error:", err);
-    res.status(500).json({ error: "Failed to search venues" });
+    const message = err?.message || 'Failed to search venues';
+    res.status(500).json({ error: message });
   }
 });
 
