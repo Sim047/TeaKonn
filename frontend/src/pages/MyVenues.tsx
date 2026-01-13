@@ -378,57 +378,20 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                         const receivedForVenue = receivedRequests.filter((r) => String(r.venue?._id || r.venue) === venueId);
                         return (
                           <>
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                              <div className="flex items-center gap-2">
-                                <label className="text-xs text-theme-secondary">Insights</label>
-                                <select
-                                  className="input text-sm py-1 h-8 w-full sm:w-auto"
-                                  value={mode}
-                                  onChange={(e) => setMode(e.target.value as any)}
-                                  aria-label="Select insight type"
-                                >
-                                  <option value="generated">Tokens Generated</option>
-                                  <option value="received">Tokens Received</option>
-                                  <option value="requests">Received Requests</option>
-                                  <option value="events">Events Using Venue</option>
-                                </select>
-                              </div>
-                              <div className="flex flex-wrap gap-1">
-                                <button
-                                  className={`inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs ${mode === 'generated' ? 'bg-emerald-600 text-white' : ''}`}
-                                  style={{ borderColor: 'var(--border)' }}
-                                  onClick={() => setMode('generated')}
-                                  aria-pressed={mode === 'generated'}
-                                >
-                                  Generated
-                                </button>
-                                <button
-                                  className={`inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs ${mode === 'received' ? 'bg-emerald-600 text-white' : ''}`}
-                                  style={{ borderColor: 'var(--border)' }}
-                                  onClick={() => setMode('received')}
-                                  aria-pressed={mode === 'received'}
-                                >
-                                  Received
-                                </button>
-                                <button
-                                  className={`inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs ${mode === 'requests' ? 'bg-emerald-600 text-white' : ''}`}
-                                  style={{ borderColor: 'var(--border)' }}
-                                  onClick={() => setMode('requests')}
-                                  aria-pressed={mode === 'requests'}
-                                >
-                                  Requests
-                                </button>
-                                <button
-                                  className={`inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs ${mode === 'events' ? 'bg-emerald-600 text-white' : ''}`}
-                                  style={{ borderColor: 'var(--border)' }}
-                                  onClick={() => setMode('events')}
-                                  aria-pressed={mode === 'events'}
-                                >
-                                  Events
-                                </button>
-                              </div>
+                            <div className="flex">
+                              <select
+                                className="input text-sm h-9 w-full sm:w-64"
+                                value={mode}
+                                onChange={(e) => setMode(e.target.value as any)}
+                                aria-label="Select insight type"
+                              >
+                                <option value="generated">Tokens Generated</option>
+                                <option value="received">Tokens Received</option>
+                                <option value="requests">Received Requests</option>
+                                <option value="events">Events Using Venue</option>
+                              </select>
                             </div>
-                            <p className="mt-2 text-xs text-theme-secondary">Tip: Click the chips to switch between insights — Generated/Received Tokens, Received Requests, and Events using this venue.</p>
+                            <p className="mt-2 text-xs text-theme-secondary">Use the dropdown to switch between insights.</p>
 
                             {/* Scrollable content area */}
                             <div className="mt-3 max-h-[50vh] overflow-y-auto pr-1" style={{ WebkitOverflowScrolling: 'touch' as any }}>
