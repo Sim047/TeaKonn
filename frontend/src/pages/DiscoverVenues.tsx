@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import { Calendar, MapPin, Tag as TagIcon } from 'lucide-react';
+import { MapPin, Plus } from 'lucide-react';
 import VenueDetailModal from '../components/VenueDetailModal';
+import CreateVenueModal from '../components/CreateVenueModal';
 import { API_URL } from '../config/api';
 
 type Venue = {
@@ -22,10 +23,12 @@ const API = API_URL.replace(/\/api$/, '');
 
 export default function DiscoverVenues({ token }: { token: string | null }) {
   const [q, setQ] = useState('');
-  const [city, setCity] = useState('');
-  const [minCap, setMinCap] = useState('');
-  const [maxCap, setMaxCap] = useState('');
-  const [onlyAvailable, setOnlyAvailable] = useState(true);
+  const [onlyAvailable, setOnlyAvailable] = useState(false);
+  const [showCreateVenue, setShowCreateVenue] = useState(false);
+  // Future filters (hidden for now)
+  const city = '';
+  const minCap = '';
+  const maxCap = '';
   const [page, setPage] = useState(1);
   const [items, setItems] = useState<Venue[]>([]);
   const [hasMore, setHasMore] = useState(true);
@@ -121,16 +124,37 @@ export default function DiscoverVenues({ token }: { token: string | null }) {
           </div>
         </div>
 
-        <div className="themed-card rounded-2xl p-3 sm:p-4 border" style={{ borderColor: 'var(--border)' }}>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
-            <input className="input" placeholder="Search anything (name, city, address)" value={q} onChange={(e) => setQ(e.target.value)} />
-            <input className="input" placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} />
-            <input className="input" placeholder="Min capacity" type="number" value={minCap} onChange={(e) => setMinCap(e.target.value)} />
-            <input className="input" placeholder="Max capacity" type="number" value={maxCap} onChange={(e) => setMaxCap(e.target.value)} />
-            <label className="inline-flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={onlyAvailable} onChange={(e) => setOnlyAvailable(e.target.checked)} />
-              <span>Only available</span>
-            </label>
+        {/* Posts-style single search bar */}
+        <div className="-mx-3 sm:mx-0">
+          <div className="p-[1px] bg-gradient-to-r from-cyan-400 to-purple-500 rounded-none sm:rounded-xl">
+            <div className="flex items-center gap-1 themed-card rounded-none sm:rounded-xl px-1 py-1 w-full flex-nowrap" style={{ background: 'var(--card)' }}>
+              <button
+                className={`px-2 py-1 text-[12px] font-semibold leading-tight rounded-md flex-none border transition-colors ${
+                  onlyAvailable ? 'bg-cyan-600 text-white border-cyan-500' : 'bg-purple-600 text-white border-purple-500'
+                }`}
+                onClick={() => setOnlyAvailable((v) => !v)}
+                aria-label="Toggle availability scope"
+                title={onlyAvailable ? 'Filtering Available Only' : 'All Venues'}
+              >
+                {onlyAvailable ? 'Available' : 'All Venues'}
+              </button>
+              <input
+                type="text"
+                className="input h-9 text-sm flex-1 min-w-0 rounded-md bg-white/60 dark:bg-slate-800/60 focus:ring-2 focus:ring-cyan-400 focus:outline-none placeholder:text-theme-secondary"
+                placeholder="Search venues"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                aria-label="Search venues"
+              />
+              <button
+                onClick={() => setShowCreateVenue(true)}
+                aria-label="Create venue"
+                className="p-1 rounded-md transition-all flex-none bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20"
+                title="Create venue"
+              >
+                <Plus className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -200,6 +224,15 @@ export default function DiscoverVenues({ token }: { token: string | null }) {
 
       {selectedVenue && (
         <VenueDetailModal venue={selectedVenue as any} token={token} onClose={() => setSelectedVenue(null)} />
+      )}
+      {showCreateVenue && (
+        <CreateVenueModal
+          token={token}
+          onClose={() => setShowCreateVenue(false)}
+          editVenue={null}
+          onCreated={() => { setShowCreateVenue(false); fetchPage(true); }}
+          onUpdated={() => { setShowCreateVenue(false); fetchPage(true); }}
+        />
       )}
     </div>
   );
