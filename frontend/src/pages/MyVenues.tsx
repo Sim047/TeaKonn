@@ -257,8 +257,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">My Venues</h2>
           <div className="flex flex-wrap sm:flex-nowrap gap-2 sm:justify-end w-full sm:w-auto">
-            <button className={`${btn('primary')} w-full sm:w-auto`} onClick={() => setShowCreateVenue(true)}>+ Create Venue</button>
-            <button className={`${btn('outline')} w-full sm:w-auto`} onClick={refreshVenues}>Refresh</button>
+            <button className="btn w-full sm:w-auto" onClick={() => setShowCreateVenue(true)}>+ Create Venue</button>
             {me?.role === 'venue_owner' && (
               <button
                 className={`${btn('warning')} w-full sm:w-auto`}
