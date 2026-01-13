@@ -668,6 +668,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                       <span className={`badge ${r.status === 'approved' ? 'badge-accent' : 'badge-violet'}`}>{r.status}</span>
                     </div>
                     <div className="text-xs text-theme-secondary">Requester: {r.requester?.username}</div>
+                    <div className="text-xs text-theme-secondary">Updated: {(() => { const v = r.updatedAt || r.createdAt || r.date; return v ? new Date(v).toLocaleString() : '—'; })()}</div>
                     <div className="mt-2">
                       <button className="inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs" style={{ borderColor: 'var(--border)' }} onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
                     </div>
@@ -708,6 +709,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                     <div className="flex items-center gap-2 text-xs text-theme-secondary w-full sm:w-auto min-w-0">
                       <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
                       <span className="break-words">Exp: {new Date(t.expiresAt).toLocaleString()}</span>
+                      <span className="break-words">Received: {(() => { const v = t.receivedAt || t.createdAt || t.updatedAt; return v ? new Date(v).toLocaleString() : '—'; })()}</span>
                     </div>
                   </div>
                 ))}
