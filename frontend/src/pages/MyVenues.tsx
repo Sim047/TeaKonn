@@ -374,6 +374,16 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                       {/* Controls: dropdown + segmented toggle */}
                       {(() => {
                         const mode = insightModeByVenue[venueId] || 'requests';
+                        const containerAccent =
+                          mode === 'requests'
+                            ? 'ring-1 ring-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/20'
+                            : mode === 'generated'
+                            ? 'ring-1 ring-amber-500/30 bg-amber-50 dark:bg-amber-950/20'
+                            : mode === 'received'
+                            ? 'ring-1 ring-violet-500/30 bg-violet-50 dark:bg-violet-950/20'
+                            : mode === 'events'
+                            ? 'ring-1 ring-sky-500/30 bg-sky-50 dark:bg-sky-950/20'
+                            : '';
                         const setMode = (m: 'requests' | 'generated' | 'received' | 'events') => setInsightModeByVenue((map) => ({ ...map, [venueId]: m }));
                         const receivedForVenue = receivedRequests.filter((r) => String(r.venue?._id || r.venue) === venueId);
                         return (
@@ -395,7 +405,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
 
                             {/* Scrollable content area */}
                             <div
-                              className={`mt-3 max-h-[50vh] overflow-y-auto pr-1 rounded-lg border ${mode === 'requests' ? 'ring-1 ring-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/20' : ''}`}
+                              className={`mt-3 max-h-[50vh] overflow-y-auto pr-1 rounded-lg border ${containerAccent}`}
                               style={{ borderColor: 'var(--border)', WebkitOverflowScrolling: 'touch' as any }}
                             >
                               {mode === 'generated' && (
