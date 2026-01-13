@@ -11,7 +11,7 @@ type Props = {
 };
 
 export default function ProfileEditModal({ visible, onClose, user, onUpdated }: Props) {
-  const MAX_NAME = 60;
+  const MAX_NAME = 30;
   const [name, setName] = useState(user?.name || '');
   const [username, setUsername] = useState(user?.username || '');
   const [email, setEmail] = useState(user?.email || '');
