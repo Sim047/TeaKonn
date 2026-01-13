@@ -664,7 +664,8 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             </div>
           </div>
           {showReceived ? (
-          <div className="space-y-2">
+          <div className="rounded-lg border p-2 ring-1 ring-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/20" style={{ borderColor: 'var(--border)' }}>
+            <div className="space-y-2">
             {receivedRequests.filter((r) => {
               const q = query.toLowerCase();
               if (!q) return true;
@@ -696,6 +697,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
               </div>
             ))}
             {receivedRequests.length === 0 && <p className="text-sm text-gray-500">No received requests.</p>}
+            </div>
           </div>
           ) : null}
         </section>
