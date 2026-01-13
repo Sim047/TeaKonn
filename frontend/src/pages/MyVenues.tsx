@@ -221,6 +221,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [eventsByVenue, setEventsByVenue] = useState<Record<string, any[]>>({});
   const [loadingVenueEvents, setLoadingVenueEvents] = useState<Record<string, boolean>>({});
+  const [insightModeByVenue, setInsightModeByVenue] = useState<Record<string, 'requests' | 'generated' | 'received' | 'events'>>({});
 
   async function loadEventsForVenue(venueId: string) {
     if (!venueId) return;
@@ -369,78 +370,179 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                   </div>
 
                   {isOpen && (
-                    <div className="mt-3 rounded-xl border p-3 sm:p-4 space-y-4" style={{ borderColor: 'var(--border)' }}>
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-sm font-semibold">Tokens Generated</h4>
-                          <span className="text-xs text-theme-secondary">{genForVenue.length}</span>
-                        </div>
-                        {genForVenue.length ? (
-                          <div className="space-y-2">
-                            {genForVenue.slice(0, 5).map((t) => (
-                              <div key={t._id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
-                                <div className="text-sm font-medium">{t.code}</div>
-                                <div className="flex items-center gap-2 text-xs text-theme-secondary">
-                                  <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
-                                  <span>Exp: {new Date(t.expiresAt).toLocaleString()}</span>
-                                </div>
-                                {t.status === 'active' && (
-                                  <div className="w-full sm:w-auto flex gap-2">
-                                    <button className="inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs" style={{ borderColor: 'var(--border)' }} onClick={() => extendToken(t.code, 24)}>Extend 24h</button>
-                                    <button className="inline-flex items-center px-2.5 py-1.5 rounded-md bg-rose-600 text-white text-xs" onClick={() => revokeToken(t.code)}>Revoke</button>
+                    <div className="mt-3 rounded-xl border p-3 sm:p-4" style={{ borderColor: 'var(--border)' }}>
+                      {/* Controls: dropdown + segmented toggle */}
+                      {(() => {
+                        const mode = insightModeByVenue[venueId] || 'generated';
+                        const setMode = (m: 'requests' | 'generated' | 'received' | 'events') => setInsightModeByVenue((map) => ({ ...map, [venueId]: m }));
+                        const receivedForVenue = receivedRequests.filter((r) => String(r.venue?._id || r.venue) === venueId);
+                        return (
+                          <>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <label className="text-xs text-theme-secondary">Insights</label>
+                                <select
+                                  className="input text-sm py-1 h-8 w-full sm:w-auto"
+                                  value={mode}
+                                  onChange={(e) => setMode(e.target.value as any)}
+                                  aria-label="Select insight type"
+                                >
+                                  <option value="generated">Tokens Generated</option>
+                                  <option value="received">Tokens Received</option>
+                                  <option value="requests">Received Requests</option>
+                                  <option value="events">Events Using Venue</option>
+                                </select>
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                <button
+                                  className={`inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs ${mode === 'generated' ? 'bg-emerald-600 text-white' : ''}`}
+                                  style={{ borderColor: 'var(--border)' }}
+                                  onClick={() => setMode('generated')}
+                                  aria-pressed={mode === 'generated'}
+                                >
+                                  Generated
+                                </button>
+                                <button
+                                  className={`inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs ${mode === 'received' ? 'bg-emerald-600 text-white' : ''}`}
+                                  style={{ borderColor: 'var(--border)' }}
+                                  onClick={() => setMode('received')}
+                                  aria-pressed={mode === 'received'}
+                                >
+                                  Received
+                                </button>
+                                <button
+                                  className={`inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs ${mode === 'requests' ? 'bg-emerald-600 text-white' : ''}`}
+                                  style={{ borderColor: 'var(--border)' }}
+                                  onClick={() => setMode('requests')}
+                                  aria-pressed={mode === 'requests'}
+                                >
+                                  Requests
+                                </button>
+                                <button
+                                  className={`inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs ${mode === 'events' ? 'bg-emerald-600 text-white' : ''}`}
+                                  style={{ borderColor: 'var(--border)' }}
+                                  onClick={() => setMode('events')}
+                                  aria-pressed={mode === 'events'}
+                                >
+                                  Events
+                                </button>
+                              </div>
+                            </div>
+                            <p className="mt-2 text-xs text-theme-secondary">Tip: Click the chips to switch between insights — Generated/Received Tokens, Received Requests, and Events using this venue.</p>
+
+                            {/* Scrollable content area */}
+                            <div className="mt-3 max-h-[50vh] overflow-y-auto pr-1" style={{ WebkitOverflowScrolling: 'touch' as any }}>
+                              {mode === 'generated' && (
+                                <div>
+                                  <div className="flex items-center justify-between mb-2">
+                                    <h4 className="text-sm font-semibold">Tokens Generated</h4>
+                                    <span className="text-xs text-theme-secondary">{genForVenue.length}</span>
                                   </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-xs text-theme-secondary">No tokens generated for this venue.</div>
-                        )}
-                      </div>
-
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-sm font-semibold">Tokens Received</h4>
-                          <span className="text-xs text-theme-secondary">{recForVenue.length}</span>
-                        </div>
-                        {recForVenue.length ? (
-                          <div className="space-y-2">
-                            {recForVenue.slice(0, 5).map((t) => (
-                              <div key={t._id} className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
-                                <div className="text-sm font-medium">{t.code}</div>
-                                <div className="flex items-center gap-2 text-xs text-theme-secondary">
-                                  <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
-                                  <span>Exp: {new Date(t.expiresAt).toLocaleString()}</span>
+                                  {genForVenue.length ? (
+                                    <div className="space-y-2">
+                                      {genForVenue.map((t) => (
+                                        <div key={t._id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+                                          <div className="text-sm font-medium">{t.code}</div>
+                                          <div className="flex items-center gap-2 text-xs text-theme-secondary">
+                                            <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
+                                            <span>Exp: {new Date(t.expiresAt).toLocaleString()}</span>
+                                          </div>
+                                          {t.status === 'active' && (
+                                            <div className="w-full sm:w-auto flex gap-2">
+                                              <button className="inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs" style={{ borderColor: 'var(--border)' }} onClick={() => extendToken(t.code, 24)}>Extend 24h</button>
+                                              <button className="inline-flex items-center px-2.5 py-1.5 rounded-md bg-rose-600 text-white text-xs" onClick={() => revokeToken(t.code)}>Revoke</button>
+                                            </div>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="text-xs text-theme-secondary">No tokens generated for this venue.</div>
+                                  )}
                                 </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-xs text-theme-secondary">No received tokens tied to this venue.</div>
-                        )}
-                      </div>
+                              )}
 
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-sm font-semibold">Events Using This Venue</h4>
-                          <span className="text-xs text-theme-secondary">{(eventsByVenue[venueId] || []).length}{loadingVenueEvents[venueId] ? '…' : ''}</span>
-                        </div>
-                        {loadingVenueEvents[venueId] ? (
-                          <div className="text-xs text-theme-secondary">Loading events…</div>
-                        ) : (eventsByVenue[venueId] && eventsByVenue[venueId].length ? (
-                          <div className="space-y-2">
-                            {eventsByVenue[venueId].slice(0, 5).map((ev: any) => (
-                              <div key={ev._id} className="rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
-                                <div className="text-sm font-medium line-clamp-1">{ev.title}</div>
-                                <div className="text-xs text-theme-secondary">Starts: {new Date(ev.startDate).toLocaleString()}</div>
-                                <div className="text-xs text-theme-secondary">By {ev.organizer?.username || 'Organizer'}</div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-xs text-theme-secondary">No events linked to this venue yet.</div>
-                        ))}
-                      </div>
+                              {mode === 'received' && (
+                                <div>
+                                  <div className="flex items-center justify-between mb-2">
+                                    <h4 className="text-sm font-semibold">Tokens Received</h4>
+                                    <span className="text-xs text-theme-secondary">{recForVenue.length}</span>
+                                  </div>
+                                  {recForVenue.length ? (
+                                    <div className="space-y-2">
+                                      {recForVenue.map((t) => (
+                                        <div key={t._id} className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+                                          <div className="text-sm font-medium">{t.code}</div>
+                                          <div className="flex items-center gap-2 text-xs text-theme-secondary">
+                                            <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
+                                            <span>Exp: {new Date(t.expiresAt).toLocaleString()}</span>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="text-xs text-theme-secondary">No received tokens tied to this venue.</div>
+                                  )}
+                                </div>
+                              )}
+
+                              {mode === 'requests' && (
+                                <div>
+                                  <div className="flex items-center justify-between mb-2">
+                                    <h4 className="text-sm font-semibold">Received Requests</h4>
+                                    <span className="text-xs text-theme-secondary">{receivedForVenue.length}</span>
+                                  </div>
+                                  {receivedForVenue.length ? (
+                                    <div className="space-y-2">
+                                      {receivedForVenue.map((r) => (
+                                        <div key={r._id} className="rounded-lg border px-3 py-2 space-y-1" style={{ borderColor: 'var(--border)' }}>
+                                          <div className="flex items-center justify-between">
+                                            <div className="text-sm font-medium">{r.venue?.name}</div>
+                                            <span className={`badge ${r.status === 'pending' ? 'badge-amber' : r.status === 'approved' ? 'badge-accent' : 'badge-violet'}`}>{r.status}</span>
+                                          </div>
+                                          <div className="text-xs text-theme-secondary">Requester: {r.requester?.username}</div>
+                                          <div className="mt-2 flex flex-wrap gap-2">
+                                            <button className="inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs" style={{ borderColor: 'var(--border)' }} onClick={() => openRequestChat(r._id)}>Open Chat</button>
+                                            {r.status === 'pending' && (
+                                              <button className="inline-flex items-center px-2.5 py-1.5 rounded-md bg-emerald-600 text-white text-xs" onClick={() => setConfirmGenerateReq(r)}>Generate Token</button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="text-xs text-theme-secondary">No received requests for this venue.</div>
+                                  )}
+                                </div>
+                              )}
+
+                              {mode === 'events' && (
+                                <div>
+                                  <div className="flex items-center justify-between mb-2">
+                                    <h4 className="text-sm font-semibold">Events Using This Venue</h4>
+                                    <span className="text-xs text-theme-secondary">{(eventsByVenue[venueId] || []).length}{loadingVenueEvents[venueId] ? '…' : ''}</span>
+                                  </div>
+                                  {loadingVenueEvents[venueId] ? (
+                                    <div className="text-xs text-theme-secondary">Loading events…</div>
+                                  ) : (eventsByVenue[venueId] && eventsByVenue[venueId].length ? (
+                                    <div className="space-y-2">
+                                      {eventsByVenue[venueId].map((ev: any) => (
+                                        <div key={ev._id} className="rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+                                          <div className="text-sm font-medium line-clamp-1">{ev.title}</div>
+                                          <div className="text-xs text-theme-secondary">Starts: {new Date(ev.startDate).toLocaleString()}</div>
+                                          <div className="text-xs text-theme-secondary">By {ev.organizer?.username || 'Organizer'}</div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="text-xs text-theme-secondary">No events linked to this venue yet.</div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>
