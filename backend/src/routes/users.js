@@ -149,6 +149,31 @@ router.get("/me", auth, async (req, res) => {
 });
 
 /* ---------------------------------------------
+   CHECK USERNAME AVAILABILITY
+   Query: ?username=foo
+   Returns: { available: boolean }
+--------------------------------------------- */
+router.get('/exists', auth, async (req, res) => {
+  try {
+    const raw = String(req.query.username || '').trim();
+    const candidate = raw.toLowerCase().replace(/[^a-z0-9_.-]/g, '');
+    if (!candidate) return res.json({ available: false, reason: 'empty' });
+    if (candidate.length < 3 || candidate.length > 30) {
+      return res.json({ available: false, reason: 'length' });
+    }
+    function escapeRegExp(str) { return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+    const exists = await User.findOne({
+      username: { $regex: '^' + escapeRegExp(candidate) + '$', $options: 'i' },
+      _id: { $ne: req.user.id },
+    }).select('_id');
+    return res.json({ available: !exists, candidate });
+  } catch (err) {
+    console.error('GET /api/users/exists error:', err);
+    return res.status(500).json({ available: false, reason: 'error' });
+  }
+});
+
+/* ---------------------------------------------
    UPDATE LOGGED-IN USER PROFILE
    Allowed fields: username, email, bio, about, location
 --------------------------------------------- */

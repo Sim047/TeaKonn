@@ -13,12 +13,15 @@ type Props = {
 export default function ProfileEditModal({ visible, onClose, user, onUpdated }: Props) {
   const MAX_NAME = 30;
   const [name, setName] = useState(user?.name || '');
-  const [username, setUsername] = useState(user?.username || '');
+  const [username, setUsername] = useState((user?.username || '').toLowerCase());
   const [email, setEmail] = useState(user?.email || '');
   const [location, setLocation] = useState(user?.location || '');
   const [about, setAbout] = useState(user?.about || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+    const [usernameAvailable, setUsernameAvailable] = useState<null | boolean>(null);
+    const [usernameChecking, setUsernameChecking] = useState<boolean>(false);
+    const [usernameHint, setUsernameHint] = useState<string>('3–30 chars, lowercase, letters/numbers . _ -');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -33,7 +36,7 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
 
   useEffect(() => {
     setName(user?.name || '');
-    setUsername(user?.username || '');
+    setUsername((user?.username || '').toLowerCase());
     setEmail(user?.email || '');
     setLocation(user?.location || '');
     setAbout(user?.about || '');
@@ -47,6 +50,39 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
     setPasswordSuccess(null);
   }, [user, visible]);
 
+  // Debounced username availability check
+  useEffect(() => {
+    const raw = (username || '').toLowerCase().replace(/[^a-z0-9_.-]/g, '');
+    if (!raw) {
+      setUsernameAvailable(null);
+      setUsernameHint('3–30 chars, lowercase, letters/numbers . _ -');
+      return;
+    }
+    if (raw.length < 3 || raw.length > 30) {
+      setUsernameAvailable(false);
+      setUsernameHint('Must be 3–30 characters');
+      return;
+    }
+    let cancelled = false;
+    setUsernameChecking(true);
+    setUsernameHint('Checking availability…');
+    const t = setTimeout(async () => {
+      try {
+        const { data } = await api.get('/users/exists', { params: { username: raw } });
+        if (cancelled) return;
+        setUsernameAvailable(!!data?.available);
+        setUsernameHint(data?.available ? 'Available' : 'Already taken');
+      } catch (e) {
+        if (cancelled) return;
+        setUsernameAvailable(null);
+        setUsernameHint('Could not verify, will validate on save');
+      } finally {
+        if (!cancelled) setUsernameChecking(false);
+      }
+    }, 400);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [username]);
+
   async function saveProfile() {
     try {
       setSaving(true);
@@ -54,7 +90,8 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
 
       // Update text fields
       const safeName = (name || '').slice(0, MAX_NAME);
-      const { data } = await api.put('/users/me', { name: safeName, username, email, location, about });
+      const safeUsername = (username || '').toLowerCase().replace(/[^a-z0-9_.-]/g, '');
+      const { data } = await api.put('/users/me', { name: safeName, username: safeUsername, email, location, about });
       let updatedUser = data?.user || user;
 
       // Optional avatar upload
@@ -230,8 +267,19 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
           {/* Username (unique handle) */}
           <div>
             <label className="text-xs text-theme-secondary">Username</label>
-            <input className="input w-full mt-1" value={username} onChange={(e) => setUsername(e.target.value)} maxLength={30} />
-            <p className="text-xs text-theme-secondary mt-1">3–30 chars. Allowed: letters, numbers, dot, dash, underscore. Must be unique.</p>
+            <input
+              className="input w-full mt-1"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_.-]/g, ''))}
+              maxLength={30}
+              placeholder="yourname"
+            />
+            <div className="mt-1 flex items-center justify-between">
+              <p className={`text-xs ${usernameAvailable === false ? 'text-red-500' : usernameAvailable ? 'text-green-600' : 'text-theme-secondary'}`}>
+                {usernameChecking ? 'Checking availability…' : usernameHint}
+              </p>
+              <p className="text-xs text-theme-secondary">{Math.max(0, username.length)}/30</p>
+            </div>
           </div>
 
           <div>
@@ -309,10 +357,10 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
             <p className="text-xs text-theme-secondary mt-2">Minimum 8 characters. If your account was created via Google, you can set a password here.</p>
           </div>
 
-          {/* Danger zone: Delete account */}
-          <div className="mt-4 p-4 rounded-xl border border-red-500/40 bg-red-900/10">
-            <h4 className="text-sm font-semibold text-red-300">Delete Account</h4>
-            <p className="text-xs text-red-200 mt-1">This action is permanent. Your profile will be removed and you will be signed out.</p>
+          {/* Danger zone: Delete account (theme-aware for readability) */}
+          <div className="mt-4 p-4 rounded-xl themed-card border" style={{ borderColor: 'rgba(239,68,68,0.4)' }}>
+            <h4 className="text-sm font-semibold text-red-600 dark:text-red-300">Delete Account</h4>
+            <p className="text-xs text-theme-secondary mt-1">This action is permanent. Your profile will be removed and you will be signed out.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
               <div>
                 <label className="text-xs text-theme-secondary">Type DELETE to confirm</label>
@@ -330,7 +378,7 @@ export default function ProfileEditModal({ visible, onClose, user, onUpdated }: 
         </div>
 
         <div className="p-4 border-t flex gap-2 sticky bottom-0 z-10" style={{ borderColor: 'var(--border)', background: 'var(--card)' }}>
-          <button className="flex-1 btn" onClick={saveProfile} disabled={saving}>{saving ? 'Saving…' : 'Save Changes'}</button>
+          <button className="flex-1 btn" onClick={saveProfile} disabled={saving || usernameChecking || usernameAvailable === false}>{saving ? 'Saving…' : 'Save Changes'}</button>
           <button className="flex-1 px-4 py-2 rounded-lg themed-card" onClick={onClose}>Cancel</button>
         </div>
       </div>

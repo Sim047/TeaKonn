@@ -244,54 +244,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
           </div>
         </div>
 
-        <div className="sticky top-0 z-10 -mx-3 sm:mx-0 px-3 py-2 bg-[var(--bg)]/80 backdrop-blur border-b" style={{ borderColor: 'var(--border)' }}>
-          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Venues Subtabs">
-            <button
-              className={tabBtn(venuesSubTab === 'sent')}
-              onClick={() => setVenuesSubTab('sent')}
-              role="tab"
-              aria-selected={venuesSubTab === 'sent'}
-              title="Sent booking requests"
-            >
-              <Send className="w-4 h-4" />
-              <span>Sent Requests</span>
-              <span className={countPill(venuesSubTab === 'sent')}>{sentRequests.length}</span>
-            </button>
-            <button
-              className={tabBtn(venuesSubTab === 'received')}
-              onClick={() => setVenuesSubTab('received')}
-              role="tab"
-              aria-selected={venuesSubTab === 'received'}
-              title="Received booking requests"
-            >
-              <Inbox className="w-4 h-4" />
-              <span>Received Requests</span>
-              <span className={countPill(venuesSubTab === 'received')}>{receivedRequests.length}</span>
-            </button>
-            <button
-              className={tabBtn(venuesSubTab === 'generated')}
-              onClick={() => setVenuesSubTab('generated')}
-              role="tab"
-              aria-selected={venuesSubTab === 'generated'}
-              title="Tokens you generated"
-            >
-              <KeyRound className="w-4 h-4" />
-              <span>Generated Tokens</span>
-              <span className={countPill(venuesSubTab === 'generated')}>{generatedTokens.length}</span>
-            </button>
-            <button
-              className={tabBtn(venuesSubTab === 'receivedTokens')}
-              onClick={() => setVenuesSubTab('receivedTokens')}
-              role="tab"
-              aria-selected={venuesSubTab === 'receivedTokens'}
-              title="Tokens you received"
-            >
-              <Shield className="w-4 h-4" />
-              <span>Received Tokens</span>
-              <span className={countPill(venuesSubTab === 'receivedTokens')}>{receivedTokens.length}</span>
-            </button>
-          </div>
-        </div>
+        {/* Filters temporarily removed: to be reintroduced as search-bar toggles */}
 
         <div className="-mx-3 sm:mx-0">
           <div className="p-[1px] bg-gradient-to-r from-cyan-400 to-purple-500 rounded-none sm:rounded-xl">
