@@ -473,6 +473,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                                             <span className={`badge ${r.status === 'pending' ? 'badge-amber' : r.status === 'approved' ? 'badge-accent' : 'badge-violet'}`}>{r.status}</span>
                                           </div>
                                           <div className="text-xs text-theme-secondary">Requester: {r.requester?.username}</div>
+                                          <div className="text-xs text-theme-secondary">Requested: {(() => { const v = r.createdAt || r.updatedAt || r.date; return v ? new Date(v).toLocaleString() : '—'; })()}</div>
                                           <div className="mt-2 flex flex-wrap gap-2">
                                             <button className="inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs" style={{ borderColor: 'var(--border)' }} onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
                                             {(me && String(r.owner?._id || r.owner) === String(me?._id) && r.status === 'pending') && (
@@ -668,7 +669,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                       <span className={`badge ${r.status === 'approved' ? 'badge-accent' : 'badge-violet'}`}>{r.status}</span>
                     </div>
                     <div className="text-xs text-theme-secondary">Requester: {r.requester?.username}</div>
-                    <div className="text-xs text-theme-secondary">Updated: {(() => { const v = r.updatedAt || r.createdAt || r.date; return v ? new Date(v).toLocaleString() : '—'; })()}</div>
+                    <div className="text-xs text-theme-secondary">Requested: {(() => { const v = r.createdAt || r.updatedAt || r.date; return v ? new Date(v).toLocaleString() : '—'; })()}</div>
                     <div className="mt-2">
                       <button className="inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs" style={{ borderColor: 'var(--border)' }} onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
                     </div>
