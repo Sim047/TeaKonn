@@ -87,6 +87,9 @@ export default function MyProducts({ token, onNavigate, onToast, onUpdated }: My
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">My Products</h2>
             <p className="text-sm text-theme-secondary">Manage your products</p>
           </div>
+          <div className="flex flex-wrap sm:flex-nowrap gap-2 sm:justify-end w-full sm:w-auto">
+            <button className="btn w-full sm:w-auto" onClick={() => setOpenCreate(true)}>+ Sell Product</button>
+          </div>
         </div>
 
         <div className="-mx-3 sm:mx-0">
