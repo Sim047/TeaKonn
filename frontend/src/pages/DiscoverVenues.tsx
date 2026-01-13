@@ -124,23 +124,13 @@ export default function DiscoverVenues({ token }: { token: string | null }) {
           </div>
         </div>
 
-        {/* Posts-style single search bar */}
+        {/* Posts-style single search bar (no left toggle) */}
         <div className="-mx-3 sm:mx-0">
           <div className="p-[1px] bg-gradient-to-r from-cyan-400 to-purple-500 rounded-none sm:rounded-xl">
-            <div className="flex items-center gap-1 themed-card rounded-none sm:rounded-xl px-1 py-1 w-full flex-nowrap" style={{ background: 'var(--card)' }}>
-              <button
-                className={`px-2 py-1 text-[12px] font-semibold leading-tight rounded-md flex-none border transition-colors ${
-                  onlyAvailable ? 'bg-cyan-600 text-white border-cyan-500' : 'bg-purple-600 text-white border-purple-500'
-                }`}
-                onClick={() => setOnlyAvailable((v) => !v)}
-                aria-label="Toggle availability scope"
-                title={onlyAvailable ? 'Filtering Available Only' : 'All Venues'}
-              >
-                {onlyAvailable ? 'Available' : 'All Venues'}
-              </button>
+            <div className="flex items-center gap-0.5 themed-card rounded-none sm:rounded-xl px-1 py-0 w-full flex-nowrap" style={{ background: 'var(--card)' }}>
               <input
                 type="text"
-                className="input h-9 text-sm flex-1 min-w-0 rounded-md bg-white/60 dark:bg-slate-800/60 focus:ring-2 focus:ring-cyan-400 focus:outline-none placeholder:text-theme-secondary"
+                className="input h-8 text-sm flex-1 min-w-0 rounded-md bg-white/60 dark:bg-slate-800/60 focus:ring-2 focus:ring-cyan-400 focus:outline-none placeholder:text-theme-secondary"
                 placeholder="Search venues"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -149,10 +139,10 @@ export default function DiscoverVenues({ token }: { token: string | null }) {
               <button
                 onClick={() => setShowCreateVenue(true)}
                 aria-label="Create venue"
-                className="p-1 rounded-md transition-all flex-none bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20"
+                className="p-0.5 rounded-md transition-all flex-none bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20"
                 title="Create venue"
               >
-                <Plus className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <Plus className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               </button>
             </div>
           </div>
