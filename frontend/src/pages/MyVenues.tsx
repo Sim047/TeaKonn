@@ -703,11 +703,11 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
             {globalInsightsMode === 'received' && (
               <div className="space-y-2">
                 {receivedTokens.map((t) => (
-                  <div key={t._id} className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
-                    <div className="text-sm font-medium">{t.code}</div>
-                    <div className="flex items-center gap-2 text-xs text-theme-secondary">
+                  <div key={t._id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+                    <div className="text-sm font-medium break-all">{t.code}</div>
+                    <div className="flex items-center gap-2 text-xs text-theme-secondary w-full sm:w-auto min-w-0">
                       <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
-                      <span>Exp: {new Date(t.expiresAt).toLocaleString()}</span>
+                      <span className="break-words">Exp: {new Date(t.expiresAt).toLocaleString()}</span>
                     </div>
                   </div>
                 ))}
