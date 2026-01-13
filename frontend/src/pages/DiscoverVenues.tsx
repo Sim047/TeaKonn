@@ -217,11 +217,12 @@ export default function DiscoverVenues({ token }: { token: string | null }) {
       )}
       {showCreateVenue && (
         <CreateVenueModal
+          isOpen={showCreateVenue}
           token={token}
           onClose={() => setShowCreateVenue(false)}
           editVenue={null}
           onCreated={() => { setShowCreateVenue(false); fetchPage(true); }}
-          onUpdated={() => { setShowCreateVenue(false); fetchPage(true); }}
+          onSaved={() => { setShowCreateVenue(false); fetchPage(true); }}
         />
       )}
     </div>

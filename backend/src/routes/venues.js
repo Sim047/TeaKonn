@@ -67,26 +67,28 @@ router.get("/search", async (req, res) => {
     if (q && String(q).trim()) {
       const term = String(q).trim();
       const regex = { $regex: term, $options: 'i' };
-      // Combine with existing filters using $and
-      const andParts = [query];
-      andParts.push({ $or: [
-        { name: regex },
-        { description: regex },
-        { 'location.name': regex },
-        { 'location.address': regex },
-        { 'location.city': regex },
-        { 'location.state': regex },
-        { 'location.country': regex },
-      ]});
-      // Replace query with $and
-      // If query was empty object initially, $and with {} is fine
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      query.$and = andParts.filter(Boolean);
-      // Remove top-level fields already merged in $and to avoid conflicts
-      for (const k of Object.keys(query)) {
-        if (k !== '$and') delete query[k];
-      }
+
+      // Capture existing filters to avoid circular references
+      const hasBaseFilters = Object.keys(query).length > 0;
+      const baseFilters = hasBaseFilters ? { ...query } : {};
+
+      const textOr = {
+        $or: [
+          { name: regex },
+          { description: regex },
+          { 'location.name': regex },
+          { 'location.address': regex },
+          { 'location.city': regex },
+          { 'location.state': regex },
+          { 'location.country': regex },
+        ],
+      };
+
+      const combined = hasBaseFilters ? { $and: [baseFilters, textOr] } : textOr;
+
+      // Replace contents of query with the combined object
+      for (const key of Object.keys(query)) delete query[key];
+      Object.assign(query, combined);
     }
 
     const [venues, total] = await Promise.all([
