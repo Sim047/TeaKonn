@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../config/api';
 // Venue functionality moved to MyVenues page
@@ -86,7 +86,42 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
   const [confirmDeleteEventId, setConfirmDeleteEventId] = useState<string | null>(null);
   // const [confirmDeleteVenueId, setConfirmDeleteVenueId] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
-  const [activeTab, setActiveTab] = useState<'events' | 'services' | 'products' | 'venues'>('events');
+  const [activeTab, setActiveTab] = useState<'events' | 'services' | 'products' | 'venues'>(() => {
+    const saved = localStorage.getItem('auralink-my-activities-tab');
+    if (saved === 'events' || saved === 'services' || saved === 'products' || saved === 'venues') return saved as any;
+    return 'events';
+  });
+    useEffect(() => { localStorage.setItem('auralink-my-activities-tab', activeTab); }, [activeTab]);
+
+    const tabKeys: Array<'events' | 'venues' | 'services' | 'products'> = ['events','venues','services','products'];
+    const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+    function focusTab(nextKey: 'events' | 'venues' | 'services' | 'products') {
+      const el = tabRefs.current[nextKey];
+      if (el) el.focus();
+    }
+    function onTabKeyDown(e: React.KeyboardEvent, key: 'events' | 'venues' | 'services' | 'products') {
+      const i = tabKeys.indexOf(key);
+      if (e.key === 'ArrowRight') {
+        const next = tabKeys[(i + 1) % tabKeys.length];
+        setActiveTab(next);
+        focusTab(next);
+        e.preventDefault();
+      } else if (e.key === 'ArrowLeft') {
+        const prev = tabKeys[(i - 1 + tabKeys.length) % tabKeys.length];
+        setActiveTab(prev);
+        focusTab(prev);
+        e.preventDefault();
+      } else if (e.key === 'Home') {
+        setActiveTab(tabKeys[0]);
+        focusTab(tabKeys[0]);
+        e.preventDefault();
+      } else if (e.key === 'End') {
+        const last = tabKeys[tabKeys.length - 1];
+        setActiveTab(last);
+        focusTab(last);
+        e.preventDefault();
+      }
+    }
   const [eventsQuery, setEventsQuery] = useState<string>('');
   const [venuesCount, setVenuesCount] = useState<number>(0);
   const [eventsSubTab, setEventsSubTab] = useState<'created' | 'joined' | 'past'>(() => {
@@ -203,49 +238,67 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         </div>
 
       {/* Main tabs (distinct segmented control) */}
-      <div className="mt-3">
-        <div className="rounded-xl border themed-card p-1 overflow-x-auto flex gap-1 sm:flex-wrap" role="tablist" aria-label="My Activities Tabs" style={{ borderColor: 'var(--border)' }}>
-          <button
-            className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg min-w-[140px] ${activeTab === 'events' ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-            onClick={() => setActiveTab('events')}
-            role="tab"
-            aria-selected={activeTab === 'events'}
-          >
-            <Calendar className="w-4 h-4" />
-            <span>My Events ({createdEvents.length})</span>
-          </button>
-          <button
-            className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg min-w-[140px] ${activeTab === 'venues' ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-            onClick={() => setActiveTab('venues')}
-            role="tab"
-            aria-selected={activeTab === 'venues'}
-          >
-            <MapPin className="w-4 h-4" />
-            <span>My Venues {venuesCount ? `(${venuesCount})` : ''}</span>
-          </button>
-          <button
-            className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg min-w-[140px] ${activeTab === 'services' ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-            onClick={() => setActiveTab('services')}
-            role="tab"
-            aria-selected={activeTab === 'services'}
-          >
-            <Trophy className="w-4 h-4" />
-            <span>My Services ({servicesCount})</span>
-          </button>
-          <button
-            className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg min-w-[140px] ${activeTab === 'products' ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-            onClick={() => setActiveTab('products')}
-            role="tab"
-            aria-selected={activeTab === 'products'}
-          >
-            <Users className="w-4 h-4" />
-            <span>My Products ({productsCount})</span>
-          </button>
+      <div className="mt-3 -mx-3 sm:mx-0">
+        <div className="p-[1px] bg-gradient-to-r from-cyan-400 to-purple-500 rounded-none sm:rounded-xl">
+          <div className="rounded-none sm:rounded-xl border themed-card p-1 overflow-x-auto flex gap-1 sm:flex-wrap" role="tablist" aria-label="My Activities Tabs" style={{ borderColor: 'var(--border)', background: 'var(--card)' }}>
+            <button
+              id="tab-events"
+              ref={(el) => (tabRefs.current['events'] = el)}
+              className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg min-w-[140px] ${activeTab === 'events' ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+              onClick={() => setActiveTab('events')}
+              onKeyDown={(e) => onTabKeyDown(e, 'events')}
+              role="tab"
+              aria-selected={activeTab === 'events'}
+              aria-controls="panel-events"
+            >
+              <Calendar className="w-4 h-4" />
+              <span>My Events ({createdEvents.length})</span>
+            </button>
+            <button
+              id="tab-venues"
+              ref={(el) => (tabRefs.current['venues'] = el)}
+              className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg min-w-[140px] ${activeTab === 'venues' ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+              onClick={() => setActiveTab('venues')}
+              onKeyDown={(e) => onTabKeyDown(e, 'venues')}
+              role="tab"
+              aria-selected={activeTab === 'venues'}
+              aria-controls="panel-venues"
+            >
+              <MapPin className="w-4 h-4" />
+              <span>My Venues {venuesCount ? `(${venuesCount})` : ''}</span>
+            </button>
+            <button
+              id="tab-services"
+              ref={(el) => (tabRefs.current['services'] = el)}
+              className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg min-w-[140px] ${activeTab === 'services' ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+              onClick={() => setActiveTab('services')}
+              onKeyDown={(e) => onTabKeyDown(e, 'services')}
+              role="tab"
+              aria-selected={activeTab === 'services'}
+              aria-controls="panel-services"
+            >
+              <Trophy className="w-4 h-4" />
+              <span>My Services ({servicesCount})</span>
+            </button>
+            <button
+              id="tab-products"
+              ref={(el) => (tabRefs.current['products'] = el)}
+              className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg min-w-[140px] ${activeTab === 'products' ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+              onClick={() => setActiveTab('products')}
+              onKeyDown={(e) => onTabKeyDown(e, 'products')}
+              role="tab"
+              aria-selected={activeTab === 'products'}
+              aria-controls="panel-products"
+            >
+              <Users className="w-4 h-4" />
+              <span>My Products ({productsCount})</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {activeTab === 'events' && (
-        <div className="mt-3">
+        <div id="panel-events" role="tabpanel" aria-labelledby="tab-events" className="mt-3">
           <div className="text-xs text-theme-secondary mb-1">Event tabs</div>
           <div className="rounded-lg border themed-card p-1 overflow-x-auto flex gap-1 sm:flex-wrap" role="tablist" aria-label="Events Subtabs" style={{ borderColor: 'var(--border)' }}>
             <button
@@ -406,7 +459,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
       )}
 
       {activeTab === 'services' && (
-        <div className="mt-4">
+        <div id="panel-services" role="tabpanel" aria-labelledby="tab-services" className="mt-4">
           <MyServices
             token={token}
             onNavigate={() => setActiveTab('events')}
@@ -416,7 +469,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         </div>
       )}
       {activeTab === 'products' && (
-        <div className="mt-4">
+        <div id="panel-products" role="tabpanel" aria-labelledby="tab-products" className="mt-4">
           <MyProducts
             token={token}
             onNavigate={() => setActiveTab('events')}
@@ -426,7 +479,7 @@ export default function MyActivities({ token, onOpenConversation, onNavigate, on
         </div>
       )}
       {activeTab === 'venues' && (
-        <div className="mt-4">
+        <div id="panel-venues" role="tabpanel" aria-labelledby="tab-venues" className="mt-4">
           <MyVenues
             token={token}
             onNavigate={() => setActiveTab('events')}
