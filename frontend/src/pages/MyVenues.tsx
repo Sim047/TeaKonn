@@ -221,7 +221,9 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [eventsByVenue, setEventsByVenue] = useState<Record<string, any[]>>({});
   const [loadingVenueEvents, setLoadingVenueEvents] = useState<Record<string, boolean>>({});
-  const [insightModeByVenue, setInsightModeByVenue] = useState<Record<string, 'requests' | 'generated' | 'received' | 'events'>>({});
+  const [insightModeByVenue, setInsightModeByVenue] = useState<Record<string, 'requests' | 'events'>>({});
+  const [globalInsightsMode, setGlobalInsightsMode] = useState<'nonPendingRequests' | 'generated' | 'received' | 'inactiveEvents'>('nonPendingRequests');
+  const [loadingAllVenueEvents, setLoadingAllVenueEvents] = useState(false);
 
   async function loadEventsForVenue(venueId: string) {
     if (!venueId) return;
@@ -235,6 +237,38 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
       setEventsByVenue((m) => ({ ...m, [venueId]: [] }));
     } finally {
       setLoadingVenueEvents((m) => ({ ...m, [venueId]: false }));
+    }
+  }
+
+  function isEventActive(ev: any) {
+    const status = (ev?.status || '').toLowerCase();
+    if (status === 'active') return true;
+    try {
+      const now = Date.now();
+      const start = ev?.startDate ? new Date(ev.startDate).getTime() : undefined;
+      const end = ev?.endDate ? new Date(ev.endDate).getTime() : undefined;
+      if (end !== undefined) return end >= now; // ongoing or upcoming
+      if (start !== undefined) return start >= now - 1000 * 60 * 60 * 4; // allow slight grace
+    } catch {}
+    return false;
+  }
+
+  async function loadAllVenueEventsIfNeeded() {
+    if (loadingAllVenueEvents) return;
+    const missing = myVenues.map(v => String(v._id)).filter(id => !eventsByVenue[id]);
+    if (!missing.length) return;
+    setLoadingAllVenueEvents(true);
+    try {
+      await Promise.all(missing.map(async (id) => {
+        try {
+          const res = await axios.get(`${API_URL}/events/by-venue/${id}`, { params: { includeArchived: true, limit: 100 } });
+          setEventsByVenue((m) => ({ ...m, [id]: res.data?.events || [] }));
+        } catch {
+          setEventsByVenue((m) => ({ ...m, [id]: [] }));
+        }
+      }));
+    } finally {
+      setLoadingAllVenueEvents(false);
     }
   }
 
@@ -371,21 +405,17 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
 
                   {isOpen && (
                     <div className="mt-3 rounded-xl border p-3 sm:p-4" style={{ borderColor: 'var(--border)' }}>
-                      {/* Controls: dropdown + segmented toggle */}
+                      {/* Controls: dropdown */}
                       {(() => {
                         const mode = insightModeByVenue[venueId] || 'requests';
                         const containerAccent =
                           mode === 'requests'
                             ? 'ring-1 ring-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/20'
-                            : mode === 'generated'
-                            ? 'ring-1 ring-amber-500/30 bg-amber-50 dark:bg-amber-950/20'
-                            : mode === 'received'
-                            ? 'ring-1 ring-violet-500/30 bg-violet-50 dark:bg-violet-950/20'
                             : mode === 'events'
                             ? 'ring-1 ring-sky-500/30 bg-sky-50 dark:bg-sky-950/20'
                             : '';
-                        const setMode = (m: 'requests' | 'generated' | 'received' | 'events') => setInsightModeByVenue((map) => ({ ...map, [venueId]: m }));
-                        const receivedForVenue = receivedRequests.filter((r) => String(r.venue?._id || r.venue) === venueId);
+                        const setMode = (m: 'requests' | 'events') => setInsightModeByVenue((map) => ({ ...map, [venueId]: m }));
+                        const receivedForVenue = receivedRequests.filter((r) => String(r.venue?._id || r.venue) === venueId && (r.status || '').toLowerCase() === 'pending');
                         return (
                           <>
                             <div className="flex">
@@ -395,73 +425,17 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                                 onChange={(e) => setMode(e.target.value as any)}
                                 aria-label="Select insight type"
                               >
-                                <option value="generated">Tokens Generated</option>
-                                <option value="received">Tokens Received</option>
                                 <option value="requests">Received Requests</option>
                                 <option value="events">Events Using Venue</option>
                               </select>
                             </div>
-                            <p className="mt-2 text-xs text-theme-secondary">Use the dropdown to switch between insights.</p>
+                            <p className="mt-2 text-xs text-theme-secondary">Showing pending requests and active events only.</p>
 
                             {/* Scrollable content area */}
                             <div
                               className={`mt-3 max-h-[50vh] overflow-y-auto pr-1 rounded-lg border ${containerAccent}`}
                               style={{ borderColor: 'var(--border)', WebkitOverflowScrolling: 'touch' as any }}
                             >
-                              {mode === 'generated' && (
-                                <div>
-                                  <div className="flex items-center justify-between mb-2">
-                                    <h4 className="text-sm font-semibold">Tokens Generated</h4>
-                                    <span className="text-xs text-theme-secondary">{genForVenue.length}</span>
-                                  </div>
-                                  {genForVenue.length ? (
-                                    <div className="space-y-2">
-                                      {genForVenue.map((t) => (
-                                        <div key={t._id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
-                                          <div className="text-sm font-medium">{t.code}</div>
-                                          <div className="flex items-center gap-2 text-xs text-theme-secondary">
-                                            <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
-                                            <span>Exp: {new Date(t.expiresAt).toLocaleString()}</span>
-                                          </div>
-                                          {t.status === 'active' && (
-                                            <div className="w-full sm:w-auto flex gap-2">
-                                              <button className="inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs" style={{ borderColor: 'var(--border)' }} onClick={() => extendToken(t.code, 24)}>Extend 24h</button>
-                                              <button className="inline-flex items-center px-2.5 py-1.5 rounded-md bg-rose-600 text-white text-xs" onClick={() => revokeToken(t.code)}>Revoke</button>
-                                            </div>
-                                          )}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <div className="text-xs text-theme-secondary">No tokens generated for this venue.</div>
-                                  )}
-                                </div>
-                              )}
-
-                              {mode === 'received' && (
-                                <div>
-                                  <div className="flex items-center justify-between mb-2">
-                                    <h4 className="text-sm font-semibold">Tokens Received</h4>
-                                    <span className="text-xs text-theme-secondary">{recForVenue.length}</span>
-                                  </div>
-                                  {recForVenue.length ? (
-                                    <div className="space-y-2">
-                                      {recForVenue.map((t) => (
-                                        <div key={t._id} className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
-                                          <div className="text-sm font-medium">{t.code}</div>
-                                          <div className="flex items-center gap-2 text-xs text-theme-secondary">
-                                            <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
-                                            <span>Exp: {new Date(t.expiresAt).toLocaleString()}</span>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <div className="text-xs text-theme-secondary">No received tokens tied to this venue.</div>
-                                  )}
-                                </div>
-                              )}
-
                               {mode === 'requests' && (
                                 <div>
                                   <div className="flex items-center justify-between mb-2">
@@ -496,13 +470,13 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                                 <div>
                                   <div className="flex items-center justify-between mb-2">
                                     <h4 className="text-sm font-semibold">Events Using This Venue</h4>
-                                    <span className="text-xs text-theme-secondary">{(eventsByVenue[venueId] || []).length}{loadingVenueEvents[venueId] ? '…' : ''}</span>
+                                    <span className="text-xs text-theme-secondary">{(eventsByVenue[venueId] || []).filter(isEventActive).length}{loadingVenueEvents[venueId] ? '…' : ''}</span>
                                   </div>
                                   {loadingVenueEvents[venueId] ? (
                                     <div className="text-xs text-theme-secondary">Loading events…</div>
-                                  ) : (eventsByVenue[venueId] && eventsByVenue[venueId].length ? (
+                                  ) : (eventsByVenue[venueId] && eventsByVenue[venueId].filter(isEventActive).length ? (
                                     <div className="space-y-2">
-                                      {eventsByVenue[venueId].map((ev: any) => (
+                                      {eventsByVenue[venueId].filter(isEventActive).map((ev: any) => (
                                         <div key={ev._id} className="rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
                                           <div className="text-sm font-medium line-clamp-1">{ev.title}</div>
                                           <div className="text-xs text-theme-secondary">Starts: {new Date(ev.startDate).toLocaleString()}</div>
@@ -511,7 +485,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                                       ))}
                                     </div>
                                   ) : (
-                                    <div className="text-xs text-theme-secondary">No events linked to this venue yet.</div>
+                                    <div className="text-xs text-theme-secondary">No active events linked to this venue.</div>
                                   ))}
                                 </div>
                               )}
@@ -700,6 +674,115 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
           ) : null}
         </section>
         )}
+
+        {/* Global/Other Insights section for large-scale management */}
+        <section className="mt-6">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xl font-semibold">Other Insights</h3>
+            <div className="flex items-center gap-2">
+              <select
+                className="input h-9 text-sm"
+                value={globalInsightsMode}
+                onChange={async (e) => {
+                  const v = e.target.value as typeof globalInsightsMode;
+                  setGlobalInsightsMode(v);
+                  if (v === 'inactiveEvents') await loadAllVenueEventsIfNeeded();
+                }}
+                aria-label="Select insight type"
+              >
+                <option value="nonPendingRequests">Non-pending Requests</option>
+                <option value="generated">Tokens Generated</option>
+                <option value="received">Tokens Received</option>
+                <option value="inactiveEvents">Inactive/Past Events</option>
+              </select>
+            </div>
+          </div>
+
+          <div
+            className={`rounded-lg border p-3 max-h-[55vh] overflow-y-auto ${
+              globalInsightsMode === 'nonPendingRequests' ? 'ring-1 ring-amber-500/30 bg-amber-50 dark:bg-amber-950/20' :
+              globalInsightsMode === 'generated' ? 'ring-1 ring-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/20' :
+              globalInsightsMode === 'received' ? 'ring-1 ring-violet-500/30 bg-violet-50 dark:bg-violet-950/20' :
+              'ring-1 ring-slate-500/30 bg-slate-50 dark:bg-slate-900/20'
+            }`}
+            style={{ borderColor: 'var(--border)', WebkitOverflowScrolling: 'touch' as any }}
+          >
+            {globalInsightsMode === 'nonPendingRequests' && (
+              <div className="space-y-2">
+                {receivedRequests.filter(r => (r.status || '').toLowerCase() !== 'pending').map((r) => (
+                  <div key={r._id} className="rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-medium">{r.venue?.name}</div>
+                      <span className={`badge ${r.status === 'approved' ? 'badge-accent' : 'badge-violet'}`}>{r.status}</span>
+                    </div>
+                    <div className="text-xs text-theme-secondary">Requester: {r.requester?.username}</div>
+                    <div className="mt-2">
+                      <button className="inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs" style={{ borderColor: 'var(--border)' }} onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
+                    </div>
+                  </div>
+                ))}
+                {receivedRequests.filter(r => (r.status || '').toLowerCase() !== 'pending').length === 0 && (
+                  <div className="text-xs text-theme-secondary">No non-pending requests.</div>
+                )}
+              </div>
+            )}
+
+            {globalInsightsMode === 'generated' && (
+              <div className="space-y-2">
+                {generatedTokens.map((t) => (
+                  <div key={t._id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+                    <div className="text-sm font-medium">{t.code}</div>
+                    <div className="flex items-center gap-2 text-xs text-theme-secondary">
+                      <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
+                      <span>Exp: {new Date(t.expiresAt).toLocaleString()}</span>
+                    </div>
+                    {t.status === 'active' && (
+                      <div className="w-full sm:w-auto flex gap-2">
+                        <button className="inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs" style={{ borderColor: 'var(--border)' }} onClick={() => extendToken(t.code, 24)}>Extend 24h</button>
+                        <button className="inline-flex items-center px-2.5 py-1.5 rounded-md bg-rose-600 text-white text-xs" onClick={() => revokeToken(t.code)}>Revoke</button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {generatedTokens.length === 0 && <div className="text-xs text-theme-secondary">No generated tokens.</div>}
+              </div>
+            )}
+
+            {globalInsightsMode === 'received' && (
+              <div className="space-y-2">
+                {receivedTokens.map((t) => (
+                  <div key={t._id} className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+                    <div className="text-sm font-medium">{t.code}</div>
+                    <div className="flex items-center gap-2 text-xs text-theme-secondary">
+                      <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
+                      <span>Exp: {new Date(t.expiresAt).toLocaleString()}</span>
+                    </div>
+                  </div>
+                ))}
+                {receivedTokens.length === 0 && <div className="text-xs text-theme-secondary">No received tokens.</div>}
+              </div>
+            )}
+
+            {globalInsightsMode === 'inactiveEvents' && (
+              <div className="space-y-2">
+                {loadingAllVenueEvents && <div className="text-xs text-theme-secondary">Loading events…</div>}
+                {!loadingAllVenueEvents && myVenues
+                  .flatMap(v => (eventsByVenue[String(v._id)] || []))
+                  .filter(ev => !isEventActive(ev))
+                  .map((ev: any) => (
+                    <div key={ev._id} className="rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+                      <div className="text-sm font-medium line-clamp-1">{ev.title}</div>
+                      <div className="text-xs text-theme-secondary">Starts: {new Date(ev.startDate).toLocaleString()}</div>
+                      {ev.endDate && <div className="text-xs text-theme-secondary">Ended: {new Date(ev.endDate).toLocaleString()}</div>}
+                    </div>
+                  ))}
+                {!loadingAllVenueEvents && myVenues.flatMap(v => (eventsByVenue[String(v._id)] || [])).filter(ev => !isEventActive(ev)).length === 0 && (
+                  <div className="text-xs text-theme-secondary">No inactive/past events.</div>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
 
         {venuesSubTab === 'generated' && (
         <section>
