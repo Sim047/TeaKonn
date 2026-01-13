@@ -579,8 +579,10 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
 
         {/* Global/Other Insights section for large-scale management */}
         <section className="mt-6">
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-2">
             <h3 className="text-xl font-semibold">Other Insights</h3>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
             <div className="flex items-center gap-2">
               <span className="text-sm text-theme-secondary">Show</span>
               <button
@@ -591,8 +593,10 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
               >
                 {showOtherInsights ? 'On' : 'Off'}
               </button>
+            </div>
+            <div>
               <select
-                className="input h-9 text-sm"
+                className="input h-9 text-sm w-full sm:w-auto"
                 value={globalInsightsMode}
                 onChange={async (e) => {
                   const v = e.target.value as typeof globalInsightsMode;
