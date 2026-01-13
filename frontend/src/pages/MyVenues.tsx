@@ -479,7 +479,8 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                                           <div className="text-xs text-theme-secondary">Requester: {r.requester?.username}</div>
                                           <div className="mt-2 flex flex-wrap gap-2">
                                             <button className="inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs" style={{ borderColor: 'var(--border)' }} onClick={() => openRequestChat(r._id)}>Open Chat</button>
-                                            {r.status === 'pending' && (
+                                            <button className="inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs" style={{ borderColor: 'var(--border)' }} onClick={() => startConversationWithUser(r.requester?._id)}>Message Requester</button>
+                                            {(me && String(r.owner?._id || r.owner) === String(me?._id) && r.status === 'pending') && (
                                               <button className="inline-flex items-center px-2.5 py-1.5 rounded-md bg-emerald-600 text-white text-xs" onClick={() => setConfirmGenerateReq(r)}>Generate Token</button>
                                             )}
                                           </div>
