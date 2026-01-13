@@ -304,7 +304,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
               </button>
               <input
                 type="text"
-                className="input h-9 text-sm flex-1 min-w-0 rounded-md bg-white/60 dark:bg-slate-800/60 focus:ring-2 focus:ring-cyan-400 focus:outline-none placeholder:text-theme-secondary"
+                className="input h-9 text-sm flex-1 min-w-0 rounded-md bg-white/60 dark:bg-slate-800/60 focus:ring-2 focus:ring-cyan-400 focus:outline-none placeholder:text-slate-500 dark:placeholder:text-slate-400 placeholder:opacity-90 dark:placeholder:opacity-80"
                 placeholder="Search venues"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
