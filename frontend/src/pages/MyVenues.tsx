@@ -345,6 +345,27 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                   (v.location?.city || '').toLowerCase().includes(q) ||
                   (v.status || '').toLowerCase().includes(q)
                 );
+              }).sort((a, b) => {
+                const venueIdA = String(a._id);
+                const venueIdB = String(b._id);
+                const getTs = (r: any) => {
+                  const v = r?.updatedAt || r?.createdAt || r?.date || r?.timestamp;
+                  const t = typeof v === 'number' ? v : (v ? new Date(v).getTime() : 0);
+                  return Number.isFinite(t) ? t : 0;
+                };
+                const latestA = receivedRequests
+                  .filter((r) => String(r.venue?._id || r.venue) === venueIdA)
+                  .reduce((m, r) => {
+                    const t = getTs(r);
+                    return t > m ? t : m;
+                  }, 0);
+                const latestB = receivedRequests
+                  .filter((r) => String(r.venue?._id || r.venue) === venueIdB)
+                  .reduce((m, r) => {
+                    const t = getTs(r);
+                    return t > m ? t : m;
+                  }, 0);
+                return latestB - latestA;
               }).map((v) => {
                 const venueId = String(v._id);
                 const genForVenue = generatedTokens.filter((t) => String(t.venue?._id || t.venue) === venueId);
