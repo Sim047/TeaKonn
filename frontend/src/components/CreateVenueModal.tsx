@@ -125,102 +125,118 @@ export default function CreateVenueModal({ isOpen, onClose, token, onCreated, ed
 
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-      <div className="bg-white dark:bg-slate-900 rounded-xl p-6 w-full max-w-xl shadow-xl">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">{editVenue ? 'Edit Venue' : 'Create Venue'}</h3>
-          <button className="px-3 py-1 rounded border" onClick={onClose}>Close</button>
-        </div>
-        {error && <p className="text-red-600 mb-2">{error}</p>}
-        <form onSubmit={submit} className="space-y-3">
-          <input className="input" placeholder="Venue name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-          <input className="input" placeholder="Location name" value={form.locationName} onChange={(e) => setForm({ ...form, locationName: e.target.value })} />
-          {isLoaded ? (
-            <Autocomplete
-              onLoad={(a) => (addressAutoRef.current = a)}
-              onPlaceChanged={() => {
-                const place = addressAutoRef.current?.getPlace();
-                if (!place) return;
-                const comps = place.address_components || [];
-                const get = (type: string) => comps.find(c => (c.types || []).includes(type))?.long_name || '';
-                const coords = place.geometry?.location
-                  ? { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() }
-                  : undefined;
-                setForm((prev) => ({
-                  ...prev,
-                  locationName: (place.name as string) || prev.locationName,
-                  address: (place.formatted_address as string) || prev.address,
-                  city: get('locality') || get('sublocality') || get('administrative_area_level_2') || prev.city,
-                  state: get('administrative_area_level_1') || prev.state,
-                  country: get('country') || prev.country,
-                  coordinates: coords ?? prev.coordinates,
-                }));
-              }}
-            >
-              <input
-                className="input"
-                placeholder="Address (search places)"
-                value={form.address}
-                onChange={(e) => setForm({ ...form, address: e.target.value })}
-              />
-            </Autocomplete>
-          ) : (
-            <input className="input" placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
-          )}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            <input className="input" placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
-            <input className="input" placeholder="State" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} />
-            <input className="input" placeholder="Country" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="w-full max-w-2xl mx-auto p-[1px] rounded-2xl bg-gradient-to-r from-cyan-400 to-purple-500 shadow-2xl">
+        <div className="themed-card rounded-2xl overflow-hidden" style={{ background: 'var(--card)' }}>
+          <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-20 rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)]" />
+              <h3 className="text-lg font-semibold">{editVenue ? 'Edit Venue' : 'Create Venue'}</h3>
+            </div>
+            <button className="px-3 py-1 rounded-md border hover:bg-white/40 dark:hover:bg-slate-800/40" style={{ borderColor: 'var(--border)' }} onClick={onClose}>Close</button>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-theme-secondary mb-2">Pick on Map (optional)</label>
-            <MapPicker
-              value={{
-                name: form.locationName || form.name || undefined,
-                address: form.address || undefined,
-                city: form.city || undefined,
-                state: form.state || undefined,
-                country: form.country || undefined,
-                coordinates: form.coordinates,
-              }}
-              onChange={(next: PlaceSelection) => {
-                setForm({
-                  ...form,
-                  locationName: next.name || form.locationName,
-                  address: next.address || form.address,
-                  city: next.city || form.city,
-                  state: next.state || form.state,
-                  country: next.country || form.country,
-                  coordinates: next.coordinates,
-                });
-              }}
-            />
-          </div>
-          <input className="input" type="number" min="1" placeholder="Capacity (max)" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: Number(e.target.value) })} required />
-          <textarea className="input" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-
-          <div>
-            <label className="block text-sm font-medium text-theme-secondary mb-2">Venue Photos</label>
-            <input type="file" accept="image/*" multiple onChange={handleImageUpload} id="venue-images" className="hidden" />
-            <label htmlFor="venue-images" className="flex items-center justify-center gap-2 w-full px-4 py-6 rounded-xl cursor-pointer hover:border-cyan-400 transition-colors border-2 border-dashed" style={{ borderColor: 'var(--border)' }}>
-              {uploading ? <span className="text-theme-secondary">Uploading…</span> : <span className="text-theme-secondary">Click to upload up to 10 photos</span>}
-            </label>
-            {form.images.length > 0 && (
-              <div className="mt-2 grid grid-cols-3 gap-2">
-                {form.images.map((url, idx) => (
-                  <div key={url + idx} className="relative group">
-                    <img src={url} alt={`Venue ${idx + 1}`} className="w-full h-24 object-cover rounded-lg" />
-                    <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 px-2 py-1 text-xs rounded bg-black/60 text-white opacity-0 group-hover:opacity-100">Remove</button>
-                  </div>
-                ))}
+          <div className="px-5 py-4">
+            {error && <p className="text-red-600 mb-3 text-sm">{error}</p>}
+            <form onSubmit={submit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input className="input" placeholder="Venue name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                <input className="input" placeholder="Location name" value={form.locationName} onChange={(e) => setForm({ ...form, locationName: e.target.value })} />
               </div>
-            )}
+
+              {isLoaded ? (
+                <Autocomplete
+                  onLoad={(a) => (addressAutoRef.current = a)}
+                  onPlaceChanged={() => {
+                    const place = addressAutoRef.current?.getPlace();
+                    if (!place) return;
+                    const comps = place.address_components || [];
+                    const get = (type: string) => comps.find(c => (c.types || []).includes(type))?.long_name || '';
+                    const coords = place.geometry?.location
+                      ? { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() }
+                      : undefined;
+                    setForm((prev) => ({
+                      ...prev,
+                      locationName: (place.name as string) || prev.locationName,
+                      address: (place.formatted_address as string) || prev.address,
+                      city: get('locality') || get('sublocality') || get('administrative_area_level_2') || prev.city,
+                      state: get('administrative_area_level_1') || prev.state,
+                      country: get('country') || prev.country,
+                      coordinates: coords ?? prev.coordinates,
+                    }));
+                  }}
+                >
+                  <input
+                    className="input"
+                    placeholder="Address (search places)"
+                    value={form.address}
+                    onChange={(e) => setForm({ ...form, address: e.target.value })}
+                  />
+                </Autocomplete>
+              ) : (
+                <input className="input" placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input className="input" placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+                <input className="input" placeholder="State" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} />
+                <input className="input" placeholder="Country" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-theme-secondary mb-2">Pick on Map (optional)</label>
+                <MapPicker
+                  value={{
+                    name: form.locationName || form.name || undefined,
+                    address: form.address || undefined,
+                    city: form.city || undefined,
+                    state: form.state || undefined,
+                    country: form.country || undefined,
+                    coordinates: form.coordinates,
+                  }}
+                  onChange={(next: PlaceSelection) => {
+                    setForm({
+                      ...form,
+                      locationName: next.name || form.locationName,
+                      address: next.address || form.address,
+                      city: next.city || form.city,
+                      state: next.state || form.state,
+                      country: next.country || form.country,
+                      coordinates: next.coordinates,
+                    });
+                  }}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input className="input md:col-span-1" type="number" min="1" placeholder="Capacity (max)" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: Number(e.target.value) })} required />
+                <textarea className="input md:col-span-2" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-theme-secondary mb-2">Venue Photos</label>
+                <input type="file" accept="image/*" multiple onChange={handleImageUpload} id="venue-images" className="hidden" />
+                <label htmlFor="venue-images" className="flex items-center justify-center gap-2 w-full px-4 py-8 rounded-xl cursor-pointer transition-colors border-2 border-dashed hover:border-cyan-400/70" style={{ borderColor: 'var(--border)' }}>
+                  {uploading ? <span className="text-theme-secondary">Uploading…</span> : <span className="text-theme-secondary">Click to upload up to 10 photos</span>}
+                </label>
+                {form.images.length > 0 && (
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    {form.images.map((url, idx) => (
+                      <div key={url + idx} className="relative group">
+                        <img src={url} alt={`Venue ${idx + 1}`} className="w-full h-24 object-cover rounded-lg" />
+                        <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 px-2 py-1 text-xs rounded bg-black/60 text-white opacity-0 group-hover:opacity-100">Remove</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 justify-end pt-2">
+                <button type="button" className="px-4 py-2 rounded-md border hover:bg-white/40 dark:hover:bg-slate-800/40" style={{ borderColor: 'var(--border)' }} onClick={onClose}>Cancel</button>
+                <button type="submit" className="px-4 py-2 rounded-md bg-teal-600 text-white hover:bg-teal-500" disabled={loading || uploading}>{(loading || uploading) ? (editVenue ? 'Saving...' : 'Creating...') : (editVenue ? 'Save Changes' : 'Create Venue')}</button>
+              </div>
+            </form>
           </div>
-          <div className="flex gap-2 justify-end">
-            <button type="button" className="px-4 py-2 rounded border" onClick={onClose}>Cancel</button>
-            <button type="submit" className="px-4 py-2 rounded bg-teal-600 text-white" disabled={loading || uploading}>{(loading || uploading) ? (editVenue ? 'Saving...' : 'Creating...') : (editVenue ? 'Save Changes' : 'Create Venue')}</button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );
