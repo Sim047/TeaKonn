@@ -349,44 +349,67 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                 const venueId = String(v._id);
                 const genForVenue = generatedTokens.filter((t) => String(t.venue?._id || t.venue) === venueId);
                 const recForVenue = receivedTokens.filter((t) => String(t.venue?._id || t.venue) === venueId);
+                const pendingCount = receivedRequests.filter((r) => String(r.venue?._id || r.venue) === venueId && (r.status || '').toLowerCase() === 'pending').length;
                 const isOpen = !!expanded[venueId];
                 return (
                 <div key={venueId} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
                   <div className="h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80 group-hover:opacity-100" />
                   {Array.isArray(v.images) && v.images.length > 0 && (
-                    <div className="relative w-full h-40 sm:h-48 overflow-hidden rounded-xl mb-3">
+                    <div className="relative w-full h-32 sm:h-40 overflow-hidden rounded-xl mb-3">
                       <img src={v.images[0]} alt={v.name} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/0 to-transparent" />
+                      {pendingCount > 0 && (
+                        <div className="absolute top-2 right-2 bg-amber-600 text-white text-xs px-2 py-0.5 rounded-full shadow">{pendingCount} pending</div>
+                      )}
                     </div>
                   )}
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                     <div>
                       <div className="text-lg font-semibold text-heading">{v.name}</div>
-                      <div className="mt-1 flex items-center gap-2 text-sm text-theme-secondary">
-                        <MapPin className="w-4 h-4 text-[var(--accent-cyan)]" />
-                        <span>{v.location?.city || 'Location TBA'}</span>
-                      </div>
+                      {!isOpen && pendingCount > 0 && (
+                        <span className="mt-1 inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">{pendingCount} pending</span>
+                      )}
+                      {isOpen && (
+                        <div className="mt-1 flex items-center gap-2 text-sm text-theme-secondary">
+                          <MapPin className="w-4 h-4 text-[var(--accent-cyan)]" />
+                          <span>{v.location?.city || 'Location TBA'}</span>
+                        </div>
+                      )}
                     </div>
-                    <span className={`badge ${venueStatusStyle(v.status)}`}>{v.status}</span>
+                    {isOpen && <span className={`badge ${venueStatusStyle(v.status)}`}>{v.status}</span>}
                   </div>
-                  <div className="mt-2 flex items-center gap-2 text-sm text-theme-secondary">
-                    <Users className="w-4 h-4 text-[var(--accent-amber)]" />
-                    <span>Capacity: {v.capacity?.max ?? '—'}</span>
-                  </div>
+                  {isOpen && (
+                    <div className="mt-2 flex items-center gap-2 text-sm text-theme-secondary">
+                      <Users className="w-4 h-4 text-[var(--accent-amber)]" />
+                      <span>Capacity: {v.capacity?.max ?? '—'}</span>
+                    </div>
+                  )}
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <button className="btn w-full sm:w-auto" onClick={() => { setEditingVenue(v); setShowCreateVenue(true); }}>Edit</button>
-                    <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400 w-full sm:w-auto" onClick={() => setConfirmDeleteVenueId(v._id)}>Delete</button>
-                    <button
-                      className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto"
-                      onClick={async () => {
-                        setExpanded((m) => ({ ...m, [venueId]: !isOpen }));
-                        if (!isOpen && !eventsByVenue[venueId]) await loadEventsForVenue(venueId);
-                      }}
-                      aria-expanded={isOpen}
-                    >
-                      <ChevronDown className={`w-4 h-4 mr-1 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                      Insights
-                    </button>
+                    {!isOpen && (
+                      <button
+                        className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto"
+                        onClick={async () => {
+                          setExpanded((m) => ({ ...m, [venueId]: true }));
+                          if (!eventsByVenue[venueId]) await loadEventsForVenue(venueId);
+                        }}
+                        aria-expanded={isOpen}
+                      >
+                        See more
+                      </button>
+                    )}
+                    {isOpen && (
+                      <>
+                        <button className="btn w-full sm:w-auto" onClick={() => { setEditingVenue(v); setShowCreateVenue(true); }}>Edit</button>
+                        <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400 w-full sm:w-auto" onClick={() => setConfirmDeleteVenueId(v._id)}>Delete</button>
+                        <button
+                          className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto"
+                          onClick={() => setExpanded((m) => ({ ...m, [venueId]: false }))}
+                          aria-expanded={isOpen}
+                        >
+                          Hide details
+                        </button>
+                      </>
+                    )}
                   </div>
 
                   {isOpen && (
@@ -406,7 +429,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                           <>
                             <div className="flex">
                               <select
-                                className="input text-sm h-9 w-full sm:w-64"
+                                className="input text-sm leading-normal w-full sm:w-64"
                                 value={mode}
                                 onChange={(e) => setMode(e.target.value as any)}
                                 aria-label="Select insight type"
