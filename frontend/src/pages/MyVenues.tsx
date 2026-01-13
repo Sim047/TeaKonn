@@ -373,7 +373,7 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                     <div className="mt-3 rounded-xl border p-3 sm:p-4" style={{ borderColor: 'var(--border)' }}>
                       {/* Controls: dropdown + segmented toggle */}
                       {(() => {
-                        const mode = insightModeByVenue[venueId] || 'generated';
+                        const mode = insightModeByVenue[venueId] || 'requests';
                         const setMode = (m: 'requests' | 'generated' | 'received' | 'events') => setInsightModeByVenue((map) => ({ ...map, [venueId]: m }));
                         const receivedForVenue = receivedRequests.filter((r) => String(r.venue?._id || r.venue) === venueId);
                         return (
@@ -394,7 +394,10 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                             <p className="mt-2 text-xs text-theme-secondary">Use the dropdown to switch between insights.</p>
 
                             {/* Scrollable content area */}
-                            <div className="mt-3 max-h-[50vh] overflow-y-auto pr-1" style={{ WebkitOverflowScrolling: 'touch' as any }}>
+                            <div
+                              className={`mt-3 max-h-[50vh] overflow-y-auto pr-1 rounded-lg border ${mode === 'requests' ? 'ring-1 ring-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/20' : ''}`}
+                              style={{ borderColor: 'var(--border)', WebkitOverflowScrolling: 'touch' as any }}
+                            >
                               {mode === 'generated' && (
                                 <div>
                                   <div className="flex items-center justify-between mb-2">
