@@ -120,7 +120,11 @@ export default function DiscoverVenues({ token }: { token: string | null }) {
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Discover Venues</h2>
-            <p className="text-sm text-theme-secondary">Find and request bookings. Results are ranked by recency, availability, images, and size.</p>
+            <p className="mt-1 text-[13px] sm:text-sm leading-relaxed text-theme-secondary max-w-prose">
+              <span>Find and request bookings.</span>
+              <span className="hidden sm:inline"> Results are ranked by recency, availability, images, and size.</span>
+              <span className="sm:hidden"> Ranked by recency, availability, images, and size.</span>
+            </p>
           </div>
         </div>
 
