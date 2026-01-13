@@ -126,10 +126,11 @@ export default function CreateVenueModal({ isOpen, onClose, token, onCreated, ed
 
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="w-full max-w-2xl mx-auto p-[1px] rounded-2xl bg-gradient-to-r from-cyan-400 to-purple-500 shadow-2xl">
-        <div className="themed-card rounded-2xl overflow-hidden" style={{ background: 'var(--card)' }}>
-          <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
+    <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain">
+      <div className="min-h-full flex items-center justify-center p-4 bg-black/50">
+        <div className="w-full max-w-2xl mx-auto p-[1px] rounded-2xl bg-gradient-to-r from-cyan-400 to-purple-500 shadow-2xl">
+          <div className="themed-card rounded-2xl flex flex-col max-h-[90vh]" style={{ background: 'var(--card)' }}>
+            <div className="px-5 py-4 border-b flex items-center justify-between sticky top-0 z-10" style={{ borderColor: 'var(--border)', background: 'var(--card)' }}>
             <div className="flex items-center gap-3">
               <div className="h-2 w-20 rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)]" />
               <Building2 className="w-5 h-5 text-cyan-500/80" />
@@ -139,8 +140,8 @@ export default function CreateVenueModal({ isOpen, onClose, token, onCreated, ed
               </div>
             </div>
             <button className="px-3 py-1 rounded-md border hover:bg-white/40 dark:hover:bg-slate-800/40" style={{ borderColor: 'var(--border)' }} onClick={onClose}>Close</button>
-          </div>
-          <div className="px-5 py-4">
+            </div>
+            <div className="px-5 py-4 flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' as any }}>
             {error && <p className="text-red-600 mb-3 text-sm">{error}</p>}
             <form onSubmit={submit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -241,6 +242,7 @@ export default function CreateVenueModal({ isOpen, onClose, token, onCreated, ed
                 <button type="submit" className="px-4 py-2 rounded-md bg-teal-600 text-white hover:bg-teal-500" disabled={loading || uploading}>{(loading || uploading) ? (editVenue ? 'Saving...' : 'Creating...') : (editVenue ? 'Save Changes' : 'Create Venue')}</button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       </div>
