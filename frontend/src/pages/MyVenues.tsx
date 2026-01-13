@@ -4,7 +4,7 @@ import { API_URL } from '../config/api';
 import CreateVenueModal from '../components/CreateVenueModal';
 import CreateEventModal from '../components/CreateEventModal';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { MapPin, Users, Search as SearchIcon, Send, Inbox, KeyRound, Shield, Plus } from 'lucide-react';
+import { MapPin, Users, Search as SearchIcon, Send, Inbox, KeyRound, Shield, Plus, ChevronDown } from 'lucide-react';
 
 export default function MyVenues({ token, onToast, onNavigate, onCountChange, onUpdated, onOpenConversation }: { token: string | null, onToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void, onNavigate?: (view: string) => void, onCountChange?: (count: number) => void, onUpdated?: () => void, onOpenConversation?: (conv: any) => void }) {
   const btn = (variant: 'primary' | 'success' | 'danger' | 'outline' | 'warning' | 'ghost', size: 'sm' | 'md' = 'md') => {
@@ -217,6 +217,26 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
   useEffect(() => { localStorage.setItem('myvenues.generated.show', JSON.stringify(showGenerated)); }, [showGenerated]);
   useEffect(() => { localStorage.setItem('myvenues.receivedTokens.show', JSON.stringify(showReceivedTokens)); }, [showReceivedTokens]);
 
+  // Per-venue insights (expanded state and lazy-loaded events)
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [eventsByVenue, setEventsByVenue] = useState<Record<string, any[]>>({});
+  const [loadingVenueEvents, setLoadingVenueEvents] = useState<Record<string, boolean>>({});
+
+  async function loadEventsForVenue(venueId: string) {
+    if (!venueId) return;
+    if (loadingVenueEvents[venueId]) return;
+    setLoadingVenueEvents((m) => ({ ...m, [venueId]: true }));
+    try {
+      const res = await axios.get(`${API_URL}/events/by-venue/${venueId}`, { params: { includeArchived: true, limit: 50 } });
+      const list = res.data?.events || [];
+      setEventsByVenue((m) => ({ ...m, [venueId]: list }));
+    } catch {
+      setEventsByVenue((m) => ({ ...m, [venueId]: [] }));
+    } finally {
+      setLoadingVenueEvents((m) => ({ ...m, [venueId]: false }));
+    }
+  }
+
   return (
     <div className="min-h-screen themed-page">
       <div className="max-w-4xl mx-auto p-3 sm:p-6 space-y-6">
@@ -304,8 +324,13 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                   (v.location?.city || '').toLowerCase().includes(q) ||
                   (v.status || '').toLowerCase().includes(q)
                 );
-              }).map((v) => (
-                <div key={v._id} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
+              }).map((v) => {
+                const venueId = String(v._id);
+                const genForVenue = generatedTokens.filter((t) => String(t.venue?._id || t.venue) === venueId);
+                const recForVenue = receivedTokens.filter((t) => String(t.venue?._id || t.venue) === venueId);
+                const isOpen = !!expanded[venueId];
+                return (
+                <div key={venueId} className="group themed-card rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-lg transition-all hover:ring-2 hover:ring-[var(--accent-cyan)]/40">
                   <div className="h-1 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] mb-3 opacity-80 group-hover:opacity-100" />
                   {Array.isArray(v.images) && v.images.length > 0 && (
                     <div className="relative w-full h-40 sm:h-48 overflow-hidden rounded-xl mb-3">
@@ -330,9 +355,96 @@ export default function MyVenues({ token, onToast, onNavigate, onCountChange, on
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button className="btn w-full sm:w-auto" onClick={() => { setEditingVenue(v); setShowCreateVenue(true); }}>Edit</button>
                     <button className="inline-flex items-center px-3 py-2 rounded-md bg-rose-600 text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-400 w-full sm:w-auto" onClick={() => setConfirmDeleteVenueId(v._id)}>Delete</button>
+                    <button
+                      className="inline-flex items-center px-3 py-2 rounded-md border hover:bg-[var(--accent-cyan-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-cyan)]/40 w-full sm:w-auto"
+                      onClick={async () => {
+                        setExpanded((m) => ({ ...m, [venueId]: !isOpen }));
+                        if (!isOpen && !eventsByVenue[venueId]) await loadEventsForVenue(venueId);
+                      }}
+                      aria-expanded={isOpen}
+                    >
+                      <ChevronDown className={`w-4 h-4 mr-1 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                      Insights
+                    </button>
                   </div>
+
+                  {isOpen && (
+                    <div className="mt-3 rounded-xl border p-3 sm:p-4 space-y-4" style={{ borderColor: 'var(--border)' }}>
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-semibold">Tokens Generated</h4>
+                          <span className="text-xs text-theme-secondary">{genForVenue.length}</span>
+                        </div>
+                        {genForVenue.length ? (
+                          <div className="space-y-2">
+                            {genForVenue.slice(0, 5).map((t) => (
+                              <div key={t._id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+                                <div className="text-sm font-medium">{t.code}</div>
+                                <div className="flex items-center gap-2 text-xs text-theme-secondary">
+                                  <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
+                                  <span>Exp: {new Date(t.expiresAt).toLocaleString()}</span>
+                                </div>
+                                {t.status === 'active' && (
+                                  <div className="w-full sm:w-auto flex gap-2">
+                                    <button className="inline-flex items-center px-2.5 py-1.5 rounded-md border text-xs" style={{ borderColor: 'var(--border)' }} onClick={() => extendToken(t.code, 24)}>Extend 24h</button>
+                                    <button className="inline-flex items-center px-2.5 py-1.5 rounded-md bg-rose-600 text-white text-xs" onClick={() => revokeToken(t.code)}>Revoke</button>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-theme-secondary">No tokens generated for this venue.</div>
+                        )}
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-semibold">Tokens Received</h4>
+                          <span className="text-xs text-theme-secondary">{recForVenue.length}</span>
+                        </div>
+                        {recForVenue.length ? (
+                          <div className="space-y-2">
+                            {recForVenue.slice(0, 5).map((t) => (
+                              <div key={t._id} className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+                                <div className="text-sm font-medium">{t.code}</div>
+                                <div className="flex items-center gap-2 text-xs text-theme-secondary">
+                                  <span className={`badge ${t.status === 'active' ? 'badge-accent' : 'badge-violet'}`}>{t.status}</span>
+                                  <span>Exp: {new Date(t.expiresAt).toLocaleString()}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-theme-secondary">No received tokens tied to this venue.</div>
+                        )}
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-semibold">Events Using This Venue</h4>
+                          <span className="text-xs text-theme-secondary">{(eventsByVenue[venueId] || []).length}{loadingVenueEvents[venueId] ? '…' : ''}</span>
+                        </div>
+                        {loadingVenueEvents[venueId] ? (
+                          <div className="text-xs text-theme-secondary">Loading events…</div>
+                        ) : (eventsByVenue[venueId] && eventsByVenue[venueId].length ? (
+                          <div className="space-y-2">
+                            {eventsByVenue[venueId].slice(0, 5).map((ev: any) => (
+                              <div key={ev._id} className="rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+                                <div className="text-sm font-medium line-clamp-1">{ev.title}</div>
+                                <div className="text-xs text-theme-secondary">Starts: {new Date(ev.startDate).toLocaleString()}</div>
+                                <div className="text-xs text-theme-secondary">By {ev.organizer?.username || 'Organizer'}</div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-theme-secondary">No events linked to this venue yet.</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ))}
+              );})}
               {myVenues.length === 0 && <p className="text-sm text-gray-500">No venues yet.</p>}
             </div>
           ) : null}

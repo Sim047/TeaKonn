@@ -74,6 +74,44 @@ router.get("/", async (req, res) => {
   }
 });
 
+// GET /api/events/by-venue/:venueId - list events tied to a specific venue
+router.get("/by-venue/:venueId", async (req, res) => {
+  try {
+    const venueId = req.params.venueId;
+    const includeArchived = String(req.query.includeArchived || "").toLowerCase() === "true";
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
+    const skip = (page - 1) * limit;
+
+    const q = { venue: venueId };
+    if (!includeArchived) {
+      q.$or = [
+        { archivedAt: { $exists: false } },
+        { archivedAt: null },
+      ];
+    }
+
+    const [events, total] = await Promise.all([
+      Event.find(q)
+        .sort({ startDate: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("organizer", "username avatar"),
+      Event.countDocuments(q),
+    ]);
+
+    res.json({
+      events,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      total,
+    });
+  } catch (err) {
+    console.error("Get events by venue error:", err);
+    res.status(500).json({ error: "Failed to fetch events by venue" });
+  }
+});
+
 // GET /api/events/stats/area - aggregate counts for events within a geographic area
 // Supports either bbox=minLat,minLng,maxLat,maxLng or lat,lng,radiusKm
 // Optional timeframe: upcoming|past|all (default: upcoming), days window for past (default: 30)
